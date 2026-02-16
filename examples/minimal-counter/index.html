@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOM++ Minimal Counter</title>
+
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 40px;
+    }
+
+    #app {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 240px;
+    }
+
+    button {
+      padding: 8px 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>DOM++ Counter</h1>
+
+<!--
+  Root container.
+
+  DOM++ does NOT require a virtual DOM or mounting system.
+  We directly mutate real DOM nodes.
+-->
+<div id="app"></div>
+
+<!--
+  Load the example module.
+  Native ES Modules are used — no bundler required.
+-->
+<script type="module" src="./counter.js"></script>
+
+</body>
+</html>
