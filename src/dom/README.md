@@ -2,11 +2,9 @@
 
 The `src/dom` directory provides the **mutation layer** of DOMPP.
 
-These utilities extend native browser elements with a small set of chainable methods designed to make DOM mutations more expressive while preserving the performance and semantics of the underlying platform.
+These utilities extend native browser elements with a minimal set of chainable methods designed to make DOM mutations more expressive while preserving the performance and semantics of the underlying platform.
 
-This module does **not** implement reactivity.
-
-Instead, it focuses purely on **deterministic DOM mutation** — making it the ideal companion to the reactive primitives found in `src/reactive`.
+The DOM module intentionally stays focused on mutation. Reactive behavior is introduced separately through addons such as `stateful` or the primitives inside `src/reactive`.
 
 ---
 
@@ -19,11 +17,15 @@ Reactive → decides WHEN updates happen
 DOM → decides HOW mutations occur
 ```
 
-The DOM module never schedules work and never tracks dependencies.
+The DOM module:
 
-It simply performs fast, explicit mutations.
+* Does not schedule work
+* Does not track dependencies
+* Does not implement reactivity
 
-This separation keeps the engine predictable and prevents hidden behavior.
+It performs fast, explicit mutations — nothing more.
+
+This separation keeps the engine predictable, inspectable, and free from hidden behavior.
 
 ---
 
@@ -64,6 +66,26 @@ The goal is readability without sacrificing explicitness.
 Every method exists to eliminate repetitive boilerplate commonly encountered when mutating the DOM.
 
 If a helper does not significantly improve clarity or ergonomics, it does not belong in this module.
+
+---
+
+### Deterministic mutations
+
+DOMPP favors predictable operations over heuristic-driven behavior.
+
+Helpers perform exactly what they describe:
+
+* `setChildren` replaces
+* `setText` assigns
+* `setStyles` mutates
+* `setAttributes` applies
+* `setEvents` binds
+
+No diffing.
+No virtual DOM.
+No observers.
+
+Just direct mutation.
 
 ---
 
@@ -190,26 +212,19 @@ This helps eliminate a common source of memory leaks in dynamic interfaces.
 
 ---
 
-## Using DOM with Reactivity
+## About Stateful Bindings
 
-A recommended pattern is to let signals trigger mutations:
+Reactive bindings such as:
 
 ```js
-const [count, setCount] = createSignal(0);
-
-const label = document.createElement("span");
-
-count.subscribe(v => {
-  label.setText(v);
-});
+el.setText(({ state }) => `Count: ${state.count}`);
 ```
 
-The reactive layer schedules updates.
-The DOM layer performs them.
+are **not part of the core DOM module**.
 
-No hidden coupling.
+They are provided by the `stateful` addon, which layers reactive behavior on top of these primitives without modifying their responsibilities.
 
-No magic bindings.
+This keeps the core mutation engine small and stable while allowing optional higher-level capabilities.
 
 ---
 
@@ -221,13 +236,14 @@ Use the DOM module when you want:
 * Zero framework overhead
 * Predictable mutation behavior
 * A highly inspectable UI architecture
+* A solid foundation for building reactive layers
 
 Avoid it if you need:
 
 * Template compilation
 * SSR abstractions
 * Large ecosystem tooling
-* Built-in state orchestration
+* Opinionated state orchestration
 
 DOMPP intentionally stays small.
 
