@@ -6,6 +6,23 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.2] - 2026-02-17
+
+### Added
+- DocumentFragment support for core mutation helpers:
+  - setText
+  - setChildren
+
+### Changed
+- Refactored DOM installer to support prototype-targeted definitions.
+- Shared method implementations between Element and DocumentFragment to prevent behavioral drift.
+
+### Design Notes
+- Fragment intentionally supports only mutation primitives.
+- Styling, attributes, and events remain Element-only to preserve platform semantics.
+
+---
+
 ## [0.1.1] - 2026-02-17
 
 First stabilization patch after the foundation release.
