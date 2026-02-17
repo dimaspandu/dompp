@@ -1,5 +1,5 @@
 /**
- * Installs DOM++ methods onto Element.prototype.
+ * Installs DOM++ methods onto native DOM prototypes.
  *
  * DOM++ is intentionally designed as a prototype enhancement layer
  * rather than a wrapper-based API. This allows developers to work
@@ -23,28 +23,28 @@
  *
  * NOTE FOR CONTRIBUTORS:
  * Be extremely cautious when modifying prototype behavior.
- * Any change here affects ALL Element instances globally.
+ * Any change here affects ALL instances globally.
  */
 export function installDompp() {
 
   /**
-   * Defines a non-writable method on Element.prototype.
+   * Defines a non-writable method on a prototype.
    *
    * WHY Object.defineProperty?
    *
    * - Prevents accidental reassignment:
-   *   element.setText = somethingElse
+   *     element.setText = somethingElse
    *
    * - Keeps behavior stable across the app lifetime.
    *
-   * We intentionally do NOT set configurable:true to discourage
-   * runtime patching by external libraries.
-   *
    * Guard clause ensures we never override an existing method.
+   *
+   * The configurable flag remains true to allow controlled
+   * evolution of the engine if absolutely necessary.
    */
-  const define = (name, fn) => {
-    if (!Element.prototype[name]) {
-      Object.defineProperty(Element.prototype, name, {
+  const defineOn = (proto, name, fn) => {
+    if (!proto[name]) {
+      Object.defineProperty(proto, name, {
         value: fn,
         writable: false,
         configurable: true,
@@ -53,7 +53,7 @@ export function installDompp() {
   };
 
   /**
-   * setText(text)
+   * Shared implementation: setText
    *
    * A thin wrapper around textContent with chain support.
    *
@@ -61,15 +61,17 @@ export function installDompp() {
    * innerText triggers layout calculations because it is CSS-aware.
    * textContent is significantly faster and does not cause reflow.
    *
-   * Accepts any value that can be stringified by the browser.
+   * Works safely on:
+   * - Element
+   * - DocumentFragment
    */
-  define("setText", function (text) {
+  function setText(text) {
     this.textContent = text;
     return this;
-  });
+  }
 
   /**
-   * setChildren(...children)
+   * Shared implementation: setChildren
    *
    * Replaces all child nodes using replaceChildren(),
    * which is the modern and efficient alternative to:
@@ -88,8 +90,12 @@ export function installDompp() {
    *
    * DOM++ intentionally favors predictable behavior
    * over hidden heuristics.
+   *
+   * Supported on:
+   * - Element
+   * - DocumentFragment
    */
-  define("setChildren", function (...children) {
+  function setChildren(...children) {
     this.replaceChildren(
       ...children.map(c =>
         typeof c === "string"
@@ -98,19 +104,19 @@ export function installDompp() {
       )
     );
     return this;
-  });
+  }
+
+  // --------------------------------------------------
+  // Element-only methods
+  // --------------------------------------------------
+
+  defineOn(Element.prototype, "setText", setText);
+  defineOn(Element.prototype, "setChildren", setChildren);
 
   /**
    * setStyles(styles)
    *
    * Assigns style properties via Object.assign.
-   *
-   * This method expects a plain object:
-   *
-   * element.setStyles({
-   *   backgroundColor: "red",
-   *   fontSize: "14px"
-   * })
    *
    * WHY NOT setAttribute("style")?
    * Direct style mutation avoids string parsing and is faster.
@@ -119,7 +125,7 @@ export function installDompp() {
    * This does not auto-prefix properties.
    * DOM++ intentionally avoids magic behavior.
    */
-  define("setStyles", function (styles = {}) {
+  defineOn(Element.prototype, "setStyles", function (styles = {}) {
     Object.assign(this.style, styles);
     return this;
   });
@@ -130,22 +136,11 @@ export function installDompp() {
    * Applies attributes with boolean semantics.
    *
    * RULES:
-   *
    * true  -> attribute is added with empty string
    * false -> attribute is removed
    * null/undefined -> attribute is removed
-   *
-   * Example:
-   *
-   * element.setAttributes({
-   *   disabled: true,
-   *   title: "Submit"
-   * })
-   *
-   * WHY remove on falsy?
-   * Mirrors how boolean HTML attributes behave.
    */
-  define("setAttributes", function (attrs = {}) {
+  defineOn(Element.prototype, "setAttributes", function (attrs = {}) {
 
     for (const k in attrs) {
       const v = attrs[k];
@@ -182,7 +177,7 @@ export function installDompp() {
    *
    * This is a deliberate performance tradeoff.
    */
-  define("setEvents", function (events = {}) {
+  defineOn(Element.prototype, "setEvents", function (events = {}) {
 
     this.__dompp_handlers ??= {};
 
@@ -199,8 +194,36 @@ export function installDompp() {
     return this;
   });
 
+  // --------------------------------------------------
+  // DocumentFragment support (intentionally minimal)
+  // --------------------------------------------------
+
+  /**
+   * Fragments are not elements.
+   *
+   * They do not support:
+   * - styles
+   * - attributes
+   * - events
+   *
+   * Only install mutation helpers that make semantic sense.
+   *
+   * This restraint is intentional and protects the engine
+   * from API surface creep.
+   */
+  defineOn(DocumentFragment.prototype, "setText", setText);
+  defineOn(DocumentFragment.prototype, "setChildren", setChildren);
 }
 
+/**
+ * Registry of setters used by the stateful addon.
+ *
+ * IMPORTANT:
+ * Only Element setters belong here.
+ *
+ * DocumentFragment intentionally does NOT participate
+ * in stateful bindings.
+ */
 export const DOMPP_SETTERS = [
   "setText",
   "setChildren",
@@ -208,4 +231,3 @@ export const DOMPP_SETTERS = [
   "setAttributes",
   "setEvents"
 ];
-
