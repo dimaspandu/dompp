@@ -27,16 +27,45 @@ This repository is not intended to compete with production frameworks. Instead, 
 
 ```
 src/
- ├── dom/        DOM utilities and rendering helpers
- └── reactive/   Reactive primitives (signals, effects, scheduler)
+ ├── dom/        Core DOM primitives and prototype extensions
+ │    ├── dompp.js
+ │    └── stateful.js
+ │
+ ├── reactive/   Reactive primitives (signals, scheduler)
+ │    ├── signal.js
+ │    └── scheduler.js
+ │
+ ├── addons/     Optional ergonomics
+ │    └── vquery.addon.js
+ │
+ └── index.js    Entry point
 
 examples/
  ├── minimal-counter
  ├── reactive-counter
+ ├── stateful-counter
  └── vquery-counter
 ```
 
-### Examples
+### Architecture Overview
+
+DOMPP is intentionally layered to keep the core extremely small while allowing experimentation at higher levels.
+
+**dom/**
+Provides direct prototype extensions for deterministic DOM mutation.
+
+**stateful**
+Adds element-local state and binding without proxies or dependency graphs.
+
+**reactive/**
+Contains signal-based primitives and a scheduler for fine‑grained updates.
+
+**addons/**
+Optional helpers that improve developer ergonomics without polluting the core engine.
+
+---
+
+## Examples
 
 The examples directory demonstrates progressively more advanced usage:
 
@@ -45,6 +74,9 @@ The examples directory demonstrates progressively more advanced usage:
 
 * **reactive-counter**
   Demonstrates fine-grained updates powered by signals.
+
+* **stateful-counter**
+  Shows element-local state with automatic binding re-execution.
 
 * **vquery-counter**
   Experiments with a query-style DOM helper API.
@@ -70,6 +102,10 @@ Update only what actually changes.
 ### Framework independence
 
 The engine should not rely on compilers, proxies, or build steps.
+
+### Deterministic rendering
+
+Updates should execute in a predictable order with minimal hidden work.
 
 ### Performance awareness
 
