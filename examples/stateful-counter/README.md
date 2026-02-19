@@ -38,3 +38,6 @@ From the project root:
 
 ```bash
 node examples/serve.js
+```
+
+Then open `http://localhost:3000` and select the example from the index.

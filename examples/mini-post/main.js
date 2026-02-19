@@ -1,5 +1,5 @@
 import "../../src/index.js";
-import { installDomppStateful } from "../../src/dom/stateful.js";
+import { installDomppStateful } from "../../src/reactive/stateful.js";
 import { createSignal } from "../../src/reactive/signal.js";
 
 installDomppStateful();

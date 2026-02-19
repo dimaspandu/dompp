@@ -1,6 +1,6 @@
 // Install DOM++ (includes stateful extensions)
 import "../../src/index.js";
-import { installDomppStateful } from "../../src/dom/stateful.js";
+import { installDomppStateful } from "../../src/reactive/stateful.js";
 installDomppStateful();
 
 /**

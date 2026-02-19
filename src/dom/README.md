@@ -126,6 +126,11 @@ el.setText("Hello");
 * Chainable
 * Explicit intent
 
+**Supported targets:**
+
+* `Element`
+* `DocumentFragment`
+
 ---
 
 ### `setChildren(...children)`
@@ -146,6 +151,11 @@ container.setChildren(
 * Uses native APIs for maximum performance
 * Avoids manual loops
 * Prevents accidental node duplication
+
+**Supported targets:**
+
+* `Element`
+* `DocumentFragment`
 
 Best used during initial tree construction or when a full replacement is intentional.
 
@@ -209,6 +219,23 @@ button.setEvents({
 * Prevents duplicate subscriptions
 
 This helps eliminate a common source of memory leaks in dynamic interfaces.
+
+---
+
+## DocumentFragment Support
+
+`DocumentFragment` intentionally supports only:
+
+* `setText`
+* `setChildren`
+
+It does **not** support:
+
+* `setStyles`
+* `setAttributes`
+* `setEvents`
+
+This keeps the API semantically correct and avoids surface-area creep.
 
 ---
 

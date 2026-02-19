@@ -6,6 +6,31 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.3] - 2026-02-19
+
+### Added
+- Documentation index in root README linking to module/example docs.
+- New proposal document:
+  - `docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md`
+  - scientific-style structure with references to DOM standards and related research.
+
+### Changed
+- Root README expanded with:
+  - "Proposed Advantages" section
+  - consistent setter model explanation for initial and update phases
+  - declarative tree authoring example.
+- `src/addons/README.md` rewritten into full module documentation:
+  - philosophy
+  - API (`$`, `v`)
+  - usage guidance
+  - non-goals.
+- `src/dom/README.md` clarified `DocumentFragment` support and limitations.
+
+### Notes
+- This release is documentation-focused and introduces no runtime API breakage.
+
+---
+
 ## [0.1.2] - 2026-02-17
 
 ### Added

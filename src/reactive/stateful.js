@@ -1,4 +1,4 @@
-import { DOMPP_SETTERS } from "./dompp.js";
+import { DOMPP_SETTERS } from "../dom/dompp.js";
 
 /**
  * DOM++ Stateful Addon

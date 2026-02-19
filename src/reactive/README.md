@@ -1,11 +1,12 @@
 # Reactive Module
 
-The `src/reactive` directory contains the core primitives responsible for state propagation and update scheduling in DOMPP.
+The `src/reactive` directory contains the core primitives responsible for state propagation, element-local bindings, and update scheduling in DOMPP.
 
-This module is intentionally small and focuses on two responsibilities only:
+This module is intentionally small and focuses on three responsibilities:
 
 * Scheduling reactive work
 * Broadcasting state changes
+* Providing element-local stateful bindings
 
 There is no hidden dependency tracking, proxy magic, or lifecycle system. Every update path is explicit and traceable.
 
@@ -16,7 +17,8 @@ There is no hidden dependency tracking, proxy magic, or lifecycle system. Every 
 ```
 reactive/
  ├── scheduler.js   Microtask job scheduler
- └── signal.js      Reactive state primitive
+ ├── signal.js      Reactive state primitive
+ └── stateful.js    Element-local state and binding addon
 ```
 
 These files form the lowest-level reactive foundation. Higher-level constructs such as computed values or effects can be built on top of them but are not required.
@@ -161,7 +163,7 @@ A typical update looks like this:
 3. The scheduler flushes in a microtask.
 4. Subscribers receive the latest value.
 
-There is no tree diffing and no component rerender cycle.
+There is no tree diffing and no component re-render cycle.
 
 Only the subscribed work executes.
 

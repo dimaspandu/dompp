@@ -44,13 +44,10 @@ DOM++ takes the opposite approach:
 
 Because this example uses native ES Modules, you must serve it with a local server.
 
-### Option 1 — VSCode Live Server
-
-Just right-click `index.html` → **Open with Live Server**
-
----
-
-### Option 2 — Node
+From the project root:
 
 ```bash
-npx serve .
+node examples/serve.js
+```
+
+Then open `http://localhost:3000` and select the example from the index.
