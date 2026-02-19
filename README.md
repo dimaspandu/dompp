@@ -17,6 +17,7 @@ Use this index to jump directly to module and example docs:
 * [Reactive Module](./src/reactive/README.md)
 * [Addons](./src/addons/README.md)
 * [Example: Minimal Counter](./examples/minimal-counter/README.md)
+* [Example: Mini Post](./examples/mini-post/README.md)
 * [Example: Reactive Counter](./examples/reactive-counter/README.md)
 * [Example: Stateful Counter](./examples/stateful-counter/README.md)
 * [Example: VQuery Counter](./examples/vquery-counter/README.md)

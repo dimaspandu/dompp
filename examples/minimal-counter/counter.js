@@ -1,4 +1,4 @@
-// Activate DOM++.
+﻿// Activate DOM++.
 //
 // This installs prototype extensions such as:
 // - setText
@@ -50,7 +50,7 @@ function update() {
 /**
  * Attach elements once to the root container.
  *
- * After this, the structure never changes —
+ * After this, the structure never changes -
  * only internal state does.
  */
 document.getElementById("app").setChildren(

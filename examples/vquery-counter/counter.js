@@ -1,5 +1,5 @@
-/**
- * DOM++ Counter — VQuery Example
+﻿/**
+ * DOM++ Counter - VQuery Example
  *
  * Rendering model:
  * - Retained DOM
