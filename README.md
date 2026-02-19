@@ -16,6 +16,7 @@ Use this index to jump directly to module and example docs:
 * [DOM Module](./src/dom/README.md)
 * [Reactive Module](./src/reactive/README.md)
 * [Addons](./src/addons/README.md)
+* [Benchmark Suite](./benchmarks/README.md)
 * [Example: Minimal Counter](./examples/minimal-counter/README.md)
 * [Example: Mini Post](./examples/mini-post/README.md)
 * [Example: Reactive Counter](./examples/reactive-counter/README.md)

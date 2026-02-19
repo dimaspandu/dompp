@@ -6,6 +6,28 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.4] - 2026-02-19
+
+### Added
+- Experimental benchmark suite scaffold under `benchmarks/`:
+  - paper outline for evidence-driven evaluation
+  - cross-framework harness design
+  - reproducibility protocol
+  - CSV templates for runtime/authoring/readability studies
+  - table/plot templates for paper reporting
+  - Node scripts for runtime CSV validation and aggregation.
+- Benchmark artifacts workspace:
+  - `benchmarks/results/.gitkeep`
+
+### Changed
+- Root README documentation index now includes benchmark suite docs.
+
+### Notes
+- This release focuses on research methodology and measurement tooling.
+- No runtime API changes.
+
+---
+
 ## [0.1.3] - 2026-02-19
 
 ### Added
