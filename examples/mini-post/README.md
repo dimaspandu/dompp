@@ -1,26 +1,26 @@
 # Mini Post
 
-Contoh ini menunjukkan pola retained DOM untuk daftar post sederhana:
+This example demonstrates a retained-DOM pattern for a simple post feed:
 
-* node dibuat sekali lalu dimutasi langsung
-* insert post baru dilakukan dengan `prepend` tanpa re-render seluruh list
-* aksi edit mengubah node yang sama (swap view/editor), bukan membuat subtree baru
-* data tetap disimpan di signal sebagai source of truth
+* nodes are created once, then mutated directly
+* new posts are inserted with `prepend` without re-rendering the full list
+* edit actions mutate the same node (view/editor swap) instead of rebuilding subtrees
+* data is still stored in a signal as the source of truth
 
-## Yang Didemokan
+## What It Demonstrates
 
-* Integrasi `setChildren`, `setText`, `setEvents` dari DOM++
-* Pemisahan jalur mutasi UI dan jalur update store
-* Operasi list tanpa diffing/virtual DOM
+* Integration of DOM++ setters: `setChildren`, `setText`, `setEvents`
+* Clear separation between UI mutation path and store update path
+* List operations without diffing or virtual DOM
 
-## Cara Menjalankan
+## How to Run
 
-Dari root project:
+From the project root:
 
 ```bash
 node examples/serve.js
 ```
 
-Buka:
+Open:
 
 `http://localhost:3000/examples/mini-post/`

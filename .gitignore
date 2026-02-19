@@ -4,3 +4,4 @@ dist
 .env
 coverage
 *.log
+docs/Proposed_DOMPP_Paper.docx
