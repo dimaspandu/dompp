@@ -1,9 +1,9 @@
-# DOMPP
+# DOMPP (DOM++)
 
-DOMPP is an experimental UI engine built directly on the native browser DOM.
-It focuses on explicit mutation primitives, fine-grained updates, and low abstraction overhead.
+DOMPP (read as DOM plus plus) is an experiment in ergonomic APIs on top of the native DOM.
+The name "DOM++" is inspired by C++ naming style: DOM extended with small, explicit, chainable methods and no wrapper objects.
 
-The project is a research-oriented playground for understanding how modern UI systems work without virtual DOM.
+This project focuses on deterministic mutation primitives, fine-grained updates, and low abstraction overhead.
 
 ---
 
@@ -36,6 +36,34 @@ The project is a research-oriented playground for understanding how modern UI sy
 
 DOMPP is not intended to replace production frameworks.
 It exists to understand and validate design tradeoffs.
+
+---
+
+## Native Web API Proposal Direction
+
+Based on the proposal paper, DOMPP is also positioned as an experiment toward a possible native Web Platform API (via DOM/WHATWG standardization pathways, then MDN-style documentation).
+
+Expected API documentation snippet (MDN-style format):
+
+```md
+## Element.prototype.setChildren()
+
+The `setChildren()` method of `Element` replaces the element's children
+with the provided nodes or strings, and returns the element itself.
+
+### Syntax
+element.setChildren(...children)
+
+### Parameters
+- `...children`
+  - A sequence of `Node` or string values.
+
+### Return value
+- The same `Element` instance (for chaining).
+```
+
+Proposal semantics are documented in:
+`docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md`
 
 ---
 

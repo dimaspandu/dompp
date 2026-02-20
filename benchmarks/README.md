@@ -1,12 +1,13 @@
-# Benchmark Suite (Experimental Paper Support)
+# Benchmark Suite (Paper Artifacts)
 
-This folder contains an executable benchmark design to move the DOMPP paper from proposal to evidence.
+This folder currently contains the experiment protocol, data templates, and CSV aggregation scripts.
+A fully runnable cross-framework harness (`apps/dompp`, `apps/react`, etc.) is not included in this repository yet.
 
 ## Goals
 
-* Run comparable experiments across `dompp`, `react`, `vue`, `solid`, and `svelte`.
-* Produce machine-readable outputs (`.csv`) for runtime, authoring, and readability studies.
-* Generate paper-ready summary artifacts from raw data.
+* Keep experiment formats consistent for the DOMPP paper.
+* Produce machine-readable artifacts (`.csv`) for runtime, authoring, and readability studies.
+* Provide a validation/aggregation pipeline that can already run now.
 
 ## Folder Layout
 
@@ -15,14 +16,15 @@ This folder contains an executable benchmark design to move the DOMPP paper from
 * `benchmarks/PROTOCOL.md`: runbook for fair and reproducible execution.
 * `benchmarks/templates/`: CSV formats and table/plot templates.
 * `benchmarks/scripts/`: Node scripts for validation and aggregation.
-* `benchmarks/results/`: where raw and summarized outputs live.
+* `benchmarks/results/`: run outputs (created as needed by scripts).
 
 ## Quick Start
 
-1. Copy templates into `benchmarks/results/` and start filling raw data.
-2. Validate CSV shape:
+1. Copy `runtime_raw_template.csv` to `benchmarks/results/runtime_raw.csv`.
+2. Fill it with measured data.
+3. Validate CSV shape:
    * `node benchmarks/scripts/validate-runtime-csv.mjs benchmarks/results/runtime_raw.csv`
-3. Aggregate runtime metrics:
+4. Aggregate runtime metrics:
    * `node benchmarks/scripts/aggregate-runtime.mjs benchmarks/results/runtime_raw.csv benchmarks/results/runtime_summary.csv benchmarks/results/runtime_tables.md`
 
 ## Minimum Deliverables for Paper
@@ -34,6 +36,6 @@ This folder contains an executable benchmark design to move the DOMPP paper from
 
 ## Notes
 
-* The harness is intentionally framework-agnostic.
-* You can start with `dompp` only, then add frameworks incrementally.
-* Keep all tests in production mode when possible.
+* The documentation is framework-agnostic, but browser harness implementations are not included yet.
+* You can start with `dompp` only, then add other frameworks incrementally.
+* Use production mode for fair runtime comparisons.

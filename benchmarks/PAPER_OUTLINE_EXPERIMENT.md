@@ -2,7 +2,7 @@
 
 ## 1. Title
 
-Proposed DOM++: We Might Just Need an API Like This  
+Proposed DOM++ (DOMPP): We Might Just Need an API Like This  
 Subtitle: An Empirical Study of Chainable DOM Mutation Against Modern UI Abstractions
 
 ## 2. Abstract
@@ -85,5 +85,6 @@ Subtitle: An Empirical Study of Chainable DOM Mutation Against Modern UI Abstrac
 ## 11. Artifacts and Reproducibility
 
 * Repository structure.
-* Raw CSV + scripts + protocol.
+* Raw CSV + scripts + protocol (currently implemented).
 * Versioned environment details.
+* Note current scope: this repository already includes data templates and runtime aggregation scripts, while cross-framework harness apps are planned work.

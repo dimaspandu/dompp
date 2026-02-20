@@ -1,5 +1,7 @@
 # Cross-Framework Harness Design
 
+Implementation status in this repository: contract design only (`benchmarks/apps/*` does not exist yet).
+
 ## Objective
 
 Provide one benchmark contract so every framework implementation executes identical logical workloads.
@@ -51,6 +53,8 @@ benchmarks/
     solid/
     svelte/
 ```
+
+Note: the structure above is a target architecture, not the current folder contents.
 
 Each app should include:
 

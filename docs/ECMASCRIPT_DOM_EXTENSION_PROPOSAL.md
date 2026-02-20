@@ -1,5 +1,9 @@
 # Toward a Minimal Standard for Chainable DOM Mutation Helpers
 
+> Status on this repository (February 20, 2026): this document is a research proposal.
+> DOMPP already implements the proposed helpers as userland prototype extensions in `src/dom/dompp.js`,
+> plus optional addons (`stateful`, `reconcile`, `vquery`) that are explicitly out of standardization scope.
+
 ## Abstract
 
 This draft proposes a small set of chainable DOM mutation helpers (`setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents`) to improve consistency between initial render and incremental updates in retained-DOM architectures. The proposal is motivated by two observations: (1) low-level DOM mutation remains central to browser UI systems [1][2], and (2) reactive or incremental systems benefit from explicit, deterministic update primitives [8][9][10][11]. The core claim is not that this API replaces existing Web APIs, but that a narrow, semantics-preserving layer can reduce authoring complexity without introducing virtual DOM or wrapper objects.
@@ -31,6 +35,12 @@ The proposal targets a minimal mutation surface:
 
 * `setText`
 * `setChildren`
+
+Current DOMPP implementation alignment:
+
+* `installDompp()` defines `setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents` on `Element.prototype`.
+* `DocumentFragment.prototype` only receives `setText` and `setChildren`.
+* Methods are installed only when absent (idempotent/non-destructive).
 
 ### 2.2 Non-Goals
 
@@ -67,6 +77,8 @@ Boolean/null handling:
 
 Attaches handlers with replacement semantics per event key to avoid duplicate listener accumulation [3].
 
+In the current codebase this is implemented via per-element handler storage (`__dompp_handlers`) and remove-then-add replacement.
+
 ## 4. Rationale
 
 ### 4.1 Consistency Across Initial and Incremental Mutation
@@ -101,6 +113,12 @@ Therefore, this document should be interpreted as:
 
 * an ECMAScript-usable API design proposal
 * with eventual standardization pathway through Web API venues
+
+Practical expectation for this repo:
+
+* short term: remain a userland experiment ("DOM++")
+* medium term: gather empirical evidence via paper/benchmark artifacts
+* long term: if evidence is strong, discuss candidate shape in web standards channels and MDN-style API docs
 
 ## 6. Evaluation Plan (for ePrint/Paper Version)
 

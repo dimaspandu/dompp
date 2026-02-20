@@ -6,6 +6,24 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.7] - 2026-02-20
+
+### Changed
+- Documentation language normalized to English (no emoji/emoticon style) across updated root/docs/benchmark markdown files.
+- Root README updated with:
+  - explicit project identity note: `DOMPP = DOM++`
+  - MDN-style native Web API proposal snippet aligned with the paper direction.
+- Proposal document refined with repository-aligned implementation status and standardization pathway notes:
+  - `docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md`
+- Benchmark docs clarified to reflect current repository state:
+  - protocol/templates/scripts are available now
+  - cross-framework runnable harness apps are still planned.
+
+### Notes
+- This release is documentation-focused and introduces no runtime API changes.
+
+---
+
 ## [0.1.6] - 2026-02-20
 
 ### Added

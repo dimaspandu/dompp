@@ -1,5 +1,11 @@
 # Experimental Protocol (Reproducibility)
 
+Current status:
+
+* Runtime CSV schema validation is automated via `benchmarks/scripts/validate-runtime-csv.mjs`.
+* Runtime statistics aggregation (mean/stddev/p50/p95/min/max) is automated via `benchmarks/scripts/aggregate-runtime.mjs`.
+* Cross-framework browser workload execution still requires a separate harness implementation.
+
 ## 1. Environment Lock
 
 Record:

@@ -1,14 +1,16 @@
 # Tables and Plots Template
 
+Note: the current aggregation script outputs summaries by `scenario + operation + framework`.
+
 ## Table T1: Runtime Latency by Scenario (p50 / p95)
 
-| Scenario | Framework | p50 (ms) | p95 (ms) | Mean (ms) | Stddev (ms) |
-|---|---|---:|---:|---:|---:|
-| counter_burst | dompp |  |  |  |  |
-| counter_burst | react |  |  |  |  |
-| counter_burst | vue |  |  |  |  |
-| counter_burst | solid |  |  |  |  |
-| counter_burst | svelte |  |  |  |  |
+| Scenario | Operation | Framework | p50 (ms) | p95 (ms) | Mean (ms) | Stddev (ms) |
+|---|---|---|---:|---:|---:|---:|
+| counter_burst | counter_burst | dompp |  |  |  |  |
+| counter_burst | counter_burst | react |  |  |  |  |
+| counter_burst | counter_burst | vue |  |  |  |  |
+| counter_burst | counter_burst | solid |  |  |  |  |
+| counter_burst | counter_burst | svelte |  |  |  |  |
 
 ## Table T2: Memory and Long Tasks
 
