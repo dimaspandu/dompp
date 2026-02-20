@@ -6,6 +6,26 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.6] - 2026-02-20
+
+### Added
+- New stateful + reconcile example:
+  - `examples/reconcile-stateful-counter/`
+
+### Changed
+- Stateful callback context now exposes `setState` directly (while keeping `el`):
+  - `src/reactive/stateful.js`
+- Root ideation demo updated to local-state usage with callback context:
+  - `ideation.js`
+- Root README rewritten for current project scope and examples:
+  - updated structure and addon overview
+  - added concise code snippets for all examples under `examples/`.
+
+### Notes
+- This release improves API ergonomics for local state updates in callback render patterns.
+
+---
+
 ## [0.1.5] - 2026-02-20
 
 ### Added

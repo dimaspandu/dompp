@@ -1,16 +1,13 @@
 # DOMPP
 
-DOMPP is a lightweight experimental UI engine built directly on top of the browser DOM without relying on a virtual DOM or heavyweight frameworks.
+DOMPP is an experimental UI engine built directly on the native browser DOM.
+It focuses on explicit mutation primitives, fine-grained updates, and low abstraction overhead.
 
-The project focuses on understanding and implementing the fundamental primitives required to build modern user interfaces while maintaining full control over performance, memory usage, and update behavior.
-
-DOMPP is intentionally minimal and designed as a foundation for exploring fine-grained reactivity and low-level rendering strategies.
+The project is a research-oriented playground for understanding how modern UI systems work without virtual DOM.
 
 ---
 
 ## Documentation Index
-
-Use this index to jump directly to module and example docs:
 
 * [Root Overview](./README.md)
 * [DOM Module](./src/dom/README.md)
@@ -19,38 +16,32 @@ Use this index to jump directly to module and example docs:
 * [Benchmark Suite](./benchmarks/README.md)
 * [Example: Minimal Counter](./examples/minimal-counter/README.md)
 * [Example: Mini Post](./examples/mini-post/README.md)
-* [Example: Reconcile Match By Id](./examples/reconcile-match-by-id/README.md)
 * [Example: Reactive Counter](./examples/reactive-counter/README.md)
-* [Example: Reconcile List Patterns](./examples/reconcile-list-patterns/README.md)
-* [Example: Reconcile Counter](./examples/reconcile-counter/README.md)
 * [Example: Stateful Counter](./examples/stateful-counter/README.md)
 * [Example: VQuery Counter](./examples/vquery-counter/README.md)
+* [Example: Reconcile Counter](./examples/reconcile-counter/README.md)
+* [Example: Reconcile List Patterns](./examples/reconcile-list-patterns/README.md)
+* [Example: Reconcile Match By Id](./examples/reconcile-match-by-id/README.md)
+* [Example: Reconcile Stateful Counter](./examples/reconcile-stateful-counter/README.md)
 * [Proposal: DOM Extension for ECMAScript](./docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md)
 
 ---
 
 ## Goals
 
-The primary goals of this project are:
+* Explore UI engine architecture from first principles
+* Keep rendering behavior explicit and predictable
+* Reduce unnecessary DOM work and allocations
+* Provide a minimal base for experiments in reactivity and scheduling
 
-* Explore reactive architecture from first principles
-* Reduce abstraction while improving developer control
-* Encourage predictable rendering behavior
-* Minimize unnecessary DOM work
-* Promote memory-aware patterns
-* Serve as a learning platform for engine-level design
-
-This repository is not intended to compete with production frameworks. Instead, it exists to understand how such systems can be built.
+DOMPP is not intended to replace production frameworks.
+It exists to understand and validate design tradeoffs.
 
 ---
 
-## Proposed Advantages
+## Core API
 
-DOM++ proposes a mutation model that stays consistent between initial render and updates.
-
-### Consistent Setter API (Initial and Update)
-
-The same setter methods are used in both phases:
+DOMPP adds a small set of chainable mutation helpers:
 
 * `setText(...)`
 * `setChildren(...)`
@@ -58,108 +49,7 @@ The same setter methods are used in both phases:
 * `setAttributes(...)`
 * `setEvents(...)`
 
-This means you do not switch mental models between "first render" and "next update".  
-For attributes specifically, you keep using `setAttributes(...)` in both cases.
-
-### Simpler, More Declarative Tree Authoring
-
-You can express DOM tree structure as chained mutations, making hierarchy easier to read.
-
-Instead of:
-
-```js
-const root = document.createElement("html");
-root.lang = "en";
-
-const head = document.createElement("head");
-const title = document.createElement("title");
-title.appendChild(document.createTextNode("My Document"));
-head.appendChild(title);
-
-const body = document.createElement("body");
-const header = document.createElement("h1");
-header.appendChild(document.createTextNode("Header"));
-const paragraph = document.createElement("p");
-paragraph.appendChild(document.createTextNode("Paragraph"));
-body.appendChild(header);
-body.appendChild(paragraph);
-
-root.appendChild(head);
-root.appendChild(body);
-```
-
-Use:
-
-```js
-const HTML = document.createElement("html").setChildren(
-  document.createElement("head").setChildren(
-    document.createElement("title").setText("My Document")
-  ),
-  document.createElement("body").setChildren(
-    document.createElement("h1").setText("Header"),
-    document.createElement("p").setText("Paragraph")
-  )
-);
-```
-
-This keeps mutations explicit while reducing boilerplate.
-
----
-
-## Project Structure
-
-```
-src/
- ├── dom/        Core DOM primitives and prototype extensions
- │    └── dompp.js
- │
- ├── reactive/   Reactive primitives (signals, stateful, scheduler)
- │    ├── signal.js
- │    ├── stateful.js
- │    └── scheduler.js
- │
- ├── addons/     Optional ergonomics
- │    └── vquery.addon.js
- │
- └── index.js    Entry point
-
-examples/
- ├── serve.js           Dev server for running examples
- ├── mini-post/         Retained DOM post list with signals
- ├── minimal-counter/
- ├── reactive-counter/
- ├── stateful-counter/
- └── vquery-counter/
-```
-
-### Architecture Overview
-
-DOMPP is intentionally layered to keep the core extremely small while allowing experimentation at higher levels.
-
-**dom/**
-Provides direct prototype extensions for deterministic DOM mutation.
-
-**reactive/**
-Contains signal-based primitives, element-local stateful bindings, and a scheduler for fine‑grained updates.
-
-**addons/**
-Optional helpers that improve developer ergonomics without polluting the core engine.
-
----
-
-## Quick Start
-
-DOMPP has zero dependencies and requires no build step. Serve the project root with any static HTTP server that supports ES modules.
-
-A built-in dev server is included:
-
-```bash
-node examples/serve.js
-```
-
-Then open `http://localhost:3000` to browse the example index.
-
-### Basic Usage
+Basic usage:
 
 ```js
 import { installDompp } from "./src/dom/dompp.js";
@@ -174,135 +64,237 @@ document.body.setChildren(
 );
 ```
 
-For reactive state, import the stateful addon:
+---
 
-```js
-import { installDomppStateful } from "./src/reactive/stateful.js";
+## Project Structure
 
-installDomppStateful();
+```text
+src/
+  dom/
+    dompp.js
+  reactive/
+    signal.js
+    stateful.js
+    scheduler.js
+  addons/
+    vquery.addon.js
+    reconcile.addon.js
+  index.js
 
-const counter = document.createElement("span");
-counter.setState({ count: 0 });
-counter.setText(({ state }) => `Count: ${state.count}`);
+examples/
+  serve.js
+  minimal-counter/
+  mini-post/
+  reactive-counter/
+  stateful-counter/
+  vquery-counter/
+  reconcile-counter/
+  reconcile-list-patterns/
+  reconcile-match-by-id/
+  reconcile-stateful-counter/
 ```
 
 ---
 
-## Examples
+## Quick Start
 
-The examples directory demonstrates progressively more advanced usage:
+Run examples:
 
-* **minimal-counter**
-  Direct DOM manipulation without reactive state.
+```bash
+node examples/serve.js
+```
 
-* **reactive-counter**
-  Demonstrates fine-grained updates powered by signals.
+Open:
 
-* **reconcile-counter**
-  Demonstrates patch-based repeated `set*` calls without virtual DOM.
+`http://localhost:3000`
 
-* **reconcile-match-by-id**
-  Demonstrates `setChildren(..., { matchById: true })` for id-based child reuse.
+---
 
-* **reconcile-list-patterns**
-  Demonstrates auto append, auto prepend, and id-based retained node order updates.
+## Addons Overview
 
-* **stateful-counter**
-  Shows element-local state with automatic binding re-execution.
+### `stateful`
 
-* **vquery-counter**
-  Experiments with a query-style DOM helper API.
+Adds element-local state and callback-based setter bindings.
 
-* **mini-post**
-  A retained DOM post list combining signals with stateful bindings.
+```js
+import "./src/index.js";
+import { installDomppStateful } from "./src/reactive/stateful.js";
+
+installDomppStateful();
+
+const app = document.getElementById("app").setState({ count: 0 });
+
+app.setChildren(({ state, setState }) => [
+  document.createElement("h2").setText(`Count: ${state.count}`),
+  document.createElement("button")
+    .setText("Increment")
+    .setEvents({ click: () => setState(({ state }) => { state.count += 1; }) })
+]);
+```
+
+### `reconcile`
+
+Adds patch-style updates and optional id-based matching:
+
+```js
+import "./src/index.js";
+import { installDomppReconcile } from "./src/addons/reconcile.addon.js";
+
+installDomppReconcile({ overrideSetters: true });
+
+list.setChildren(...nodes, { matchById: true });
+```
+
+---
+
+## Example Snippets
+
+Each snippet is intentionally short and highlights the core idea of that example.
+
+### `minimal-counter`
+
+```js
+import "../../src/index.js";
+
+let count = 0;
+const titleEl = document.createElement("h2").setText("Count: 0");
+
+function update() {
+  titleEl.setText(`Count: ${count}`);
+}
+```
+
+### `reactive-counter`
+
+```js
+import "../../src/index.js";
+import { createSignal } from "../../src/reactive/signal.js";
+
+const [count, setCount] = createSignal(0);
+const title = document.createElement("h2").setText("Count: 0");
+
+count.subscribe(value => {
+  title.setText(`Count: ${value}`);
+});
+```
+
+### `stateful-counter`
+
+```js
+import "../../src/index.js";
+import { installDomppStateful } from "../../src/reactive/stateful.js";
+
+installDomppStateful();
+
+const titleEl = document.createElement("h2")
+  .setState({ count: 0 })
+  .setText(({ state }) => `Count: ${state.count}`);
+```
+
+### `vquery-counter`
+
+```js
+import "../../src/index.js";
+import { $, v } from "../../src/addons/vquery.addon.js";
+
+const title = v("h2").setText("Count: 0");
+
+$("#app").setChildren(title);
+```
+
+### `mini-post`
+
+```js
+import "../../src/index.js";
+import { createSignal } from "../../src/reactive/signal.js";
+
+const [posts, setPosts] = createSignal([]);
+const feed = document.createElement("div");
+
+const postNode = document.createElement("div").setText("New post");
+feed.prepend(postNode);
+setPosts(prev => [{ id: Date.now(), text: "New post" }, ...prev]);
+```
+
+### `reconcile-counter`
+
+```js
+import "../../src/index.js";
+import { installDomppReconcile } from "../../src/addons/reconcile.addon.js";
+
+installDomppReconcile({ overrideSetters: true });
+
+app.setChildren(title, status, row);
+```
+
+### `reconcile-list-patterns`
+
+```js
+installDomppReconcile({ overrideSetters: true });
+
+appendNodes.push(createListItem("append"));
+prependNodes.unshift(createListItem("prepend"));
+
+idList.setChildren(...idNodes);
+```
+
+### `reconcile-match-by-id`
+
+```js
+installDomppReconcile({ overrideSetters: true });
+
+const templates = buildTemplateNodes();
+list.setChildren(...templates, { matchById: true });
+```
+
+### `reconcile-stateful-counter`
+
+```js
+installDomppReconcile({ overrideSetters: true });
+installDomppStateful();
+
+app.setChildren(({ state, setState }) => [
+  document.createElement("h2").setChildren(`Count: ${state.count}`),
+  document.createElement("button")
+    .setChildren("+")
+    .setEvents({ click: () => setState(({ state }) => { state.count += 1; }) }),
+  { matchById: true }
+]);
+```
 
 ---
 
 ## Design Principles
 
-DOMPP follows a small set of guiding principles:
-
-### Explicit over magical
-
-Behavior should be easy to trace and debug.
-
-### Minimal surface area
-
-Every primitive should justify its existence.
-
-### Fine-grained updates
-
-Update only what actually changes.
-
-### Framework independence
-
-The engine should not rely on compilers, proxies, or build steps.
-
-### Deterministic rendering
-
-Updates should execute in a predictable order with minimal hidden work.
-
-### Performance awareness
-
-Avoid unnecessary allocations, subscriptions, and rerenders.
+* Explicit over magical behavior
+* Minimal runtime surface area
+* Fine-grained mutation
+* Deterministic update flow
+* Framework-independent architecture
 
 ---
 
 ## Status
 
-DOMPP is experimental and under active exploration.
-
-Breaking changes are expected as the architecture evolves.
-
-The codebase favors clarity over completeness and is optimized for learning rather than production readiness.
+DOMPP is experimental and under active iteration.
+Breaking changes are expected while architecture decisions are validated.
 
 ---
 
 ## Contributing
 
-Contributions are welcome, especially from developers interested in:
+Contributions are welcome, especially around:
 
-* Reactive systems
-* Rendering strategies
-* Scheduling models
-* Memory management
-* Engine architecture
+* reactive architecture
+* scheduling strategies
+* memory behavior
+* rendering performance
+* documentation quality
 
-Before submitting large changes, consider opening a discussion to align on direction.
-
-When contributing:
-
-* Prefer small, focused pull requests
-* Keep primitives minimal
-* Avoid adding abstraction without clear benefit
-* Document non-obvious decisions
-* Maintain readability
-
----
-
-## Suggested Areas for Contribution
-
-* Reactive dependency tracking improvements
-* Smarter scheduling strategies
-* Automatic resource cleanup
-* Developer ergonomics
-* Benchmarking
-* Documentation
-
----
-
-## Vision
-
-Modern UI frameworks are powerful but often hide meaningful complexity behind layers of abstraction.
-
-DOMPP asks a simple question:
-
-**What is the minimum engine required to support modern UI patterns?**
-
-By rebuilding these primitives from scratch, we gain a deeper understanding of how reactive interfaces truly work.
+Before large changes, open a discussion to align direction.
 
 ---
 
 ## License
 
-[MIT](LICENSE.md) © Dimas Pandu Pratama
+[MIT](LICENSE.md) Copyright (c) Dimas Pandu Pratama

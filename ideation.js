@@ -1,63 +1,64 @@
 // Load DOMPP core methods before building any UI nodes.
 import "./src/index.js";
-// Load the reconcile addon to patch repeated set* calls.
+// Load addons for reconcile patching and local state bindings.
 import { installDomppReconcile } from "./src/addons/reconcile.addon.js";
+import { installDomppStateful } from "./src/reactive/stateful.js";
 
-// Enable reconcile mode and override default set* behavior.
+// Enable reconcile mode first so stateful wrappers target patched setters.
 installDomppReconcile({ overrideSetters: true });
+// Enable local state and callback-based setter bindings.
+installDomppStateful();
 
-// Initialize mutable demo state.
-let count = 0;
-
-const handleDecrement = () => {
-  // Decrease the state value.
-  count -= 1;
-  // Re-render immediately after mutating state.
-  render();
+// Define updater functions for local element state.
+const handleDecrement = ({ state }) => {
+  state.count -= 1;
 };
 
-const handleIncrement = () => {
-  // Increase the state value.
-  count += 1;
-  // Re-render immediately after mutating state.
-  render();
+const handleIncrement = ({ state }) => {
+  state.count += 1;
 };
 
-function component() {
-  // Build the next UI tree in a fragment for a single mount/patch entry.
-  return document.createDocumentFragment().setChildren(
-    document.createElement("h1")
-      .setStyles({
-        // Apply highlight styles only for even count.
-        backgroundColor: count % 2 === 0 ? "tomato" : null,
-        color: count % 2 === 0 ? "#fff" : null
-      })
-      // Render the latest count text.
-      .setChildren(`Count: ${count}`),
+// Initialize local state on the parent container.
+const app = document.getElementById("app")
+  .setState({
+    count: 0
+  });
 
-    document.createElement("button")
-      // Declare stable button attributes.
-      .setAttributes({ type: "button", "data-action": "decrement" })
-      // Set visible button label.
-      .setChildren("-")
-      // Bind click handler for decrement action.
-      .setEvents({ click: handleDecrement }),
+// Rebuild a UI template from local state on each update.
+app.setChildren(({ state: { count }, setState }) => [
+  // Recreate title template and reuse by id during patch.
+  document.createElement("h1")
+    .setAttributes({ id: "counter-title" })
+    .setStyles({
+      // Toggle highlight styles from local state.
+      backgroundColor: count % 2 === 0 ? "tomato" : null,
+      color: count % 2 === 0 ? "#fff" : null
+    })
+    // Print the latest local count.
+    .setChildren(`Count: ${count}`),
 
-    document.createElement("button")
-      // Declare stable button attributes.
-      .setAttributes({ type: "button", "data-action": "increment" })
-      // Set visible button label.
-      .setChildren("+")
-      // Bind click handler for increment action.
-      .setEvents({ click: handleIncrement })
-  );
-}
+  // Recreate decrement button template and reuse by id during patch.
+  document.createElement("button")
+    .setAttributes({
+      id: "counter-decrement",
+      type: "button",
+      "data-action": "decrement"
+    })
+    .setChildren("-")
+    // Mutate local state from the same parent element.
+    .setEvents({ click: () => setState(handleDecrement) }),
 
-function render() {
-  // Select the mount point.
-  document.getElementById("app").setChildren(component());
-  // Call setChildren on every render and let reconcile patch only differences.
-}
+  // Recreate increment button template and reuse by id during patch.
+  document.createElement("button")
+    .setAttributes({
+      id: "counter-increment",
+      type: "button",
+      "data-action": "increment"
+    })
+    .setChildren("+")
+    // Mutate local state from the same parent element.
+    .setEvents({ click: () => setState(handleIncrement) }),
 
-// Perform the first render.
-render();
+  // Instruct children patching to match element nodes by unique id.
+  { matchById: true }
+]);

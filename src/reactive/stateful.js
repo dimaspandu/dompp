@@ -24,6 +24,23 @@ import { DOMPP_SETTERS } from "../dom/dompp.js";
  */
 
 export function installDomppStateful() {
+  /**
+   * Builds a stable callback context for stateful updaters/bindings.
+   *
+   * Exposes:
+   * - state: mutable local state object
+   * - setState: local setter helper
+   * - el: element owner (kept for backward compatibility)
+   */
+  function createContext(el) {
+    return {
+      state: el.__dompp_state,
+      setState(next) {
+        return el.setState(next);
+      },
+      el
+    };
+  }
 
   /**
    * Ensures the element has internal storage.
@@ -107,10 +124,7 @@ export function installDomppStateful() {
 
         const prev = { ...this.__dompp_state };
 
-        next({
-          state: this.__dompp_state,
-          el: this
-        });
+        next(createContext(this));
 
         for (const key in this.__dompp_state) {
           if (!Object.is(prev[key], this.__dompp_state[key])) {
@@ -180,10 +194,7 @@ export function installDomppStateful() {
 
       const runner = () => {
 
-        const nextResult = first({
-          state: this.__dompp_state,
-          el: this,
-        });
+        const nextResult = first(createContext(this));
 
         /**
          * Memoization check.
