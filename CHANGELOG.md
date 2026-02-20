@@ -6,6 +6,31 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.5] - 2026-02-20
+
+### Added
+- New reconcile addon:
+  - `src/addons/reconcile.addon.js`
+  - opt-in patch APIs (`patchText`, `patchChildren`, `patchStyles`, `patchAttributes`, `patchEvents`)
+  - optional setter override mode via `installDomppReconcile({ overrideSetters: true })`.
+- `setChildren(..., { matchById: true })` support in reconcile mode for id-based child reuse.
+- New examples:
+  - `examples/reconcile-counter/`
+  - `examples/reconcile-list-patterns/`
+  - `examples/reconcile-match-by-id/`
+- Root-level ideation demo script:
+  - `ideation.js`
+
+### Changed
+- Root README now includes reconcile examples in the documentation index and examples list.
+- Addons README now documents reconcile addon usage and `matchById` behavior.
+
+### Notes
+- Core DOMPP implementation in `src/dom/dompp.js` remains unchanged.
+- Reconcile behavior is isolated in addons as an opt-in simulation/proposal layer.
+
+---
+
 ## [0.1.4] - 2026-02-19
 
 ### Added

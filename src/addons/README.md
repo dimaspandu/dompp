@@ -24,11 +24,13 @@ If a utility changes mental models or introduces hidden behavior, it does not be
 Currently this module includes:
 
 * `vquery.addon.js`
+* `reconcile.addon.js`
 
 It exports two utilities:
 
 * `$` for safe single-element selection
 * `v` for concise element creation
+* `installDomppReconcile` for diff/patch-style set* reconciliation
 
 ---
 
@@ -98,3 +100,37 @@ The addons layer should not become:
 * A policy-heavy utility set
 
 Addons exist to reduce boilerplate, not to hide DOM behavior.
+
+---
+
+## Reconcile Addon
+
+`reconcile.addon.js` adds opt-in patch behavior without virtual DOM.
+
+```js
+import "../../src/index.js";
+import { installDomppReconcile } from "../../src/addons/reconcile.addon.js";
+
+installDomppReconcile({ overrideSetters: true });
+```
+
+When `overrideSetters` is `true`:
+
+* `setChildren(...)` patches child nodes instead of total `replaceChildren(...)`
+* `setStyles(...)` only applies changed style keys and unsets removed keys
+* `setAttributes(...)` only applies changed attrs and removes missing keys
+* `setEvents(...)` removes stale listeners and keeps stable handlers
+
+`setChildren(...)` also supports an options object:
+
+* `setChildren(...nodes, { matchById: true })`
+
+When enabled, element children with unique `id` are matched against existing DOM children by id and reused.
+
+Explicit methods are always available:
+
+* `patchText(...)`
+* `patchChildren(...)`
+* `patchStyles(...)`
+* `patchAttributes(...)`
+* `patchEvents(...)`

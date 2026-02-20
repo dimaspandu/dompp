@@ -19,7 +19,10 @@ Use this index to jump directly to module and example docs:
 * [Benchmark Suite](./benchmarks/README.md)
 * [Example: Minimal Counter](./examples/minimal-counter/README.md)
 * [Example: Mini Post](./examples/mini-post/README.md)
+* [Example: Reconcile Match By Id](./examples/reconcile-match-by-id/README.md)
 * [Example: Reactive Counter](./examples/reactive-counter/README.md)
+* [Example: Reconcile List Patterns](./examples/reconcile-list-patterns/README.md)
+* [Example: Reconcile Counter](./examples/reconcile-counter/README.md)
 * [Example: Stateful Counter](./examples/stateful-counter/README.md)
 * [Example: VQuery Counter](./examples/vquery-counter/README.md)
 * [Proposal: DOM Extension for ECMAScript](./docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md)
@@ -194,6 +197,15 @@ The examples directory demonstrates progressively more advanced usage:
 
 * **reactive-counter**
   Demonstrates fine-grained updates powered by signals.
+
+* **reconcile-counter**
+  Demonstrates patch-based repeated `set*` calls without virtual DOM.
+
+* **reconcile-match-by-id**
+  Demonstrates `setChildren(..., { matchById: true })` for id-based child reuse.
+
+* **reconcile-list-patterns**
+  Demonstrates auto append, auto prepend, and id-based retained node order updates.
 
 * **stateful-counter**
   Shows element-local state with automatic binding re-execution.
