@@ -1,72 +1,56 @@
 /**
  * DOM++ Reconcile Match By Id
  *
- * This example recreates list item templates on every render.
- * The matchById option keeps existing DOM nodes by unique id.
+ * This example recreates fresh template nodes on each render.
+ * The matchById option preserves DOM identity by unique id.
  */
 
 import "../../src/index.js";
 import { installDomppReconcile } from "../../src/addons/reconcile.addon.js";
+import { installDomppStateful } from "../../src/reactive/stateful.js";
 
 installDomppReconcile({ overrideSetters: true });
+installDomppStateful();
 
-const app = document.getElementById("app");
-const info = document.createElement("div").setAttributes({ class: "meta" });
-const list = document.createElement("ul");
-const identity = document.createElement("div").setAttributes({ class: "meta" });
-
-app.setChildren(info, list, identity);
-
-let tick = 0;
-let order = ["alpha", "beta", "gamma", "delta"];
-let tokenSeq = 0;
-
-const tokenByNode = new WeakMap();
-
-const buildTemplateNode = (id, position) =>
-  document.createElement("li")
-    .setAttributes({ id: `row-${id}` })
-    .setChildren(`id=${id} | position=${position} | tick=${tick}`);
-
-const buildTemplateNodes = () =>
-  order.map((id, index) => buildTemplateNode(id, index + 1));
-
-const collectIdentityLine = () => {
-  const lines = [];
-
-  for (const node of Array.from(list.children)) {
-    if (!tokenByNode.has(node)) {
-      tokenSeq += 1;
-      tokenByNode.set(node, tokenSeq);
-    }
-    lines.push(`${node.id}->node#${tokenByNode.get(node)}`);
-  }
-
-  return lines.join(" | ");
+const handleDecrement = ({ state }) => {
+  state.count -= 1;
 };
 
-const render = () => {
-  const templates = buildTemplateNodes();
-
-  list.setChildren(...templates, { matchById: true });
-
-  info.setText(`tick=${tick} | order=${order.join(" -> ")}`);
-  identity.setText(`identity: ${collectIdentityLine()}`);
+const handleIncrement = ({ state }) => {
+  state.count += 1;
 };
 
-const nextFrame = () => {
-  tick += 1;
+const app = document.getElementById("app")
+  .setState({
+    count: 0
+  });
 
-  // Rotate order to force frequent reordering.
-  order.push(order.shift());
+app.setChildren(({ state: { count }, setState }) => [
+  document.createElement("h1")
+    .setAttributes({ id: "counter-title" })
+    .setStyles({
+      backgroundColor: count % 2 === 0 ? "tomato" : null,
+      color: count % 2 === 0 ? "#fff" : null
+    })
+    .setChildren(`Count: ${count}`),
 
-  // Reverse occasionally to stress id-based matching.
-  if (tick % 4 === 0) {
-    order = order.slice().reverse();
-  }
+  document.createElement("button")
+    .setAttributes({
+      id: "counter-decrement",
+      type: "button",
+      "data-action": "decrement"
+    })
+    .setChildren("-")
+    .setEvents({ click: () => setState(handleDecrement) }),
 
-  render();
-};
+  document.createElement("button")
+    .setAttributes({
+      id: "counter-increment",
+      type: "button",
+      "data-action": "increment"
+    })
+    .setChildren("+")
+    .setEvents({ click: () => setState(handleIncrement) }),
 
-render();
-setInterval(nextFrame, 1000);
+  { matchById: true }
+]);

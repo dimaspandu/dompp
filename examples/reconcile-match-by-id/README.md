@@ -1,14 +1,12 @@
 # Reconcile Match By Id
 
-This demo shows `setChildren(..., { matchById: true })` on repeated renders.
+This demo shows `setChildren(..., { matchById: true })` with stateful callback rendering.
 
 ## Behavior
 
-- Recreate item templates every render
-- Reorder items every tick
-- Reuse existing DOM nodes by unique `id`
-
-The identity line displays stable node instance tokens for each id.
+- Recreate title and button templates on each render callback
+- Preserve node identity by matching template ids to existing DOM nodes
+- Keep event behavior stable while text/style values update from local state
 
 ## Run
 

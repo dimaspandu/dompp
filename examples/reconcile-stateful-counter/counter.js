@@ -4,7 +4,7 @@
  * This example combines:
  * - local element state (setState)
  * - callback-based setter bindings
- * - id-based children reuse via matchById
+ * - reconcile patching with positional child matching
  */
 
 import "../../src/index.js";
@@ -37,9 +37,29 @@ const app = document.getElementById("app")
     step: 1
   });
 
-app.setChildren(({ state, setState }) => [
-  document.createElement("h2")
-    .setAttributes({ id: "stateful-title" })
+const title = document.createElement("h2");
+const meta = document.createElement("small");
+
+const decrementBtn = document.createElement("button")
+  .setAttributes({ type: "button" })
+  .setEvents({ click: () => app.setState(decrement) });
+
+const incrementBtn = document.createElement("button")
+  .setAttributes({ type: "button" })
+  .setEvents({ click: () => app.setState(increment) });
+
+const growStepBtn = document.createElement("button")
+  .setAttributes({ type: "button" })
+  .setChildren("Increase Step")
+  .setEvents({ click: () => app.setState(growStep) });
+
+const resetBtn = document.createElement("button")
+  .setAttributes({ type: "button" })
+  .setChildren("Reset")
+  .setEvents({ click: () => app.setState(reset) });
+
+app.setChildren(({ state }) => {
+  title
     .setStyles({
       backgroundColor: state.count % 2 === 0 ? "tomato" : null,
       color: state.count % 2 === 0 ? "#fff" : null,
@@ -47,35 +67,24 @@ app.setChildren(({ state, setState }) => [
       borderRadius: "8px",
       width: "fit-content"
     })
-    .setChildren(`Count: ${state.count}`),
+    .setChildren(`Count: ${state.count}`);
 
-  document.createElement("small")
-    .setAttributes({ id: "stateful-meta" })
-    .setChildren(`Step: ${state.step}`),
+  meta.setChildren(`Step: ${state.step}`);
 
-  document.createElement("button")
-    .setAttributes({ id: "btn-decrement", type: "button" })
-    .setChildren(`-${state.step}`)
-    .setEvents({ click: () => setState(decrement) }),
+  decrementBtn.setChildren(`-${state.step}`);
+  incrementBtn.setChildren(`+${state.step}`);
 
-  document.createElement("button")
-    .setAttributes({ id: "btn-increment", type: "button" })
-    .setChildren(`+${state.step}`)
-    .setEvents({ click: () => setState(increment) }),
+  resetBtn.setAttributes({
+    type: "button",
+    disabled: state.count === 0 && state.step === 1
+  });
 
-  document.createElement("button")
-    .setAttributes({ id: "btn-grow-step", type: "button" })
-    .setChildren("Increase Step")
-    .setEvents({ click: () => setState(growStep) }),
-
-  document.createElement("button")
-    .setAttributes({
-      id: "btn-reset",
-      type: "button",
-      disabled: state.count === 0 && state.step === 1
-    })
-    .setChildren("Reset")
-    .setEvents({ click: () => setState(reset) }),
-
-  { matchById: true }
-]);
+  return [
+    title,
+    meta,
+    decrementBtn,
+    incrementBtn,
+    growStepBtn,
+    resetBtn
+  ];
+});

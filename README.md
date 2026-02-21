@@ -20,7 +20,7 @@ This project focuses on deterministic mutation primitives, fine-grained updates,
 * [Example: Stateful Counter](./examples/stateful-counter/README.md)
 * [Example: VQuery Counter](./examples/vquery-counter/README.md)
 * [Example: Reconcile Counter](./examples/reconcile-counter/README.md)
-* [Example: Reconcile List Patterns](./examples/reconcile-list-patterns/README.md)
+* [Example: Reconcile Match By Id Ordered List](./examples/reconcile-match-by-id-ordered-list/README.md)
 * [Example: Reconcile Match By Id](./examples/reconcile-match-by-id/README.md)
 * [Example: Reconcile Stateful Counter](./examples/reconcile-stateful-counter/README.md)
 * [Proposal: DOM Extension for ECMAScript](./docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md)
@@ -117,7 +117,7 @@ examples/
   stateful-counter/
   vquery-counter/
   reconcile-counter/
-  reconcile-list-patterns/
+  reconcile-match-by-id-ordered-list/
   reconcile-match-by-id/
   reconcile-stateful-counter/
 ```
@@ -255,15 +255,16 @@ installDomppReconcile({ overrideSetters: true });
 app.setChildren(title, status, row);
 ```
 
-### `reconcile-list-patterns`
+### `reconcile-match-by-id-ordered-list`
 
 ```js
 installDomppReconcile({ overrideSetters: true });
+installDomppStateful();
 
-appendNodes.push(createListItem("append"));
-prependNodes.unshift(createListItem("prepend"));
-
-idList.setChildren(...idNodes);
+const templates = items.map(item =>
+  document.createElement("li").setAttributes({ id: item.id })
+);
+orderedList.setChildren(...templates, { matchById: true });
 ```
 
 ### `reconcile-match-by-id`

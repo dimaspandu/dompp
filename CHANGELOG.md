@@ -6,6 +6,38 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.8] - 2026-02-21
+
+### Added
+- New ordered-list reconcile demo with id-based matching:
+  - `examples/reconcile-match-by-id-ordered-list/`
+  - Stateful callback rendering with `setChildren(..., { matchById: true })`
+  - Prepend-focused refresh flow and conditional `"(UPDATED!)"` marker behavior.
+
+### Changed
+- Reconcile stateful counter refactored to stable node references (no per-element `id` requirement):
+  - `examples/reconcile-stateful-counter/counter.js`
+- Reconcile stateful counter docs expanded with coding-style comparison and reconcile mechanics:
+  - `examples/reconcile-stateful-counter/README.md`
+- Reconcile match-by-id counter aligned to stateful callback style:
+  - `examples/reconcile-match-by-id/counter.js`
+  - `examples/reconcile-match-by-id/README.md`
+- Root ideation script rewritten with runnable ordered-list flow and explanatory comments:
+  - `ideation.js`
+- Root README example index/structure/snippets updated for new ordered-list example:
+  - `README.md`
+
+### Removed
+- Deprecated list-pattern demo:
+  - `examples/reconcile-list-patterns/`
+
+### Notes
+- This release focuses on clarify-and-demonstrate reconcile behavior under two rendering styles:
+  1. Fresh templates with `matchById`
+  2. Stable node references without `matchById`
+
+---
+
 ## [0.1.7] - 2026-02-20
 
 ### Changed

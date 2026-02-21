@@ -2,55 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>DOM++ Reconcile List Patterns</title>
+  <title>DOM++ Reconcile Match By Id Ordered List</title>
 
   <style>
     body {
       font-family: system-ui;
       padding: 32px;
-      max-width: 900px;
+      max-width: 760px;
       margin: 0 auto;
     }
 
     #app {
       display: grid;
-      gap: 18px;
+      gap: 12px;
     }
 
-    .panel {
+    .timeline {
       border: 1px solid #ddd;
       border-radius: 10px;
       padding: 14px;
       background: #fafafa;
     }
 
-    .panel h2 {
-      margin: 0 0 6px;
-      font-size: 18px;
-    }
-
     .meta {
+      margin: 0 0 8px;
       color: #555;
-      margin-bottom: 8px;
     }
 
-    ul {
+    .timeline__list {
       margin: 0;
-      padding-left: 20px;
+      padding-left: 24px;
       line-height: 1.7;
+    }
+
+    .timeline__row {
+      margin-bottom: 2px;
+    }
+
+    button {
+      width: fit-content;
+      padding: 6px 12px;
     }
 
     code {
       background: #eee;
-      padding: 2px 6px;
       border-radius: 6px;
+      padding: 2px 6px;
     }
   </style>
 </head>
 <body>
 
-<h1>DOM++ Reconcile: List Patterns</h1>
-<p>Auto-render every 900ms with append, prepend, and id-based node retention.</p>
+<h1>DOM++ Reconcile: matchById Ordered List</h1>
+<p>Each refresh recreates list item templates, then <code>matchById</code> reuses existing nodes by id.</p>
 
 <div id="app"></div>
 
