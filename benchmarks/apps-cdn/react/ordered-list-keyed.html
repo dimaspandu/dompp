@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>React CDN - Ordered List Keyed</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import React, { useState } from "https://esm.sh/react@18.3.1";
+    import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
+
+    const e = React.createElement;
+
+    const createItem = () => ({
+      id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      message: "Hello, World!"
+    });
+
+    function App() {
+      const [items, setItems] = useState([]);
+
+      const refresh = () => {
+        const next = items.map((item) => ({
+          ...item,
+          message: item.message.replace(" (UPDATED!)", "")
+        }));
+
+        next.unshift(createItem());
+
+        if (next.length > 5 && next[1]) {
+          next[1].message += " (UPDATED!)";
+        }
+
+        setItems(next);
+      };
+
+      return e("div", null,
+        e("ol", null, items.map((item) => e("li", { key: item.id }, item.message))),
+        e("button", { type: "button", onClick: refresh }, "Refresh")
+      );
+    }
+
+    createRoot(document.getElementById("app")).render(e(App));
+  </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vue CDN - Ordered List Keyed</title>
+</head>
+<body>
+  <div id="app">
+    <ol>
+      <li v-for="item in items" :key="item.id">{{ item.message }}</li>
+    </ol>
+    <button type="button" @click="refresh">Refresh</button>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script>
+    const createItem = () => ({
+      id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      message: "Hello, World!"
+    });
+
+    Vue.createApp({
+      data() {
+        return { items: [] };
+      },
+      methods: {
+        refresh() {
+          const next = this.items.map((item) => ({
+            ...item,
+            message: item.message.replace(" (UPDATED!)", "")
+          }));
+
+          next.unshift(createItem());
+
+          if (next.length > 5 && next[1]) {
+            next[1].message += " (UPDATED!)";
+          }
+
+          this.items = next;
+        }
+      }
+    }).mount("#app");
+  </script>
+</body>
+</html>

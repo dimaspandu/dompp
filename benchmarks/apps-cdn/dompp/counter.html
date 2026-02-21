@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOMPP CDN - Counter</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import "../../../src/index.js";
+    import { installDomppStateful } from "../../../src/reactive/stateful.js";
+
+    installDomppStateful();
+
+    const app = document.getElementById("app").setState({ count: 0 });
+    const title = document.createElement("h2");
+
+    const decBtn = document.createElement("button")
+      .setAttributes({ type: "button" })
+      .setChildren("-1")
+      .setEvents({ click: () => app.setState(({ state }) => { state.count -= 1; }) });
+
+    const incBtn = document.createElement("button")
+      .setAttributes({ type: "button" })
+      .setChildren("+1")
+      .setEvents({ click: () => app.setState(({ state }) => { state.count += 1; }) });
+
+    const resetBtn = document.createElement("button")
+      .setAttributes({ type: "button" })
+      .setChildren("Reset")
+      .setEvents({ click: () => app.setState({ count: 0 }) });
+
+    app.setChildren(({ state }) => {
+      title.setText(`Count: ${state.count}`);
+      return [title, decBtn, incBtn, resetBtn];
+    });
+  </script>
+</body>
+</html>

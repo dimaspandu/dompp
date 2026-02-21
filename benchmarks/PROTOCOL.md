@@ -4,7 +4,17 @@ Current status:
 
 * Runtime CSV schema validation is automated via `benchmarks/scripts/validate-runtime-csv.mjs`.
 * Runtime statistics aggregation (mean/stddev/p50/p95/min/max) is automated via `benchmarks/scripts/aggregate-runtime.mjs`.
-* Cross-framework browser workload execution still requires a separate harness implementation.
+* CDN-only browser harness is available at `benchmarks/apps-cdn/` for `dompp`, `react`, `vue`, and `solid`.
+* `svelte` and modern `angular` should be evaluated in a separate build-required track.
+
+## 0. Track Definition (Fairness)
+
+Use two explicit tracks:
+
+* Track A (`cdn_only`): frameworks that can run fairly without local build tooling in this repo.
+* Track B (`build_required`): frameworks that normally require compile/build pipelines.
+
+Do not mix Track A and Track B values in one aggregate ranking table.
 
 ## 1. Environment Lock
 
@@ -23,6 +33,8 @@ Use the same machine for all runs when possible.
 * Use production build for every framework.
 * Disable source maps if they affect runtime behavior.
 * Keep equivalent feature flags.
+* For Track A, use production CDN bundles when available (e.g., Vue prod global build).
+* For Track B, use each framework's production compiler/build output.
 
 ## 3. Warm-Up and Run Count
 

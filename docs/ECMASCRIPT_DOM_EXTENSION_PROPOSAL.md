@@ -6,7 +6,7 @@
 
 ## Abstract
 
-This draft proposes a small set of chainable DOM mutation helpers (`setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents`) to improve consistency between initial render and incremental updates in retained-DOM architectures. The proposal is motivated by two observations: (1) low-level DOM mutation remains central to browser UI systems [1][2], and (2) reactive or incremental systems benefit from explicit, deterministic update primitives [8][9][10][11]. The core claim is not that this API replaces existing Web APIs, but that a narrow, semantics-preserving layer can reduce authoring complexity without introducing virtual DOM or wrapper objects.
+This draft proposes a small set of chainable DOM mutation helpers (`setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents`) to improve consistency between initial render and incremental updates in retained-DOM architectures. The proposal is motivated by four observations: (1) low-level DOM mutation remains central to browser UI systems [1][2], (2) reactive or incremental systems benefit from explicit, deterministic update primitives [8][9][10][11], (3) frontend ecosystem fragmentation often shifts teams toward framework-selection overhead rather than engine-level clarity, and (4) AI-assisted coding reduces boilerplate cost, which makes a simpler native mutation model more strategically valuable. The core claim is not that this API replaces existing Web APIs or framework ecosystems, but that a narrow, semantics-preserving layer can reduce authoring complexity without introducing virtual DOM or wrapper objects.
 
 ## 1. Problem Statement
 
@@ -17,7 +17,16 @@ In imperative UI code, initial construction and later updates often use differen
 * direct text mutation (`textContent`)
 * event subscription (`addEventListener`, manual replacement)
 
-This heterogeneity increases cognitive load and creates avoidable inconsistency in mutation code paths. The hypothesis is that a stable setter-shaped interface can reduce these inconsistencies while preserving platform semantics [1][2][3][4][5][6][7].
+This heterogeneity increases cognitive load and creates avoidable inconsistency in mutation code paths. The hypothesis is that a stable setter-shaped interface can reduce these inconsistencies while preserving platform semantics [1][2][3][4][5][6][7]. This rationale also aligns with program-comprehension and cognitive-load findings that highlight how representational complexity affects understanding effort [13][14].
+
+At ecosystem level, teams also face a practical decision burden: many libraries solve similar mutation/update concerns with different abstractions, lifecycle models, and terminology. In practice, this can produce:
+
+* framework-selection churn driven by perceived complexity/performance tradeoffs
+* abstraction layers that are harder to trace during debugging [13]
+* onboarding friction for fullstack developers whose primary expertise is backend systems
+* portability loss when UI logic is tightly coupled to one framework runtime
+
+The proposal frames these as API ergonomics and traceability issues, not as criticism of any specific framework.
 
 ## 2. Scope and Non-Goals
 
@@ -59,11 +68,15 @@ Equivalent to setting `textContent`; returns `this` for chaining [4].
 
 ### 3.2 `setChildren(...children)`
 
-Equivalent to subtree replacement via `replaceChildren`. String arguments are converted to `Text` nodes [5].
+Semantic baseline: equivalent final DOM result to subtree replacement via `replaceChildren`. String arguments are converted to `Text` nodes [5].
+
+Optimization expectation (non-normative): implementations should avoid full child replacement when possible, and mutate only the minimum necessary DOM nodes (insert/move/update/remove), similar to keyed/id-aware reconciliation strategies.
 
 ### 3.3 `setStyles(styles)`
 
 Applies key-value style mutations onto `element.style`; returns `this`.
+
+Optimization expectation (non-normative): only changed style properties should be written, and removed properties should be cleared without rewriting unaffected properties.
 
 ### 3.4 `setAttributes(attrs)`
 
@@ -73,11 +86,25 @@ Boolean/null handling:
 * `false`/`null`/`undefined`: remove attribute
 * other: set attribute value (string-coercible) [6][7]
 
+Optimization expectation (non-normative): perform differential attribute sync (set/remove only when value presence or content actually differs).
+
 ### 3.5 `setEvents(events)`
 
 Attaches handlers with replacement semantics per event key to avoid duplicate listener accumulation [3].
 
 In the current codebase this is implemented via per-element handler storage (`__dompp_handlers`) and remove-then-add replacement.
+
+Optimization expectation (non-normative): if handler identity is unchanged for an event key, skip detach/attach.
+
+### 3.6 Performance-Oriented Behavioral Expectation (Non-Normative)
+
+The proposal expects setter APIs to be semantically deterministic and performance-aware:
+
+* preserve observable DOM semantics
+* minimize unnecessary writes
+* mutate only changed parts of DOM state when safe
+
+In other words, the API surface should stay simple for authors, while engines are free to optimize toward fine-grained mutations under the same final observable result.
 
 ## 4. Rationale
 
@@ -105,6 +132,14 @@ const HTML = document.createElement("html").setChildren(
 
 Prior work in reactive programming and incremental computation emphasizes explicit update propagation and minimized recomputation [8][9][10][11]. The proposed helpers are compatible with that direction because they expose deterministic mutation boundaries rather than hidden rendering passes.
 
+### 4.4 Lower Traceability Cost and Fullstack-Friendly Mental Model
+
+A direct DOM-first API keeps stack traces, event flow, and mutation boundaries close to platform primitives. This can reduce debugging indirection compared to multi-layer abstractions, especially in mixed frontend-backend teams where developers frequently switch domains.
+
+### 4.5 AI-Assisted Authoring Context ("Vibe Coding")
+
+Modern AI tools can already generate repetitive UI boilerplate quickly. Under this constraint, the bottleneck shifts from "writing code fast" to "running a model that is easy to reason about, profile, and maintain." A minimal engine-level API can complement AI-assisted authoring by keeping generated code close to native semantics and easier to verify.
+
 ## 5. Standardization Considerations
 
 Important terminology note: DOM APIs are standardized through Web platform standards processes (e.g., WHATWG DOM), not by ECMAScript language standardization alone [2][12].
@@ -128,6 +163,8 @@ To move from proposal to evidence, the paper version should include:
 2. Readability study: measure comprehension accuracy/time on mutation-heavy snippets.
 3. Runtime study: microbenchmarks verifying no material overhead versus direct API use.
 4. Case studies: counters, list updates, and event-rebinding-heavy components.
+5. Debuggability study: measure traceability outcomes (time-to-root-cause, stack clarity ratings, mutation-path identification success) between baseline DOM, DOMPP-style helpers, and framework implementations.
+6. Fullstack ergonomics study: compare onboarding/completion outcomes for backend-primary developers implementing the same UI tasks.
 
 ## 7. Threats to Validity
 
@@ -135,6 +172,7 @@ To move from proposal to evidence, the paper version should include:
 * External validity (results from small demos may not generalize to large apps).
 * Benchmark confounds (JIT warmup, browser version variance, GC noise).
 * Semantics debates (especially event replacement policy).
+* AI assistance confounds (tool quality and prompting skill can affect authoring/readability outcomes).
 
 ## 8. Conclusion
 
@@ -181,3 +219,13 @@ https://doi.org/10.1145/2814270.2814305
 
 [12] TC39. "The TC39 Process."  
 https://tc39.es/process-document/
+
+[13] M.-A. D. Storey.  
+"Theories, tools and research methods in program comprehension: past, present and future."  
+Software Quality Journal, 14(3):187-208, 2006.  
+https://doi.org/10.1007/s11219-006-9216-4
+
+[14] J. Sweller.  
+"Cognitive load during problem solving: Effects on learning."  
+Cognitive Science, 12(2):257-285, 1988.  
+https://doi.org/10.1016/0364-0213(88)90023-7

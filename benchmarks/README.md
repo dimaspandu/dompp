@@ -1,7 +1,6 @@
 # Benchmark Suite (Paper Artifacts)
 
-This folder currently contains the experiment protocol, data templates, and CSV aggregation scripts.
-A fully runnable cross-framework harness (`apps/dompp`, `apps/react`, etc.) is not included in this repository yet.
+This folder contains protocol/docs/templates/scripts, plus a runnable CDN-only harness under `benchmarks/apps-cdn/`.
 
 ## Goals
 
@@ -14,6 +13,8 @@ A fully runnable cross-framework harness (`apps/dompp`, `apps/react`, etc.) is n
 * `benchmarks/PAPER_OUTLINE_EXPERIMENT.md`: paper structure with experiment sections.
 * `benchmarks/HARNESS_DESIGN.md`: framework-neutral harness contract and workloads.
 * `benchmarks/PROTOCOL.md`: runbook for fair and reproducible execution.
+* `benchmarks/apps-cdn/`: no-build browser apps for cross-framework runtime experiments.
+* `benchmarks/apps-build-required/`: guidance for compile-first framework experiments.
 * `benchmarks/templates/`: CSV formats and table/plot templates.
 * `benchmarks/scripts/`: Node scripts for validation and aggregation.
 * `benchmarks/results/`: run outputs (created as needed by scripts).
@@ -36,6 +37,9 @@ A fully runnable cross-framework harness (`apps/dompp`, `apps/react`, etc.) is n
 
 ## Notes
 
-* The documentation is framework-agnostic, but browser harness implementations are not included yet.
-* You can start with `dompp` only, then add other frameworks incrementally.
+* CDN-only harness currently targets: `dompp`, `react`, `vue`, `solid`.
+* DOMPP includes reconcile variants for intra-framework comparison:
+  * `counter-reconcile` (with `matchById`)
+  * `counter-reconcile-no-match-by-id` (without `matchById`)
+* `svelte` and modern `angular` are build-first toolchains; include them in a separate build-required track for fair comparison.
 * Use production mode for fair runtime comparisons.

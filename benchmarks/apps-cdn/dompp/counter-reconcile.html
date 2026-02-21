@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOMPP CDN - Counter Reconcile</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import "../../../src/index.js";
+    import { installDomppReconcile } from "../../../src/addons/reconcile.addon.js";
+    import { installDomppStateful } from "../../../src/reactive/stateful.js";
+
+    installDomppReconcile({ overrideSetters: true });
+    installDomppStateful();
+
+    const app = document.getElementById("app").setState({ count: 0 });
+
+    app.setChildren(({ state, setState }) => [
+      document.createElement("h2")
+        .setAttributes({ id: "counter-title" })
+        .setText(`Count: ${state.count}`),
+
+      document.createElement("button")
+        .setAttributes({ id: "counter-dec", type: "button" })
+        .setText("-1")
+        .setEvents({
+          click: () => setState(({ state: s }) => {
+            s.count -= 1;
+          })
+        }),
+
+      document.createElement("button")
+        .setAttributes({ id: "counter-inc", type: "button" })
+        .setText("+1")
+        .setEvents({
+          click: () => setState(({ state: s }) => {
+            s.count += 1;
+          })
+        }),
+
+      document.createElement("button")
+        .setAttributes({ id: "counter-reset", type: "button" })
+        .setText("Reset")
+        .setEvents({
+          click: () => setState({ count: 0 })
+        }),
+
+      { matchById: true }
+    ]);
+  </script>
+</body>
+</html>
