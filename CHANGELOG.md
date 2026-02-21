@@ -6,6 +6,33 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.9] - 2026-02-21
+
+### Added
+- Runnable CDN-only benchmark harness apps:
+  - `benchmarks/apps-cdn/` with `dompp`, `react`, `vue`, and `solid` workloads.
+- DOMPP reconcile benchmark variants for counter:
+  - `counter-reconcile` (with `matchById`)
+  - `counter-reconcile-no-match-by-id` (stable references without `matchById`)
+- Build-required benchmark track guidance:
+  - `benchmarks/apps-build-required/README.md` for `svelte` and `angular`.
+
+### Changed
+- Benchmark documentation and protocol now define two fairness tracks:
+  - `cdn_only`
+  - `build_required`
+- Experimental paper outline updated to reflect keyed ordered-list workload and track-based reporting:
+  - `benchmarks/PAPER_OUTLINE_EXPERIMENT.md`
+- Proposal document strengthened with:
+  - additional scientific references for comprehension/cognitive-load arguments
+  - non-normative optimization expectations for setter semantics (`setChildren`, `setStyles`, `setAttributes`, `setEvents`)
+  - performance-oriented expectation that implementations minimize unnecessary DOM mutations.
+
+### Notes
+- This release expands benchmark reproducibility artifacts and clarifies the proposal direction toward semantics-preserving, engine-level DOM mutation optimization.
+
+---
+
 ## [0.1.8] - 2026-02-21
 
 ### Added
