@@ -13,7 +13,7 @@ Modern web development is increasingly dominated by declarative UI frameworks th
 
 ---
 
-## 1. Introduction
+## I. Introduction
 
 Modern web frameworks define declarative models in which state transitions are abstracted away from direct DOM mutation. While this approach simplifies application development, it introduces reconciliation strategies that translate state changes into DOM updates. Recent empirical work has demonstrated that such rendering strategies differ significantly in scaling behavior and runtime cost [1]. In parallel, structural analyses of real-world websites show a continuous increase in DOM size and JavaScript usage, transforming web pages into increasingly programmatic containers [2].
 
@@ -21,24 +21,17 @@ This paper argues that instead of introducing increasingly complex abstraction l
 
 ---
 
-## 2. Related Work
+## II. Related Work
 
-### 2.1 Rendering Strategies in Modern Frameworks
+### A. Rendering Strategies in Modern Frameworks
 
 The comparative study of Angular, React, Vue, Svelte, and Blazor demonstrates that rendering strategies exhibit significant differences in scaling behavior [1]. Performance variations can span orders of magnitude depending on how effectively a framework minimizes render-loop input size. Compile-time optimizations and fine-grained reactivity models are shown to reduce overhead by limiting the scope of updates.
 
-These frameworks typically implement reconciliation through:
-
-* Virtual DOM diffing
-* Template re-evaluation
-* Dependency tracking graphs
-* Compiler-assisted static optimization
-
-While effective under certain conditions, these strategies introduce additional memory structures and execution passes whose cost scales with application complexity.
+These frameworks typically implement reconciliation through Virtual DOM diffing, template re-evaluation, dependency tracking graphs, and compiler-assisted static optimization. While effective under certain conditions, these strategies introduce additional memory structures and execution passes whose cost scales with application complexity.
 
 DOMPP differs fundamentally: it introduces no intermediate representation, no virtual tree, and no runtime dependency graph. Instead, it relies exclusively on native DOM mutation semantics.
 
-### 2.2 Structural Properties of Web Pages
+### B. Structural Properties of Web Pages
 
 A large-scale empirical study of 708 websites reveals that most pages contain fewer than 2000 DOM nodes, have tree depth below 22, and exhibit increasing structural and scripting complexity over time [2]. The proportion of layout and presentation elements steadily increases, and JavaScript usage continues to grow.
 
@@ -48,127 +41,165 @@ DOMPP responds by minimizing runtime-level structural traversal and delegating l
 
 ---
 
-## 3. Design Principles of DOMPP
+## III. DOMPP Conceptual Design and API Model
 
-DOMPP is guided by four principles:
+### A. Baseline DOM Mutation Model
 
-1. Deterministic execution semantics
-2. Traceable and explicit state transitions
-3. Minimal abstraction over native APIs
-4. Compatibility with AI-assisted code generation workflows
+The Web Platform exposes DOM mutation through heterogeneous primitives including property assignment, setAttribute/removeAttribute, textContent updates, appendChild/replaceChildren, and addEventListener [1]–[7]. While expressive, these APIs employ fragmented mutation vocabularies.
 
-DOMPP introduces chainable setters such as `setAttributes`, `setText`, `setChildren`, and event-binding utilities that operate directly on native elements.
+A representative construction example:
 
-### Example (Listing 1)
+```js
+const root = document.createElement("html");
+root.lang = "en";
 
-```
-const button = document.createElement('button')
-  .setAttributes({ id: 'counter' })
-  .setText('0')
-  .on('click', () => increment());
-```
+const head = document.createElement("head");
+const title = document.createElement("title");
+title.appendChild(document.createTextNode("My Document"));
+head.appendChild(title);
 
-This model preserves imperative determinism while improving ergonomics.
+const body = document.createElement("body");
+const header = document.createElement("h1");
+header.appendChild(document.createTextNode("Header"));
+const paragraph = document.createElement("p");
+paragraph.appendChild(document.createTextNode("Paragraph"));
+body.appendChild(header);
+body.appendChild(paragraph);
 
----
-
-## 4. Engine-Level Reconciliation
-
-### 4.1 Runtime Reconciliation vs Engine Optimization
-
-Conventional frameworks implement reconciliation within runtime memory. Application state is transformed into an intermediate structure, diffed, and subsequently translated into DOM mutations.
-
-DOMPP proposes that reconciliation, where necessary, should occur at the browser engine level. The rendering engine already performs:
-
-* Style recalculation batching
-* Layout invalidation tracking
-* Paint coalescing
-* Compositor scheduling
-
-Reimplementing these mechanisms in JavaScript duplicates effort and may introduce scaling overhead proportional to tree size.
-
-### 4.2 Explicit and Configurable Reconciliation
-
-A key extension of DOMPP is the proposal that reconciliation be explicitly configurable rather than implicitly enforced.
-
-Certain mutations are inherently deterministic. For example, repeated `setText()` updates of a numeric counter do not require structural diffing:
-
-```
-element.setText(String(counter++));
+root.appendChild(head);
+root.appendChild(body);
 ```
 
-In such cases, reconciliation is redundant because the mutation is explicit and bounded.
+DOMPP hypothesizes that a minimal chainable mutation surface can reduce representational heterogeneity while preserving native semantics.
 
-DOMPP therefore proposes:
+### B. Minimal Chainable Mutation Surface
 
-* Developers may opt into reconciliation where structural uncertainty exists.
-* Developers may bypass reconciliation when mutations are deterministic and localized.
+DOMPP introduces:
 
-This shifts reconciliation from an implicit framework policy to an explicit architectural decision.
+* setText(text)
+* setChildren(...children)
+* setStyles(styles)
+* setAttributes(attrs)
+* setEvents(events)
+* setState(state)
+
+Each method mutates the native node directly, returns the same instance, introduces no wrapper abstraction, and preserves DOM standard semantics [2].
+
+Structure-preserving construction:
+
+```js
+const html = document.createElement("html").setChildren(
+  document.createElement("head").setChildren(
+    document.createElement("title").setText("My Document")
+  ),
+  document.createElement("body").setChildren(
+    document.createElement("h1").setText("Header"),
+    document.createElement("p").setText("Paragraph")
+  )
+);
+```
+
+### C. Deterministic Retained-DOM Philosophy
+
+DOMPP adopts a retained-DOM model: elements are constructed once and mutated in place.
+
+```js
+let count = 0;
+const titleEl = document.createElement("h2").setText("Count: 0");
+function update() {
+  titleEl.setText(`Count: ${count}`);
+}
+```
+
+No diffing stage, no virtual tree allocation, and stable node identity are maintained.
+
+### D. Unified State Composition via setState
+
+```js
+element.setState({ text, children, styles, attributes, events });
+```
+
+Functional form:
+
+```js
+element.setState(prev => { prev.count += 1; });
+```
+
+Unlike reactive graph systems [8]–[11], no dependency graph or implicit reconciliation cycle is required.
+
+### E. Explicit and Configurable Reconciliation
+
+Reconciliation is optional and explicit.
+
+```js
+installDomppReconcile({ overrideSetters: true });
+orderedList.setChildren(...templates, { matchById: true });
+```
+
+Deterministic mutations such as numeric counters do not require reconciliation.
+
+### F. Engine-Level Optimization Hypothesis
+
+Differential mutation optimization is hypothesized to be more appropriately implemented at the browser engine level rather than runtime JavaScript memory.
+
+Expected optimization domains include subtree diffing, id-aware matching, style diffing, event identity short-circuiting, and mutation batching.
+
+### G. Determinism and Developer Control
+
+DOMPP allows developers to explicitly determine when reconciliation is semantically necessary, preserving transparency and execution traceability.
 
 ---
 
-## 5. Empirical Implications
+## IV. Empirical Implications
 
-Given that rendering cost scales with input size [1] and DOM size grows over time [2], minimizing reconciliation overhead becomes increasingly important. DOMPP reduces:
-
-* Virtual tree construction cost
-* Diff traversal overhead
-* Dependency graph maintenance
-* Memory duplication
-
-Instead, it preserves:
-
-* Native browser optimization
-* Predictable execution order
-* Minimal mutation footprint
-
-Future benchmarking should replicate the methodology of [1], comparing DOMPP directly with framework rendering strategies under controlled complexity scaling.
+Given that rendering cost scales with input size [1] and DOM size grows over time [2], minimizing reconciliation overhead becomes increasingly important. DOMPP reduces virtual tree construction, diff traversal overhead, dependency graph maintenance, and memory duplication while preserving native browser optimization.
 
 ---
 
-## 6. Discussion
+## V. Discussion
 
-DOMPP does not deny the necessity of reconciliation in all cases. Rather, it reframes reconciliation as either:
-
-1. An engine-level optimization problem, or
-2. A developer-controlled optional mechanism
-
-This systems-level repositioning reduces abstraction layering while maintaining expressive power. It is particularly relevant in AI-generated code contexts, where minimizing hidden abstraction improves auditability, traceability, and predictability.
+DOMPP reframes reconciliation as either an engine-level optimization problem or a developer-controlled optional mechanism. This repositioning reduces abstraction layering while maintaining expressive power and auditability.
 
 ---
 
-## 7. Implications for Standardization
+## VI. Implications for Standardization
 
-DOMPP suggests potential future standardization efforts, including:
-
-* Mutation intent signaling APIs
-* Engine-hinted bulk insertion methods
-* Explicit subtree batching semantics
-
-Such proposals may be relevant to WHATWG or ECMAScript discussions concerning DOM ergonomics and performance predictability.
+Potential standardization directions include mutation-intent signaling APIs, engine-hinted bulk insertion methods, and explicit subtree batching semantics.
 
 ---
 
-## 8. Conclusion
+## VII. Conclusion
 
-Empirical evidence shows that rendering strategies significantly influence application performance scaling and that DOM structures steadily grow in complexity. Instead of introducing additional abstraction layers to manage this complexity, DOMPP proposes enhancing native DOM ergonomics and delegating reconciliation to the browser engine. By enabling deterministic mutation and configurable reconciliation, DOMPP offers a minimal yet scalable alternative to abstraction-heavy frameworks.
-
----
-
-## 9. Future Work
-
-Future research directions include:
-
-* Controlled benchmarking aligned with [1]
-* Mutation-cost modeling based on structural metrics in [2]
-* Usability studies comparing framework and DOMPP development workflows
-* Exploration of engine-level reconciliation hooks
+Empirical evidence shows that rendering strategies significantly influence performance scaling and that DOM structures steadily grow in complexity. DOMPP proposes enhancing native DOM ergonomics and delegating reconciliation to the browser engine. By enabling deterministic mutation and configurable reconciliation, DOMPP offers a minimal yet scalable alternative.
 
 ---
 
-## References
+## REFERENCES
 
-[1] M. Authors, "Modern Web Frameworks: A Comparison of Rendering Performance," IEEE, 2023.
+[1] MDN Web Docs, "Document Object Model (DOM)."
 
-[2] P. Authors, "An Empirical Study of Web Page Structural Properties," IEEE, 2023.
+[2] WHATWG, "DOM Standard."
+
+[3] MDN Web Docs, "EventTarget: addEventListener() method."
+
+[4] MDN Web Docs, "Node: textContent property."
+
+[5] MDN Web Docs, "Element: replaceChildren() method."
+
+[6] MDN Web Docs, "Element: setAttribute() method."
+
+[7] MDN Web Docs, "Element: removeAttribute() method."
+
+[8] E. Bainomugisha et al., "A Survey on Reactive Programming," ACM Computing Surveys, 2013.
+
+[9] U. A. Acar et al., "Adaptive Functional Programming," ACM TOPLAS, 2006.
+
+[10] U. A. Acar et al., "Adaptive Functional Programming," POPL, 2002.
+
+[11] M. A. Hammer et al., "Incremental Computation with Names," OOPSLA, 2015.
+
+[12] TC39, "The TC39 Process."
+
+[13] M.-A. D. Storey, "Program Comprehension," Software Quality Journal, 2006.
+
+[14] J. Sweller, "Cognitive Load Theory," Cognitive Science, 1988.
