@@ -39,6 +39,7 @@ The proposal targets a minimal mutation surface:
 * `Element.prototype.setStyles(styles): this`
 * `Element.prototype.setAttributes(attrs): this`
 * `Element.prototype.setEvents(events): this`
+* `Element.prototype.setState(state): this`
 
 `DocumentFragment` support is intentionally limited to:
 
@@ -47,7 +48,7 @@ The proposal targets a minimal mutation surface:
 
 Current DOMPP implementation alignment:
 
-* `installDompp()` defines `setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents` on `Element.prototype`.
+* `installDompp()` defines `setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents`, `setState` on `Element.prototype`.
 * `DocumentFragment.prototype` only receives `setText` and `setChildren`.
 * Methods are installed only when absent (idempotent/non-destructive).
 
@@ -96,7 +97,21 @@ In the current codebase this is implemented via per-element handler storage (`__
 
 Optimization expectation (non-normative): if handler identity is unchanged for an event key, skip detach/attach.
 
-### 3.6 Performance-Oriented Behavioral Expectation (Non-Normative)
+### 3.6 `setState(state)`
+
+Composes multiple state updates into a single call. The `state` argument is an object with optional keys:
+
+* `text`: calls `setText(state.text)`
+* `children`: calls `setChildren(...state.children)`
+* `styles`: calls `setStyles(state.styles)`
+* `attributes`: calls `setAttributes(state.attributes)`
+* `events`: calls `setEvents(state.events)`
+
+Returns `this` for chaining.
+
+Optimization expectation (non-normative): implementations may batch or coalesce mutations across state keys to minimize layout thrashing and redundant DOM writes.
+
+### 3.7 Performance-Oriented Behavioral Expectation (Non-Normative)
 
 The proposal expects setter APIs to be semantically deterministic and performance-aware:
 
@@ -165,6 +180,7 @@ To move from proposal to evidence, the paper version should include:
 4. Case studies: counters, list updates, and event-rebinding-heavy components.
 5. Debuggability study: measure traceability outcomes (time-to-root-cause, stack clarity ratings, mutation-path identification success) between baseline DOM, DOMPP-style helpers, and framework implementations.
 6. Fullstack ergonomics study: compare onboarding/completion outcomes for backend-primary developers implementing the same UI tasks.
+7. State composition study: evaluate `setState` for unified state updates versus chained individual setters.
 
 ## 7. Threats to Validity
 
