@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Solid CDN - Big Tree</title>
+  <title>SolidJS CDN - Big Tree (Keyed Stable)</title>
   <style>
     body { font-family: system-ui; max-width: 960px; margin: 0 auto; padding: 24px; }
     section { margin-bottom: 24px; }
@@ -16,12 +16,17 @@
 </head>
 <body>
   <div id="app"></div>
-  <script type="module">
-    import { createSignal, For } from "https://esm.sh/solid-js@1.9.3";
-    import { render } from "https://esm.sh/solid-js@1.9.3/web";
-    import html from "https://esm.sh/solid-js@1.9.3/html";
 
-    const createTodo = (index) => ({ id: `todo-${index}`, text: `Todo ${index}` });
+  <script type="module">
+    import { render } from "https://esm.sh/solid-js@1.8.19/web";
+    import { createSignal, mapArray } from "https://esm.sh/solid-js@1.8.19";
+    import h from "https://esm.sh/solid-js@1.8.19/h";
+
+    const createTodo = (index) => ({
+      id: `todo-${index}`,
+      text: `Todo ${index}`
+    });
+
     const createListItem = () => ({
       id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       message: "Hello, World!"
@@ -29,60 +34,82 @@
 
     function App() {
       const [count, setCount] = createSignal(0);
-      const [todos, setTodos] = createSignal(Array.from({ length: 100 }, (_, i) => createTodo(i)));
-      const [items, setItems] = createSignal(Array.from({ length: 50 }, () => createListItem()));
+      const [todos, setTodos] = createSignal(
+        Array.from({ length: 100 }, (_, i) => createTodo(i))
+      );
+      const [items, setItems] = createSignal(
+        Array.from({ length: 50 }, () => createListItem())
+      );
+
+      const mappedTodos = mapArray(
+        () => todos(),
+        (todo) => h("li", null, todo.text)
+      );
+
+      const mappedItems = mapArray(
+        () => items(),
+        (item) => h("li", null, () => item.message)
+      );
+
+      const staticCells = Array.from({ length: 200 }, (_, i) =>
+        h("div", { class: "static-cell" }, `Static ${i + 1}`)
+      );
 
       const refreshList = () => {
         const next = items().map((item) => ({
           ...item,
           message: item.message.replace(" (UPDATED!)", "")
         }));
+
         next.unshift(createListItem());
+
         if (next.length > 5 && next[1]) {
           next[1].message += " (UPDATED!)";
         }
+
         setItems(next);
       };
 
-      const staticCells = Array.from({ length: 200 }, (_, i) => i);
+      return h("div", null,
+        h("h1", null, "SolidJS Big Tree Workload (Keyed Stable)"),
+        h("p", null, "Fine-grained reactivity with keyed list diff."),
 
-      const staticCellsHtml = staticCells.map(i => `<div class="static-cell">Static ${i + 1}</div>`).join("");
+        h("div", { class: "grid" },
 
-      return html`<div>
-        <h1>Solid Big Tree Workload</h1>
-        <p>Localized signals with keyed list updates.</p>
-        <div class="grid">
-          <section class="card">
-            <h3>Counter</h3>
-            <h2>Count: ${count}</h2>
-            <button type="button" onClick=${() => setCount((n) => n + 1)}>+1</button>
-          </section>
-          <section class="card">
-            <h3>Todos</h3>
-            <ul>
-              <${For} each=${todos()}>
-                ${(todo) => html`<li>${todo.text}</li>`}
-              </${For}>
-            </ul>
-            <button type="button" onClick=${() => setTodos((prev) => [...prev, createTodo(prev.length)])}>
-              Add Todo
-            </button>
-          </section>
-          <section class="card">
-            <h3>Ordered List Keyed</h3>
-            <ol>
-              <${For} each=${items()}>
-                ${(item) => html`<li>${item.message}</li>`}
-              </${For}>
-            </ol>
-            <button type="button" onClick=${refreshList}>Refresh List</button>
-          </section>
-          <section class="card">
-            <h3>Static Tree (200 nodes)</h3>
-            <div class="static-grid">${staticCellsHtml}</div>
-          </section>
-        </div>
-      </div>`;
+          h("section", { class: "card" },
+            h("h3", null, "Counter"),
+            h("h2", null, () => `Count: ${count()}`),
+            h("button", {
+              type: "button",
+              onClick: () => setCount(c => c + 1)
+            }, "+1")
+          ),
+
+          h("section", { class: "card" },
+            h("h3", null, "Todos (Keyed)"),
+            h("ul", null, () => mappedTodos()),
+            h("button", {
+              type: "button",
+              onClick: () =>
+                setTodos(prev => [...prev, createTodo(prev.length)])
+            }, "Add Todo")
+          ),
+
+          h("section", { class: "card" },
+            h("h3", null, "Ordered List Keyed"),
+            h("ol", null, () => mappedItems()),
+            h("button", {
+              type: "button",
+              onClick: refreshList
+            }, "Refresh List (prepend)")
+          ),
+
+          h("section", { class: "card" },
+            h("h3", null, "Static Tree (200 nodes)"),
+            h("div", { class: "static-grid" }, staticCells)
+          )
+        )
+      );
     }
 
     render(App, document.getElementById("app"));
