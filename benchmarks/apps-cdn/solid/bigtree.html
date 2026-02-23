@@ -46,6 +46,8 @@
 
       const staticCells = Array.from({ length: 200 }, (_, i) => i);
 
+      const staticCellsHtml = staticCells.map(i => `<div class="static-cell">Static ${i + 1}</div>`).join("");
+
       return html`<div>
         <h1>Solid Big Tree Workload</h1>
         <p>Localized signals with keyed list updates.</p>
@@ -77,11 +79,7 @@
           </section>
           <section class="card">
             <h3>Static Tree (200 nodes)</h3>
-            <div class="static-grid">
-              <${For} each=${staticCells}>
-                ${(i) => html`<div class="static-cell">Static ${i + 1}</div>`}
-              </${For}>
-            </div>
+            <div class="static-grid">${staticCellsHtml}</div>
           </section>
         </div>
       </div>`;
