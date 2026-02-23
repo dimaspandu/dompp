@@ -1,15 +1,15 @@
-// IDEATION: Reconcile + Stateful + matchById on an ordered list
+// IDEATION: Big tree workload with localized state + optional reconcile
 //
 // Goal:
-// - Keep render code declarative (create fresh template nodes each render)
-// - Still preserve real DOM node identity for list rows
-// - Demonstrate prepend-heavy updates (newest item at the top)
+// - Demonstrate localized state updates that do not re-render the full tree.
+// - Provide an explicit toggle for reconcile (matchById) on list updates.
+// - Include a larger static subtree to simulate realistic DOM size.
 //
-// Key idea:
-// - We intentionally rebuild <li> templates every update.
-// - Each template carries a stable id from state.
-// - Reconcile with { matchById: true } maps new templates to existing nodes.
-// - Result: rows are patched/reordered instead of full remount behavior.
+// Sections:
+// - Counter (localized state, no reconcile required).
+// - Todo list (100 items initial, reconcile toggle).
+// - Ordered list keyed (50 items initial, reconcile enabled).
+// - Static grid (200 nodes, never changes).
 
 // Load DOM++ core extensions first.
 import "./src/index.js";
@@ -21,92 +21,134 @@ import { installDomppStateful } from "./src/reactive/stateful.js";
 installDomppReconcile({ overrideSetters: true });
 installDomppStateful();
 
-// Time-aware greeting to make inserted messages slightly contextual.
-function greetingByHour(date = new Date()) {
-  const hour = date.getHours();
-
-  if (hour < 10) return "Good morning";
-  if (hour < 15) return "Good day";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
-}
-
-// Create a unique, stable identity for each timeline item.
-function createItem() {
-  return {
-    id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    message: `${greetingByHour()}, World!`
-  };
-}
-
-// State transition for the "Refresh" action.
-//
-// Flow:
-// 1) Clone current items (immutability-friendly update shape).
-// 2) Prepend a brand-new item to the front of the list.
-// 3) If total items are more than 5, mark the topmost even position as UPDATED.
-function handleRefresh({ state }) {
-  const nextItems = state.items.map((item) => ({
-    ...item,
-    message: item.message.replace(" (UPDATED!)", "")
-  }));
-
-  nextItems.unshift(createItem());
-
-  // Topmost even list position is #2 (0-based index: 1).
-  if (nextItems.length > 5 && nextItems[1]) {
-    nextItems[1].message = `${nextItems[1].message} (UPDATED!)`;
-  }
-
-  state.items = nextItems;
-}
+const createTodo = (index) => ({ id: `todo-${index}`, text: `Todo ${index}` });
+const createListItem = () => ({
+  id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  message: "Hello, World!",
+});
 
 const app = document.getElementById("app");
 
-// Timeline owns local state and drives render output.
-const timeline = document.createElement("section")
-  .setAttributes({ class: "timeline" })
-  .setState({
-    items: []
-  });
+const counterTitle = document.createElement("h2")
+  .setState({ count: 0 })
+  .setText(({ state }) => `Count: ${state.count}`);
 
-// Keep container nodes stable. Only their content changes.
-const meta = document.createElement("p")
-  .setAttributes({ class: "meta" });
-const orderedList = document.createElement("ol")
-  .setAttributes({ class: "timeline__list" });
-
-// Reactive render function.
-//
-// Important:
-// - We recreate <li> templates on every update.
-// - Each <li> has id=item.id from state.
-// - matchById reuses existing real nodes by id and patches content/order.
-timeline.setChildren(({ state: { items } }) => {
-  const templates = items.map((item) =>
-    document.createElement("li")
-      .setAttributes({
-        id: item.id,
-        class: "timeline__row"
+const counterSection = document.createElement("section")
+  .setAttributes({ id: "counter-section" })
+  .setChildren(
+    document.createElement("h3").setText("Counter (localized state)"),
+    counterTitle,
+    document.createElement("button")
+      .setAttributes({ type: "button" })
+      .setText("+1")
+      .setEvents({
+        click: () => counterTitle.setState(({ state }) => { state.count += 1; })
       })
-      // Keep row text stable across prepend operations.
-      // Ordered list numbering is handled natively by <ol>.
-      .setChildren(item.message)
   );
 
-  orderedList.setChildren(...templates, { matchById: true });
-  meta.setText(`Items: ${items.length}. Newest item is prepended on refresh.`);
+const reconcileToggleInput = document.createElement("input")
+  .setAttributes({ type: "checkbox", checked: true, id: "reconcile-toggle" });
 
-  return [meta, orderedList];
+const reconcileToggle = document.createElement("label")
+  .setChildren(
+    reconcileToggleInput,
+    document.createElement("span").setText(" Use matchById reconcile for list")
+  );
+
+const todoList = document.createElement("ul");
+const todoHeading = document.createElement("h3").setText("Todos (reconcile optional)");
+const addTodoBtn = document.createElement("button")
+  .setAttributes({ type: "button" })
+  .setText("Add Todo");
+
+const todoSection = document.createElement("section")
+  .setAttributes({ id: "todo-section" })
+  .setState({
+    todos: Array.from({ length: 100 }, (_, i) => createTodo(i)),
+    useReconcile: true
+  })
+  .setChildren(({ state }) => {
+    const items = state.todos.map((todo) => (
+      document.createElement("li")
+        .setAttributes({ id: todo.id })
+        .setText(todo.text)
+    ));
+
+    if (state.useReconcile) {
+      todoList.setChildren(...items, { matchById: true });
+    } else {
+      todoList.setChildren(...items);
+    }
+
+    return [todoHeading, reconcileToggle, todoList, addTodoBtn];
+  });
+
+reconcileToggleInput.setEvents({
+  change: () => todoSection.setState(({ state }) => {
+    state.useReconcile = reconcileToggleInput.checked;
+  })
 });
 
-const refreshButton = document.createElement("button")
+addTodoBtn.setEvents({
+  click: () => todoSection.setState(({ state }) => {
+    state.todos = [...state.todos, createTodo(state.todos.length)];
+  })
+});
+
+const orderedList = document.createElement("ol");
+const orderedHeading = document.createElement("h3").setText("Ordered List Keyed");
+const refreshOrderedBtn = document.createElement("button")
   .setAttributes({ type: "button" })
-  .setChildren("Refresh")
-  .setEvents({ click: () => timeline.setState(handleRefresh) });
+  .setText("Refresh List");
 
-app.setChildren(timeline, refreshButton);
+const refreshOrderedList = ({ state }) => {
+  const items = state.items.map((item) => ({
+    ...item,
+    message: item.message.replace(" (UPDATED!)", "")
+  }));
+  items.unshift(createListItem());
+  if (items.length > 5 && items[1]) {
+    items[1].message += " (UPDATED!)";
+  }
+  state.items = items;
+};
 
-// Seed initial state for demo visibility.
-timeline.setState(handleRefresh);
-timeline.setState(handleRefresh);
+const orderedListSection = document.createElement("section")
+  .setAttributes({ id: "ordered-list-section" })
+  .setState({
+    items: Array.from({ length: 50 }, () => createListItem())
+  })
+  .setChildren(({ state: { items } }) => {
+    const templates = items.map((item) => (
+      document.createElement("li")
+        .setAttributes({ id: item.id })
+        .setText(item.message)
+    ));
+    orderedList.setChildren(...templates, { matchById: true });
+    return [orderedHeading, orderedList, refreshOrderedBtn];
+  });
+
+refreshOrderedBtn.setEvents({
+  click: () => orderedListSection.setState(refreshOrderedList)
+});
+
+const staticSection = document.createElement("section")
+  .setAttributes({ id: "static-section" })
+  .setChildren(
+    document.createElement("h3").setText("Static Tree (200 nodes)"),
+    document.createElement("div")
+      .setChildren(
+        ...Array.from({ length: 200 }, (_, i) => (
+          document.createElement("div").setText(`Static ${i + 1}`)
+        ))
+      )
+  );
+
+app.setChildren(
+  document.createElement("h1").setText("DOMPP Big Tree Ideation"),
+  document.createElement("p").setText("Localized state + optional reconcile for list updates."),
+  counterSection,
+  todoSection,
+  orderedListSection,
+  staticSection
+);

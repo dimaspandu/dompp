@@ -24,6 +24,7 @@ Reason: Svelte and modern Angular are compilation-first toolchains. Running them
 - `counter-reconcile.html` (DOMPP stateful + reconcile with `matchById`)
 - `counter-reconcile-no-match-by-id.html` (DOMPP stateful + reconcile without `matchById`, stable node references/no recreate loop)
 - `ordered-list-keyed.html`
+- `bigtree.html` (counter + todo list + ordered list + 200-node static tree)
 
 Both workloads follow the same behavioral spec:
 
@@ -32,6 +33,13 @@ Both workloads follow the same behavioral spec:
   - prepend a new item on refresh
   - maintain stable keyed identity
   - apply `"(UPDATED!)"` to topmost even position (item #2) only when total items > 5
+
+Bigtree adds a larger tree with multiple localized state sections:
+
+- Counter: localized increment updates
+- Todos: add items to a 100-item list (DOMPP can toggle reconcile with `matchById`)
+- Ordered list keyed: refresh list with keyed updates (50 items initial)
+- Static grid: 200 static nodes
 
 For cross-framework fairness, use `counter.html` as the default Counter comparison target and report reconcile variants as additional DOMPP analysis:
 

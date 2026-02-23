@@ -1,0 +1,169 @@
+i<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOMPP CDN - Big Tree</title>
+  <style>
+    body { font-family: system-ui; max-width: 960px; margin: 0 auto; padding: 24px; }
+    section { margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; }
+    ul, ol { padding-left: 20px; }
+    button { margin-right: 8px; }
+    .static-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .static-cell { border: 1px dashed #ccc; padding: 6px; border-radius: 6px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script type="module">
+    import "../../../src/index.js";
+    import { installDomppReconcile } from "../../../src/addons/reconcile.addon.js";
+    import { installDomppStateful } from "../../../src/reactive/stateful.js";
+
+    installDomppReconcile({ overrideSetters: true });
+    installDomppStateful();
+
+    const createTodo = (index) => ({ id: `todo-${index}`, text: `Todo ${index}` });
+    const createListItem = () => ({
+      id: `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      message: "Hello, World!"
+    });
+
+    const app = document.getElementById("app");
+
+    const counterTitle = document.createElement("h2")
+      .setState({ count: 0 })
+      .setText(({ state }) => `Count: ${state.count}`);
+
+    const counterSection = document.createElement("section")
+      .setAttributes({ id: "counter-section", class: "card" })
+      .setChildren(
+        document.createElement("h3").setText("Counter (localized state)"),
+        counterTitle,
+        document.createElement("button")
+          .setAttributes({ type: "button" })
+          .setText("+1")
+          .setEvents({
+            click: () => counterTitle.setState(({ state }) => { state.count += 1; })
+          })
+      );
+
+    const reconcileToggleInput = document.createElement("input")
+      .setAttributes({ type: "checkbox", checked: true, id: "reconcile-toggle" });
+
+    const reconcileToggle = document.createElement("label")
+      .setAttributes({ style: "display:block;margin:8px 0;" })
+      .setChildren(
+        reconcileToggleInput,
+        document.createElement("span").setText(" Use matchById reconcile for list")
+      );
+
+    const todoList = document.createElement("ul");
+    const todoHeading = document.createElement("h3").setText("Todos (reconcile optional)");
+    const addTodoBtn = document.createElement("button")
+      .setAttributes({ type: "button" })
+      .setText("Add Todo");
+
+    const todoSection = document.createElement("section")
+      .setAttributes({ id: "todo-section", class: "card" })
+      .setState({
+        todos: Array.from({ length: 100 }, (_, i) => createTodo(i)),
+        useReconcile: true
+      })
+      .setChildren(({ state }) => {
+        const items = state.todos.map((todo) => (
+          document.createElement("li")
+            .setAttributes({ id: todo.id })
+            .setText(todo.text)
+        ));
+
+        if (state.useReconcile) {
+          todoList.setChildren(...items, { matchById: true });
+        } else {
+          todoList.setChildren(...items);
+        }
+
+        return [todoHeading, reconcileToggle, todoList, addTodoBtn];
+      });
+
+    reconcileToggleInput.setEvents({
+      change: () => todoSection.setState(({ state }) => {
+        state.useReconcile = reconcileToggleInput.checked;
+      })
+    });
+
+    addTodoBtn.setEvents({
+      click: () => todoSection.setState(({ state }) => {
+        state.todos = [...state.todos, createTodo(state.todos.length)];
+      })
+    });
+
+    const orderedList = document.createElement("ol");
+    const orderedHeading = document.createElement("h3").setText("Ordered List Keyed");
+    const refreshOrderedBtn = document.createElement("button")
+      .setAttributes({ type: "button" })
+      .setText("Refresh List");
+
+    const refreshOrderedList = ({ state }) => {
+      const items = state.items.map((item) => ({
+        ...item,
+        message: item.message.replace(" (UPDATED!)", "")
+      }));
+      items.unshift(createListItem());
+      if (items.length > 5 && items[1]) {
+        items[1].message += " (UPDATED!)";
+      }
+      state.items = items;
+    };
+
+    const orderedListSection = document.createElement("section")
+      .setAttributes({ id: "ordered-list-section", class: "card" })
+      .setState({
+        items: Array.from({ length: 50 }, () => createListItem())
+      })
+      .setChildren(({ state: { items } }) => {
+        const templates = items.map((item) => (
+          document.createElement("li")
+            .setAttributes({ id: item.id })
+            .setText(item.message)
+        ));
+        orderedList.setChildren(...templates, { matchById: true });
+        return [orderedHeading, orderedList, refreshOrderedBtn];
+      });
+
+    refreshOrderedBtn.setEvents({
+      click: () => orderedListSection.setState(refreshOrderedList)
+    });
+
+    const staticSection = document.createElement("section")
+      .setAttributes({ id: "static-section", class: "card" })
+      .setChildren(
+        document.createElement("h3").setText("Static Tree (200 nodes)"),
+        document.createElement("div")
+          .setAttributes({ class: "static-grid" })
+          .setChildren(
+            ...Array.from({ length: 200 }, (_, i) => (
+              document.createElement("div")
+                .setAttributes({ class: "static-cell" })
+                .setText(`Static ${i + 1}`)
+            ))
+          )
+      );
+
+    app.setChildren(
+      document.createElement("h1").setText("DOMPP Big Tree Workload"),
+      document.createElement("p").setText("Localized state + optional reconcile for list updates."),
+      document.createElement("div")
+        .setAttributes({ class: "grid" })
+        .setChildren(
+          counterSection,
+          todoSection,
+          orderedListSection,
+          staticSection
+        )
+    );
+  </script>
+</body>
+</html>
+
