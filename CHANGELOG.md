@@ -33,6 +33,27 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.10] - 2026-02-23
+
+### Added
+- Automated CDN benchmark runner and summarizer scripts:
+  - `benchmarks/scripts/run-cdn-benchmark.mjs`
+  - `benchmarks/scripts/summarize-runtime.mjs`
+- Runtime benchmark outputs:
+  - `benchmarks/results/runtime_raw.csv`
+  - `benchmarks/results/runtime_summary.json`
+
+### Changed
+- Updated DOMPP stateful counter demo formatting consistency:
+  - `benchmarks/apps-cdn/dompp/counter-stateful.html`
+- Added runtime benchmark results table and analysis to paper outline:
+  - `docs/preprints/OUTLINE.md`
+
+### Notes
+- Benchmark results reflect CDN-only track runs on local environment; DOMPP remains a runtime library in this setup.
+
+---
+
 ## [0.1.8] - 2026-02-21
 
 ### Added

@@ -8,38 +8,42 @@
   <div id="app"></div>
   <script type="module">
     import "../../../src/index.js";
+    import { installDomppStateful } from "../../../src/reactive/stateful.js";
 
-    let count = 0;
+    installDomppStateful();
 
+    const app = document.getElementById("app").setState({ count: 0 });
     const title = document.createElement("h2");
 
     const decBtn = document.createElement("button")
       .setAttributes({ type: "button" })
       .setText("-1")
       .setEvents({
-        click: () => title.setText(`Count: ${count -= 1}`)
+        click: () => app.setState(({ state }) => {
+          state.count -= 1;
+        })
       });
 
     const incBtn = document.createElement("button")
       .setAttributes({ type: "button" })
       .setText("+1")
       .setEvents({
-        click: () => title.setText(`Count: ${count += 1}`)
+        click: () => app.setState(({ state }) => {
+          state.count += 1;
+        })
       });
 
     const resetBtn = document.createElement("button")
       .setAttributes({ type: "button" })
       .setText("Reset")
       .setEvents({
-        click: () => title.setText(`Count: ${count = 0}`)
+        click: () => app.setState({ count: 0 })
       });
 
-    document.getElementById("app").setChildren(
-      title,
-      decBtn,
-      incBtn,
-      resetBtn
-    );
+    app.setChildren(({ state }) => {
+      title.setText(`Count: ${state.count}`);
+      return [title, decBtn, incBtn, resetBtn];
+    });
   </script>
 </body>
 </html>

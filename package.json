@@ -1,0 +1,19 @@
+{
+  "name": "dompp",
+  "version": "1.0.0",
+  "description": "DOMPP (read as DOM plus plus) is an experiment in ergonomic APIs on top of the native DOM. The name \"DOM++\" is inspired by C++ naming style: DOM extended with small, explicit, chainable methods and no wrapper objects.",
+  "main": "ideation.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "puppeteer": "^24.37.5"
+  }
+}

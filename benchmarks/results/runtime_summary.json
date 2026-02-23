@@ -1,0 +1,212 @@
+[
+  {
+    "framework": "dompp",
+    "scenario": "counter-reconcile-no-match-by-id",
+    "operation": "counter_burst",
+    "duration": {
+      "n": 30,
+      "mean": 6.915066666666667,
+      "p50": 6.916,
+      "p95": 6.92,
+      "min": 6.906,
+      "max": 6.924
+    },
+    "heap": {
+      "n": 30,
+      "mean": 3.556666666666667,
+      "p50": 3.477,
+      "p95": 4.147,
+      "min": 2.754,
+      "max": 4.154
+    }
+  },
+  {
+    "framework": "dompp",
+    "scenario": "counter-reconcile",
+    "operation": "counter_burst",
+    "duration": {
+      "n": 30,
+      "mean": 6.9140999999999995,
+      "p50": 6.914,
+      "p95": 6.919,
+      "min": 6.907,
+      "max": 6.923
+    },
+    "heap": {
+      "n": 30,
+      "mean": 5.2909333333333315,
+      "p50": 5.338,
+      "p95": 6.8,
+      "min": 3.081,
+      "max": 7.156
+    }
+  },
+  {
+    "framework": "dompp",
+    "scenario": "counter",
+    "operation": "counter_burst",
+    "duration": {
+      "n": 30,
+      "mean": 6.927866666666666,
+      "p50": 6.918,
+      "p95": 6.925,
+      "min": 6.909,
+      "max": 7.239
+    },
+    "heap": {
+      "n": 30,
+      "mean": 2.3261333333333334,
+      "p50": 2.454,
+      "p95": 2.709,
+      "min": 1.72,
+      "max": 3.167
+    }
+  },
+  {
+    "framework": "dompp",
+    "scenario": "ordered-list-keyed",
+    "operation": "list_add",
+    "duration": {
+      "n": 30,
+      "mean": 6.745866666666667,
+      "p50": 6.748,
+      "p95": 6.804,
+      "min": 6.676,
+      "max": 6.812
+    },
+    "heap": {
+      "n": 30,
+      "mean": 19.4488,
+      "p50": 18.112,
+      "p95": 28.396,
+      "min": 8.223,
+      "max": 31.024
+    }
+  },
+  {
+    "framework": "react",
+    "scenario": "counter",
+    "operation": "counter_burst",
+    "duration": {
+      "n": 30,
+      "mean": 6.913933333333334,
+      "p50": 6.914,
+      "p95": 6.92,
+      "min": 6.906,
+      "max": 6.924
+    },
+    "heap": {
+      "n": 30,
+      "mean": 5.795233333333334,
+      "p50": 5.729,
+      "p95": 6.73,
+      "min": 4.121,
+      "max": 7.499
+    }
+  },
+  {
+    "framework": "react",
+    "scenario": "ordered-list-keyed",
+    "operation": "list_add",
+    "duration": {
+      "n": 30,
+      "mean": 6.748333333333335,
+      "p50": 6.734,
+      "p95": 6.818,
+      "min": 6.674,
+      "max": 6.854
+    },
+    "heap": {
+      "n": 30,
+      "mean": 24.606966666666665,
+      "p50": 23.895,
+      "p95": 35.617,
+      "min": 11.55,
+      "max": 37.157
+    }
+  },
+  {
+    "framework": "solid",
+    "scenario": "counter",
+    "operation": "counter_burst",
+    "duration": {
+      "n": 30,
+      "mean": 6.9133000000000004,
+      "p50": 6.914,
+      "p95": 6.918,
+      "min": 6.903,
+      "max": 6.918
+    },
+    "heap": {
+      "n": 30,
+      "mean": 6.283433333333333,
+      "p50": 6.329,
+      "p95": 7.225,
+      "min": 4.413,
+      "max": 7.681
+    }
+  },
+  {
+    "framework": "solid",
+    "scenario": "ordered-list-keyed",
+    "operation": "list_add",
+    "duration": {
+      "n": 30,
+      "mean": 7.6511999999999984,
+      "p50": 7.608,
+      "p95": 7.96,
+      "min": 7.146,
+      "max": 8.21
+    },
+    "heap": {
+      "n": 30,
+      "mean": 9.229700000000001,
+      "p50": 9.323,
+      "p95": 14.539,
+      "min": 3.766,
+      "max": 16.137
+    }
+  },
+  {
+    "framework": "vue",
+    "scenario": "counter",
+    "operation": "counter_burst",
+    "duration": {
+      "n": 30,
+      "mean": 6.913733333333335,
+      "p50": 6.915,
+      "p95": 6.918,
+      "min": 6.905,
+      "max": 6.918
+    },
+    "heap": {
+      "n": 30,
+      "mean": 7.250066666666667,
+      "p50": 7.194,
+      "p95": 8.14,
+      "min": 5.484,
+      "max": 8.779
+    }
+  },
+  {
+    "framework": "vue",
+    "scenario": "ordered-list-keyed",
+    "operation": "list_add",
+    "duration": {
+      "n": 30,
+      "mean": 6.769799999999999,
+      "p50": 6.774,
+      "p95": 6.816,
+      "min": 6.688,
+      "max": 6.864
+    },
+    "heap": {
+      "n": 30,
+      "mean": 20.025766666666662,
+      "p50": 19.09,
+      "p95": 30.609,
+      "min": 7.209,
+      "max": 33.426
+    }
+  }
+]
