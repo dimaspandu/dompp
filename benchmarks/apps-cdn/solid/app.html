@@ -11,7 +11,6 @@
     body {
       margin: 0;
       font-family: system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #a8e6ff, #3ddad7);
       background-attachment: fixed;
       color: #1f2d3d;
     }
@@ -115,16 +114,49 @@
       title.textContent = titleText;
 
       card.appendChild(title);
-      return { card, body: card };
+      return { card };
     }
 
     function App() {
+
+      console.log("App executed once");
+
       const container = document.createElement("div");
       container.className = "container";
+
+      /* ================= GLOBAL STATE ================= */
+      const [darkMode, setDarkMode] = createSignal(false);
+
+      createEffect(() => {
+        container.style.minHeight = "100vh";
+        container.style.transition = "all 0.3s ease";
+        container.style.background = darkMode()
+          ? "linear-gradient(135deg, #1e1e2f, #111)"
+          : "linear-gradient(135deg, #a8e6ff, #3ddad7)";
+      });
 
       const title = document.createElement("h1");
       title.textContent = "Mini Apps Dashboard (SolidJS)";
       container.appendChild(title);
+
+      /* ================= GLOBAL THEME CARD ================= */
+      const { card: themeCard } = createCard("Global Theme Toggle (Top-Level State)");
+
+      const desc = document.createElement("p");
+      desc.textContent = "This state lives in App() using createSignal.";
+
+      const btnTheme = document.createElement("button");
+
+      createEffect(() => {
+        btnTheme.textContent = darkMode()
+          ? "Switch to Light Mode"
+          : "Switch to Dark Mode";
+      });
+
+      btnTheme.onclick = () => setDarkMode(!darkMode());
+
+      themeCard.append(desc, btnTheme);
+      container.appendChild(themeCard);
 
       const grid = document.createElement("div");
       grid.className = "grid";
@@ -209,13 +241,9 @@
 
       /* ================= NOTES ================= */
       const { card: notesCard } = createCard("Quick Notes");
-      const [note, setNote] = createSignal("");
-
       const textarea = document.createElement("textarea");
       textarea.rows = 4;
       textarea.placeholder = "Write something...";
-      textarea.oninput = (e) => setNote(e.target.value);
-
       notesCard.appendChild(textarea);
       grid.appendChild(notesCard);
 
@@ -231,8 +259,9 @@
       btnCalc.textContent = "=";
       btnCalc.onclick = () => {
         try {
-          setCalcValue(eval(calcValue()).toString());
-          calcInput.value = calcValue();
+          const result = eval(calcValue()).toString();
+          setCalcValue(result);
+          calcInput.value = result;
         } catch {
           calcInput.value = "Error";
         }

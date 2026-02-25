@@ -118,6 +118,13 @@
 
     createApp({
       setup() {
+        /* 🔥 GLOBAL STATE (Top-Level) */
+        const darkMode = ref(false);
+
+        function toggleTheme() {
+          darkMode.value = !darkMode.value;
+        }
+
         /* Counter */
         const count = ref(0);
 
@@ -158,6 +165,8 @@
         }
 
         return {
+          darkMode,
+          toggleTheme,
           count,
           todos,
           todoText,
@@ -170,55 +179,74 @@
       },
 
       template: `
-        <div class="container">
-          <h1>Mini Apps Dashboard (Vue 3)</h1>
+        <div 
+          :style="{
+            minHeight: '100vh',
+            transition: 'all 0.3s ease',
+            background: darkMode
+              ? 'linear-gradient(135deg, #1e1e2f, #111)'
+              : 'linear-gradient(135deg, #a8e6ff, #3ddad7)'
+          }"
+        >
+          <div class="container">
+            <h1>Mini Apps Dashboard (Vue 3)</h1>
 
-          <div class="grid">
-
-            <!-- Counter -->
+            <!-- 🔥 GLOBAL STATE WIDGET -->
             <div class="card">
-              <h3>Counter</h3>
-              <h2>{{ count }}</h2>
-              <button @click="count--">-1</button>
-              <button @click="count++">+1</button>
-              <button @click="count = 0">Reset</button>
+              <h3>Global Theme Toggle (Top-Level State)</h3>
+              <p>This state lives in root setup().</p>
+              <button @click="toggleTheme">
+                {{ darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}
+              </button>
             </div>
 
-            <!-- Todo -->
-            <div class="card">
-              <h3>Todo List</h3>
-              <input v-model="todoText" placeholder="Add task..." />
-              <button @click="addTodo">Add</button>
-              <ul>
-                <li v-for="(todo, i) in todos" :key="i">
-                  {{ todo }}
-                </li>
-              </ul>
+            <div class="grid">
+
+              <!-- Counter -->
+              <div class="card">
+                <h3>Counter</h3>
+                <h2>{{ count }}</h2>
+                <button @click="count--">-1</button>
+                <button @click="count++">+1</button>
+                <button @click="count = 0">Reset</button>
+              </div>
+
+              <!-- Todo -->
+              <div class="card">
+                <h3>Todo List</h3>
+                <input v-model="todoText" placeholder="Add task..." />
+                <button @click="addTodo">Add</button>
+                <ul>
+                  <li v-for="(todo, i) in todos" :key="i">
+                    {{ todo }}
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Clock -->
+              <div class="card">
+                <h3>Live Clock</h3>
+                <div class="clock">{{ time }}</div>
+              </div>
+
+              <!-- Notes -->
+              <div class="card">
+                <h3>Quick Notes</h3>
+                <textarea rows="4" v-model="note" placeholder="Write something..."></textarea>
+              </div>
+
+              <!-- Calculator -->
+              <div class="card">
+                <h3>Mini Calculator</h3>
+                <input v-model="calcValue" placeholder="e.g. 2 + 2 * 3" />
+                <button @click="calculate">=</button>
+              </div>
+
             </div>
 
-            <!-- Clock -->
-            <div class="card">
-              <h3>Live Clock</h3>
-              <div class="clock">{{ time }}</div>
+            <div class="footer">
+              Built with Vue 3 via CDN
             </div>
-
-            <!-- Notes -->
-            <div class="card">
-              <h3>Quick Notes</h3>
-              <textarea rows="4" v-model="note" placeholder="Write something..."></textarea>
-            </div>
-
-            <!-- Calculator -->
-            <div class="card">
-              <h3>Mini Calculator</h3>
-              <input v-model="calcValue" placeholder="e.g. 2 + 2 * 3" />
-              <button @click="calculate">=</button>
-            </div>
-
-          </div>
-
-          <div class="footer">
-            Built with Vue 3 via CDN
           </div>
         </div>
       `

@@ -223,17 +223,42 @@
 
     /* ---------------- MAIN APP ---------------- */
     function App() {
-      return e("div", { className: "container" },
-        e("h1", null, "Mini Apps Dashboard"),
-        e("div", { className: "grid" },
-          e(CounterWidget),
-          e(TodoWidget),
-          e(ClockWidget),
-          e(NotesWidget),
-          e(CalculatorWidget)
-        ),
-        e("div", { className: "footer" },
-          "Built with React via CDN"
+      const [darkMode, setDarkMode] = useState(false);
+
+      const themeStyle = {
+        background: darkMode
+          ? "linear-gradient(135deg, #1e1e2f, #111)"
+          : "linear-gradient(135deg, #a8e6ff, #3ddad7)",
+        minHeight: "100vh",
+        transition: "all 0.3s ease"
+      };
+
+      return e("div", { style: themeStyle },
+        e("div", { className: "container" },
+          e("h1", { style: { color: darkMode ? "#fff" : "#fff" } },
+            "Mini Apps Dashboard"
+          ),
+
+          /* 🔥 GLOBAL STATE WIDGET */
+          e("div", { className: "card" },
+            e("h3", null, "Global Theme Toggle (Top-Level State)"),
+            e("p", null, "This state lives in App."),
+            e("button", {
+              onClick: () => setDarkMode(!darkMode)
+            }, darkMode ? "Switch to Light Mode" : "Switch to Dark Mode")
+          ),
+
+          e("div", { className: "grid" },
+            e(CounterWidget),
+            e(TodoWidget),
+            e(ClockWidget),
+            e(NotesWidget),
+            e(CalculatorWidget)
+          ),
+
+          e("div", { className: "footer" },
+            "Built with React via CDN"
+          )
         )
       );
     }
