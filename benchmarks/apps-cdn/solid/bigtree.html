@@ -34,13 +34,16 @@
 
     function App() {
       const [count, setCount] = createSignal(0);
+
       const [todos, setTodos] = createSignal(
         Array.from({ length: 100 }, (_, i) => createTodo(i))
       );
+
       const [items, setItems] = createSignal(
         Array.from({ length: 50 }, () => createListItem())
       );
 
+      // ✅ Keyed mapping
       const mappedTodos = mapArray(
         () => todos(),
         (todo) => h("li", null, todo.text)
@@ -48,7 +51,7 @@
 
       const mappedItems = mapArray(
         () => items(),
-        (item) => h("li", null, () => item.message)
+        (item) => h("li", null, item.message)
       );
 
       const staticCells = Array.from({ length: 200 }, (_, i) =>
@@ -56,40 +59,39 @@
       );
 
       const refreshList = () => {
-        const next = items().map((item) => ({
-          ...item,
-          message: item.message.replace(" (UPDATED!)", "")
-        }));
+        setItems(prev => {
+          const next = [...prev];
 
-        next.unshift(createListItem());
+          // prepend item baru
+          next.unshift(createListItem());
 
-        if (next.length > 5 && next[1]) {
-          next[1].message += " (UPDATED!)";
-        }
+          // hanya update item index 1
+          if (next.length > 1) {
+            next[1] = {
+              ...next[1],
+              message:
+                next[1].message.replace(" (UPDATED!)", "") + " (UPDATED!)"
+            };
+          }
 
-        setItems(next);
+          return next;
+        });
       };
 
       return h("div", null,
-        h("h1", null, "SolidJS Big Tree Workload (Keyed Stable)"),
-        h("p", null, "Fine-grained reactivity with keyed list diff."),
-
+        h("h1", null, "Solid Big Tree Workload"),
         h("div", { class: "grid" },
 
           h("section", { class: "card" },
             h("h3", null, "Counter"),
             h("h2", null, () => `Count: ${count()}`),
-            h("button", {
-              type: "button",
-              onClick: () => setCount(c => c + 1)
-            }, "+1")
+            h("button", { onClick: () => setCount(c => c + 1) }, "+1")
           ),
 
           h("section", { class: "card" },
-            h("h3", null, "Todos (Keyed)"),
+            h("h3", null, "Todos"),
             h("ul", null, () => mappedTodos()),
             h("button", {
-              type: "button",
               onClick: () =>
                 setTodos(prev => [...prev, createTodo(prev.length)])
             }, "Add Todo")
@@ -98,10 +100,7 @@
           h("section", { class: "card" },
             h("h3", null, "Ordered List Keyed"),
             h("ol", null, () => mappedItems()),
-            h("button", {
-              type: "button",
-              onClick: refreshList
-            }, "Refresh List (prepend)")
+            h("button", { onClick: refreshList }, "Refresh List")
           ),
 
           h("section", { class: "card" },

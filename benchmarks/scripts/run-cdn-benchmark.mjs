@@ -92,6 +92,34 @@ const SCENARIOS = [
     operation: "list_add",
     type: "list",
   },
+  {
+    framework: "dompp",
+    scenario: "bigtree",
+    url: "benchmarks/apps-cdn/dompp/bigtree.html",
+    operation: "bigtree_refresh",
+    type: "bigtree",
+  },
+  {
+    framework: "react",
+    scenario: "bigtree",
+    url: "benchmarks/apps-cdn/react/bigtree.html",
+    operation: "bigtree_refresh",
+    type: "bigtree",
+  },
+  {
+    framework: "solid",
+    scenario: "bigtree",
+    url: "benchmarks/apps-cdn/solid/bigtree.html",
+    operation: "bigtree_refresh",
+    type: "bigtree",
+  },
+  {
+    framework: "vue",
+    scenario: "bigtree",
+    url: "benchmarks/apps-cdn/vue/bigtree.html",
+    operation: "bigtree_refresh",
+    type: "bigtree",
+  },
 ];
 
 const header = [
@@ -115,6 +143,7 @@ const header = [
 
 const counterIterations = Number(process.env.BENCH_COUNTER_ITERATIONS || 1000);
 const listIterations = Number(process.env.BENCH_LIST_ITERATIONS || 50);
+const bigtreeIterations = Number(process.env.BENCH_BIGTREE_ITERATIONS || 50);
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -241,6 +270,33 @@ async function measureList(page) {
   }, iterations);
 }
 
+async function measureBigtree(page) {
+  const iterations = bigtreeIterations;
+  return page.evaluate(async (iterationsArg) => {
+    const harness = window.__benchHarness.attach();
+    const durations = [];
+    const getHeap = () => {
+      if (performance && performance.memory && performance.memory.usedJSHeapSize) {
+        return performance.memory.usedJSHeapSize / (1024 * 1024);
+      }
+      return null;
+    };
+
+    for (let i = 0; i < iterationsArg; i += 1) {
+      const start = performance.now();
+      harness.click("Refresh List");
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const end = performance.now();
+      durations.push({
+        duration: end - start,
+        heap: getHeap(),
+      });
+    }
+
+    return durations;
+  }, iterations);
+}
+
 async function runScenario(page, scenario, measuredRuns) {
   const url = `${BASE_URL}/${scenario.url}`;
   await page.goto(url, { waitUntil: "networkidle0" });
@@ -250,9 +306,14 @@ async function runScenario(page, scenario, measuredRuns) {
   for (let i = 0; i < measuredRuns; i += 1) {
     await page.reload({ waitUntil: "networkidle0" });
     await delay(150);
-    const durations = scenario.type === "counter"
-      ? await measureCounter(page)
-      : await measureList(page);
+    let durations;
+    if (scenario.type === "counter") {
+      durations = await measureCounter(page);
+    } else if (scenario.type === "bigtree") {
+      durations = await measureBigtree(page);
+    } else {
+      durations = await measureList(page);
+    }
     const mean = durations.reduce((sum, d) => sum + d.duration, 0) / durations.length;
     const heap = durations.map((d) => d.heap).filter((h) => typeof h === "number");
     const heapMean = heap.length ? heap.reduce((sum, h) => sum + h, 0) / heap.length : null;

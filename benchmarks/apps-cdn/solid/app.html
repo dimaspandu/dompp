@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SolidJS CDN - Mini Apps Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #a8e6ff, #3ddad7);
+      background-attachment: fixed;
+      color: #1f2d3d;
+    }
+
+    .container {
+      padding: 24px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 24px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(6px);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      font-weight: 600;
+      color: #0f4c5c;
+    }
+
+    button {
+      padding: 8px 12px;
+      margin: 6px 6px 0 0;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      color: white;
+      background: linear-gradient(135deg, #4facfe, #00c9a7);
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 15px rgba(0, 201, 167, 0.4);
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid #dceef3;
+      outline: none;
+    }
+
+    ul { padding-left: 18px; }
+
+    .clock {
+      font-size: 26px;
+      font-weight: 600;
+      text-align: center;
+      color: #0f4c5c;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      color: white;
+      opacity: 0.85;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <script type="module">
+    import { createSignal, createEffect, onCleanup } from "https://esm.sh/solid-js";
+    import { render } from "https://esm.sh/solid-js/web";
+
+    function createCard(titleText) {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = titleText;
+
+      card.appendChild(title);
+      return { card, body: card };
+    }
+
+    function App() {
+      const container = document.createElement("div");
+      container.className = "container";
+
+      const title = document.createElement("h1");
+      title.textContent = "Mini Apps Dashboard (SolidJS)";
+      container.appendChild(title);
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+      container.appendChild(grid);
+
+      /* ================= COUNTER ================= */
+      const { card: counterCard } = createCard("Counter");
+      const [count, setCount] = createSignal(0);
+
+      const countValue = document.createElement("h2");
+      createEffect(() => countValue.textContent = count());
+
+      const btnMinus = document.createElement("button");
+      btnMinus.textContent = "-1";
+      btnMinus.onclick = () => setCount(count() - 1);
+
+      const btnPlus = document.createElement("button");
+      btnPlus.textContent = "+1";
+      btnPlus.onclick = () => setCount(count() + 1);
+
+      const btnReset = document.createElement("button");
+      btnReset.textContent = "Reset";
+      btnReset.onclick = () => setCount(0);
+
+      counterCard.append(countValue, btnMinus, btnPlus, btnReset);
+      grid.appendChild(counterCard);
+
+      /* ================= TODO ================= */
+      const { card: todoCard } = createCard("Todo List");
+      const [todos, setTodos] = createSignal([]);
+      const [todoText, setTodoText] = createSignal("");
+
+      const inputTodo = document.createElement("input");
+      inputTodo.placeholder = "Add task...";
+      inputTodo.oninput = (e) => setTodoText(e.target.value);
+
+      const btnAdd = document.createElement("button");
+      btnAdd.textContent = "Add";
+      btnAdd.onclick = () => {
+        if (!todoText().trim()) return;
+        setTodos([...todos(), todoText()]);
+        setTodoText("");
+        inputTodo.value = "";
+      };
+
+      const ul = document.createElement("ul");
+
+      createEffect((prevLength) => {
+        const current = todos();
+        if (!prevLength) prevLength = 0;
+
+        if (current.length > prevLength) {
+          const newItem = current[current.length - 1];
+          const li = document.createElement("li");
+          li.textContent = newItem;
+          ul.appendChild(li);
+        }
+
+        return current.length;
+      });
+
+      todoCard.append(inputTodo, btnAdd, ul);
+      grid.appendChild(todoCard);
+
+      /* ================= CLOCK ================= */
+      const { card: clockCard } = createCard("Live Clock");
+      const [time, setTime] = createSignal(new Date().toLocaleTimeString());
+
+      const clockValue = document.createElement("div");
+      clockValue.className = "clock";
+
+      createEffect(() => clockValue.textContent = time());
+
+      const interval = setInterval(() => {
+        setTime(new Date().toLocaleTimeString());
+      }, 1000);
+
+      onCleanup(() => clearInterval(interval));
+
+      clockCard.appendChild(clockValue);
+      grid.appendChild(clockCard);
+
+      /* ================= NOTES ================= */
+      const { card: notesCard } = createCard("Quick Notes");
+      const [note, setNote] = createSignal("");
+
+      const textarea = document.createElement("textarea");
+      textarea.rows = 4;
+      textarea.placeholder = "Write something...";
+      textarea.oninput = (e) => setNote(e.target.value);
+
+      notesCard.appendChild(textarea);
+      grid.appendChild(notesCard);
+
+      /* ================= CALCULATOR ================= */
+      const { card: calcCard } = createCard("Mini Calculator");
+      const [calcValue, setCalcValue] = createSignal("");
+
+      const calcInput = document.createElement("input");
+      calcInput.placeholder = "e.g. 2 + 2 * 3";
+      calcInput.oninput = (e) => setCalcValue(e.target.value);
+
+      const btnCalc = document.createElement("button");
+      btnCalc.textContent = "=";
+      btnCalc.onclick = () => {
+        try {
+          setCalcValue(eval(calcValue()).toString());
+          calcInput.value = calcValue();
+        } catch {
+          calcInput.value = "Error";
+        }
+      };
+
+      calcCard.append(calcInput, btnCalc);
+      grid.appendChild(calcCard);
+
+      const footer = document.createElement("div");
+      footer.className = "footer";
+      footer.textContent = "Built with SolidJS via CDN (No JSX)";
+      container.appendChild(footer);
+
+      return container;
+    }
+
+    render(App, document.getElementById("app"));
+  </script>
+</body>
+</html>
