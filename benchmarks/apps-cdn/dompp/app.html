@@ -120,8 +120,10 @@
 
   <script type="module">
     import "../../../src/index.js";
+    import { installDomppReconcile } from "../../../src/addons/reconcile.addon.js";
     import { installDomppStateful } from "../../../src/reactive/stateful.js";
 
+    installDomppReconcile({ overrideSetters: true });
     installDomppStateful();
 
     function createCard(titleText) {
@@ -207,15 +209,23 @@
 
       /* ================= TODO ================= */
       const { card: todoCard } = createCard("Todo List");
+
+      const createTodo = (text) => ({
+        id: `todo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        text
+      });
+
       const todoListEl = document.createElement("ul")
         .setState({ todos: [] })
-        .setChildren(({ state }) =>
-          state.todos.map((todo) => {
-            const li = document.createElement("li");
-            li.textContent = todo;
-            return li;
-          })
-        );
+        .setChildren(({ state }) => {
+          const templates = state.todos.map((todo) =>
+            document.createElement("li")
+              .setAttributes({ id: todo.id })
+              .setText(todo.text)
+          );
+
+          return [...templates, { matchById: true }];
+        });
 
       const inputTodo = document.createElement("input");
       inputTodo.placeholder = "Add task...";
@@ -224,9 +234,10 @@
         .setText("Add")
         .setEvents({
           click: () => {
-            if (!inputTodo.value.trim()) return;
+            const text = inputTodo.value.trim();
+            if (!text) return;
             todoListEl.setState(({ state }) => {
-              state.todos = [...state.todos, inputTodo.value];
+              state.todos = [...state.todos, createTodo(text)];
             });
             inputTodo.value = "";
           }
