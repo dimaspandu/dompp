@@ -1,308 +1,266 @@
-# Proposed DOM++ (DOMPP): A Deterministic Engine-Oriented Mutation Model for Client-Side Web Systems
+# DOM++ (DOMPP): Deterministic Chainable DOM Mutation with Optional Reconciliation (Paper Outline)
 
-**Dimas Pratama**
-GitHub Repository: [https://github.com/dimaspandu/dompp](https://github.com/dimaspandu/dompp)
+**Dimas Pratama**  
+Repository: `dimaspandu/dompp`
 
 ---
 
 ## Abstract
 
-Modern web development is increasingly dominated by declarative UI frameworks that introduce runtime reconciliation layers to manage state transitions. While these abstractions simplify development, empirical evidence suggests that rendering strategies exhibit substantial differences in performance scaling. Concurrently, large-scale studies of real-world web pages indicate steady growth in DOM size and structural complexity over the past decades. This paper proposes DOM++ (DOMPP), a minimal extension to the native DOM API that introduces deterministic, chainable mutation setters without adding intermediate rendering abstractions. Unlike Virtual DOM or reactive runtime systems, DOMPP delegates reconciliation and rendering optimization to the browser engine rather than implementing them in userland memory structures. Furthermore, DOMPP proposes an explicitly configurable reconciliation model, enabling developers to determine when reconciliation is necessary and when deterministic mutation renders it redundant. We position DOMPP as a systems-level alternative to framework-centric rendering models and discuss its implications for performance, AI-assisted code generation, and potential standardization.
+Modern UI frameworks improve ergonomics by abstracting DOM mutation behind declarative render functions and runtime reconciliation. This paper proposes DOM++ (DOMPP), a minimal, deterministic mutation surface built directly on native DOM nodes: small chainable setters (text, children, styles, attributes, events) plus element-local state bindings. DOMPP emphasizes retained node identity and explicit mutation, treating reconciliation as an opt-in operation rather than a mandatory render phase. We present a JavaScript prototype and a reproducible evaluation protocol, then discuss why an engine-integrated version could reduce constant-factor overheads by moving structural matching and mutation batching into the browser.
 
-**Keywords**: DOM, Rendering Performance, Reconciliation, Deterministic Mutation, Engine-Level Optimization, Vanilla JavaScript
+**Keywords**: DOM, UI rendering, mutation, reconciliation, performance, web standards
 
 ---
 
 ## I. Introduction
 
-Modern web frameworks define declarative models in which state transitions are abstracted away from direct DOM mutation. While this approach simplifies application development, it introduces reconciliation strategies that translate state changes into DOM updates. Recent empirical work has demonstrated that such rendering strategies differ significantly in scaling behavior and runtime cost [1]. In parallel, structural analyses of real-world websites show a continuous increase in DOM size and JavaScript usage, transforming web pages into increasingly programmatic containers [2].
+### Motivation
 
-This paper argues that instead of introducing increasingly complex abstraction layers, improving the ergonomics of the native DOM may provide a more predictable and scalable alternative. DOMPP (DOM++) proposes a deterministic, chainable mutation interface over native DOM operations. Crucially, DOMPP rejects runtime-level reconciliation as a mandatory abstraction and instead repositions rendering optimization as an engine-level responsibility.
+Client-side applications increasingly spend time in UI updates: diffing trees, allocating intermediate representations, and scheduling work. At the same time, real-world pages have grown in DOM size and structural complexity, which increases the cost of broad subtree work.
+
+### Thesis
+
+If most UI changes are small, localized, and semantically explicit (e.g., update one text node, toggle one attribute), then the platform should make localized mutation ergonomic and auditable, without requiring a framework-managed render cycle.
+
+### Contributions
+
+1. **A minimal mutation surface**: chainable setters on native elements that unify common DOM update forms.
+2. **A deterministic retained-mutation model**: updates target stable node references; no implicit re-render.
+3. **Optional reconciliation**: explicit `matchById` matching for intentionally regenerated child templates.
+4. **An engine-oriented hypothesis**: structural matching, batching, and mutation shortcuts are better placed inside the browser than in userland runtimes.
 
 ---
 
-## II. Related Work
+## II. Background and Related Work
 
-### A. Evolution of Client-Side Rendering Architectures
+### A. The DOM as the Platform Boundary
 
-Prior to the emergence of declarative rendering paradigms, web developers relied heavily on libraries that wrapped native DOM APIs to improve ergonomics. Earlier generations of widely adopted libraries—including jQuery, MooTools, and Prototype.js—primarily provided convenience abstractions over imperative DOM operations. As noted in comparative performance analyses of modern web frameworks, these libraries simplified syntax but retained fundamentally imperative execution semantics and therefore exhibited performance characteristics similar to direct DOM manipulation, while remaining susceptible to comparable categories of programmer error [18]. This historical context is important: abstraction over the DOM does not inherently alter asymptotic behavior unless it introduces a distinct rendering or reconciliation model.
+The DOM is the interoperability boundary for UI on the Web: whatever the framework, the result is DOM mutation governed by platform semantics. DOMPP intentionally stays within this boundary (no wrapper nodes, no virtual tree).
 
-Recent scholarship has systematically analyzed the architectural evolution of JavaScript frameworks across performance, scalability, and developer-experience dimensions. The 2023 Journal of Web Engineering study on framework evolution demonstrates that rendering strategies fundamentally determine scaling characteristics, memory behavior, and long-term maintainability [3]. Similarly, the 2024 ACM Computing Surveys article traces frontend architecture transitions from early Virtual DOM implementations toward compiler-augmented and server-component paradigms, arguing that abstraction layers increasingly migrate rendering intelligence away from raw DOM mutation and into intermediate representations [4].
+### B. Empirical Context: DOM Growth and Structural Complexity
 
-Million.js provides empirical evidence that compiler-augmented Virtual DOM approaches can significantly reduce diff overhead by precomputing static regions and minimizing runtime tree traversal [5]. However, even optimized Virtual DOM models retain an intermediate representation and reconciliation pass. DOMPP diverges at a more fundamental level by eliminating the intermediate tree entirely and delegating structural optimization to the browser engine.
+Large-scale analyses of real-world pages report growth in DOM size and structural complexity. This motivates experiments that distinguish between:
 
-The study of deep learning inference inside browsers further demonstrates that JavaScript execution pipelines increasingly compete for CPU, memory bandwidth, and scheduling resources [6]. As client-side workloads become heterogeneous (UI rendering, inference, streaming, analytics), minimizing redundant reconciliation passes may reduce contention in constrained execution environments. Complementary surveys of client-side optimization techniques highlight that mutation batching, layout minimization, and dependency reduction remain primary performance drivers [7]. DOMPP aligns with these recommendations by minimizing abstraction overhead and encouraging deterministic mutation patterns.
+- localized updates on stable nodes (should be O(1) with small constants), and
+- structural list updates (often O(n), with performance dominated by constant factors and allocation pressure).
 
-### B. AJAX, Asynchronous Mutation, and DOM Effects
+DOMPP’s design goal is not to change asymptotic bounds, but to reduce constant overhead and make mutation scope explicit.
 
-Asynchronous JavaScript and AJAX-driven architectures historically intensified direct DOM mutation frequency. Technical analyses of asynchronous DOM effects report that excessive mutation and layout invalidation are primary contributors to performance degradation in dynamic applications [8]. These findings reinforce the argument that mutation strategy—not merely framework choice—determines scalability behavior. DOMPP addresses this by unifying mutation semantics while avoiding redundant structural traversal.
+One longitudinal structural study (based on Internet Archive / Wayback Machine sampling) reports that web page size follows an inverse exponential distribution with “surprisingly high precision,” and that almost all surveyed pages contain fewer than 2,000 HTML tags. This reinforces the practical importance of predictable constant factors for common “small updates,” and motivates list- and tree-shaped workloads that stress identity and structural operations. [3]
 
-### C. Declarative vs. Imperative Abstractions and Overhead
+### C. Rendering Architectures: Imperative, Declarative, and Reconciliation
 
-Comparative analyses of widely used web frameworks indicate that declarative paradigms improve developer productivity but introduce measurable abstraction layers that affect runtime characteristics [9]. The multiaspectual comparison literature emphasizes that framework-level abstraction often trades transparency for ergonomics. DOMPP positions itself as a minimal imperative augmentation of the DOM that preserves predictability while reducing representational duplication.
+The literature traces a progression:
 
-### D. AI-Generated Code and Reliability Implications
+- **Imperative libraries** improved DOM ergonomics without introducing a distinct reconciliation phase.
+- **Declarative frameworks** introduced render functions, intermediate representations, and reconciliation strategies to map state changes to DOM mutations.
+- **Keyed identity** and structural matching became central to performance for lists and repeated regions.
 
-Large-scale empirical studies show that AI-generated code exhibits nontrivial defect rates and increased structural complexity under certain prompting conditions [10], [11]. Additional evaluations in Empirical Software Engineering report variability in maintainability and correctness across generated artifacts [12]. Surveys of AI-assisted code generation and review further emphasize the need for constrained, deterministic APIs to improve reliability and traceability in generated systems [13].
+Comparative studies emphasize that reconciliation strategy and identity handling drive runtime behavior and memory use, even when workloads share the same high-level UI outcome.
 
-Research on trustworthy scientific workflows with LLM-generated code underscores that deterministic execution boundaries significantly enhance reproducibility and validation [14]. In this context, DOMPP’s deterministic mutation model may provide a more stable substrate for AI-assisted frontend generation by minimizing hidden reconciliation cycles.
+A rendering-performance comparison of modern web frameworks frames the core tradeoff as “DOM calls directly” vs “DOM calls generated dynamically by a framework,” and argues that the scaling of costs should ideally depend only on update complexity, not on unrelated subtree size. It also emphasizes that results under simplified benchmark components should be interpreted as relative differences under specific conditions, rather than a universal ranking. [4]
 
-### E. Deterministic Execution and Traceability
+An additional evolution-focused framework study reports that performance differences across frameworks can reach several orders of magnitude for the same tasks under some circumstances, and includes explicit validity/applicability caveats (hardware, environment sensitivity, and measurement definitions). It also highlights cross-runtime interop costs: for WebAssembly-based UIs, mediating access to DOM APIs through JavaScript can introduce overhead. [8]
 
-Recent work on human-in-the-loop deterministic tool development demonstrates that explicit control over execution stages improves correctness and auditability in generative systems [15]. Studies of agentic pipelines in embedded software similarly highlight the importance of predictable execution graphs and minimized implicit state transitions [16]. A systems-theoretic perspective on AI-assisted software quality assurance further argues that abstraction layers should be analyzable and traceable to ensure reliability [17].
+### D. Compiler-Augmented and Hybrid Rendering Models
 
-DOMPP’s configurable reconciliation model directly aligns with these findings by making reconciliation opt-in and semantically explicit rather than implicitly triggered by render cycles.
+Recent approaches reduce runtime diffing by moving work into compilation or by mixing rendering strategies (e.g., server rendering + client hydration, island/partial hydration, or other hybrid models). This trend supports DOMPP’s framing: many optimizations are about making mutation intent more explicit and reducing redundant runtime work.
 
-## III. DOMPP Conceptual Design and API Model
+DOMPP differs by staying within native DOM objects and making reconciliation opt-in at the mutation call site, rather than introducing a new template language or a required build step.
 
-### A. Baseline DOM Mutation Model
+A compiler-augmented Virtual DOM system (Million.js) presents compiler transformations and benchmark results that aim to reduce runtime diff/patch overhead, including comparisons against direct DOM updates and traditional VDOM approaches. In its reported measurements, direct DOM updates yield the lowest scripting time among tested strategies, illustrating the baseline advantage of “known target, explicit mutation,” while the compiler-augmented approach narrows the gap for declarative code paths. [5]
 
-The Web Platform exposes DOM mutation through heterogeneous primitives including property assignment, setAttribute/removeAttribute, textContent updates, appendChild/replaceChildren, and addEventListener [1]–[7]. While expressive, these APIs employ fragmented mutation vocabularies with differing invocation semantics.
+A recent frontend-architecture survey describes a shift from Virtual DOM-centric client rendering toward server-driven and hybrid approaches (e.g., React Server Components, streaming SSR) and situates this within tooling changes (build systems, framework meta-layers). This helps motivate DOMPP’s “engine-oriented” argument: if rendering strategies keep evolving, a stable low-level mutation vocabulary with explicit intent may reduce fragmentation at the platform boundary. [6]
 
-A representative construction example illustrates the fragmentation:
+An academic thesis on hybrid rendering models and edge computing discusses techniques such as islands architecture, SSR/SSG combinations, and hydration variants (including pitfalls of naïve hydration). This provides terminology and design space vocabulary that DOMPP can map to: DOMPP’s deterministic setters cover retained mutation within an island, while optional `matchById` reconciliation supports intentionally regenerated list subtrees. [7]
 
-```js
-const root = document.createElement("html");
-root.lang = "en";
+### E. Benchmarking Methodology and Confounds
 
-const head = document.createElement("head");
-const title = document.createElement("title");
-title.appendChild(document.createTextNode("My Document"));
-head.appendChild(title);
+Framework comparisons are useful but fragile. Common confounds include:
 
-const body = document.createElement("body");
-const header = document.createElement("h1");
-header.appendChild(document.createTextNode("Header"));
-const paragraph = document.createElement("p");
-paragraph.appendChild(document.createTextNode("Paragraph"));
-body.appendChild(header);
-body.appendChild(paragraph);
+- build mode differences (dev vs prod),
+- mismatched semantics (especially keyed list behavior),
+- measurement point ambiguity (end of JS vs visual commit on the next frame),
+- warm-up/JIT effects and run-order bias.
 
-root.appendChild(head);
-root.appendChild(body);
+DOMPP’s evaluation therefore prioritizes small, specified operations and a strict protocol (record environment, warm-up, distributions, and explicit measurement definition), with results interpreted as evidence about constant factors and allocation pressure rather than a universal framework ranking.
+
+### F. Key Sources Included in This Repository
+
+The following PDFs in `docs/preprints/references/` are treated as the initial “state of the art” input set for this draft:
+
+- `An_Empirical_Study_of_Web_Page_Structural_Properties.pdf` (DOM growth/complexity motivation)
+- `Modern_Web_Frameworks_A_Comparison_of_Rendering_Performance.pdf` (runtime comparison + measurement considerations)
+- `The Evolution of JavaScript Frameworks - Performance, Scalability, and Developers Experience.pdf` (architecture evolution)
+- `The Evolution of Frontend Architecture - From Virtual DOM to Server Components.pdf` (rendering paradigms)
+- `Million.js - A Fast Compiler-Augmented Virtual DOM for the Web.pdf` (compiler-augmented diff reduction)
+- `Emergence of hybrid rendering models in web application development.pdf` and `A Comparative Review of Server Rendering and Client Side Rendering in Web Development.pdf` (hybrid/SSR context)
+
+---
+
+## III. DOMPP Conceptual Design
+
+### A. Design Goals
+
+- **Determinism**: updates happen only when an explicit setter is called.
+- **Native identity**: the thing you mutate is the actual DOM node you created.
+- **Small surface**: avoid new templating languages or intermediate representations.
+- **Auditability**: code expresses the mutation boundary directly.
+
+### B. Non-goals
+
+- DOMPP is not a replacement for frameworks.
+- DOMPP does not introduce a new reactive graph as a requirement.
+- DOMPP does not claim asymptotic improvements over optimal keyed updates; the target is constant-factor reduction and predictability.
+
+### C. Minimal Chainable Mutation Surface
+
+DOMPP adds a small set of chainable helpers on native elements:
+
+- `setText(text | (ctx) => text)`
+- `setChildren(...children | (ctx) => children)`
+- `setStyles(styles | (ctx) => styles)`
+- `setAttributes(attrs | (ctx) => attrs)`
+- `setEvents(handlers | (ctx) => handlers)`
+- `setState(initial | (ctx) => void)` (element-local state + a deterministic update entrypoint)
+
+These methods:
+
+1. Mutate the underlying DOM node directly.
+2. Return the same element for chaining.
+3. Allocate no parallel tree representation.
+4. Preserve observable platform semantics.
+
+### D. Retained-Mutation Model
+
+DOMPP favors constructing nodes once and mutating them in place:
+
+```
+event -> explicit setter -> direct DOM mutation -> paint
 ```
 
-Mutation responsibilities are distributed across node creation, attribute mutation, text insertion, and structural attachment. Structural hierarchy is not visually preserved in the code layout, and subsequent updates frequently rely on different idioms than initial construction.
-
-DOMPP hypothesizes that a minimal, chainable mutation surface can reduce representational heterogeneity while preserving native semantics and object identity.
-
-### B. Minimal Chainable Mutation Surface
-
-DOMPP introduces the following methods on native elements:
-
-* setText(text)
-* setChildren(...children)
-* setStyles(styles)
-* setAttributes(attrs)
-* setEvents(events)
-* setState(state)
-
-Each method satisfies four invariants:
-
-1. It mutates the underlying native DOM node directly.
-2. It returns the same element instance to enable chaining.
-3. It introduces no wrapper abstraction or virtual node representation.
-4. It preserves observable DOM semantics defined by the platform standards [2].
-
-Structure-preserving construction becomes:
-
-```js
-const html = document.createElement("html").setChildren(
-  document.createElement("head").setChildren(
-    document.createElement("title").setText("My Document")
-  ),
-  document.createElement("body").setChildren(
-    document.createElement("h1").setText("Header"),
-    document.createElement("p").setText("Paragraph")
-  )
-);
-```
-
-This formulation visually preserves hierarchy while remaining entirely within native DOM objects. No compilation phase, template transformation, or intermediate tree allocation is required.
-
-### C. Deterministic Retained-DOM Philosophy
-
-DOMPP adopts a retained-DOM model in which elements are constructed once and subsequently mutated in place. No implicit render cycle or subtree regeneration occurs.
-
-```js
-let count = 0;
-const titleEl = document.createElement("h2").setText("Count: 0");
-function update() {
-  titleEl.setText(`Count: ${count}`);
-}
-```
-
-In this model:
-
-* Node identity remains stable.
-* Only minimal mutation is executed.
-* No diff traversal is performed.
-* No parallel tree structures are allocated.
-
-Execution flow is therefore deterministic:
-
-Event → Explicit Setter Invocation → Direct DOM Mutation → Paint.
-
-### D. Unified State Composition via setState
-
-The setState primitive composes mutation categories into a deterministic update unit:
-
-```js
-element.setState({ text, children, styles, attributes, events });
-```
-
-Functional form:
-
-```js
-element.setState(prev => { prev.count += 1; });
-```
-
-Unlike reactive graph systems [8]–[11], this approach does not require dependency graphs, scheduler queues, or implicit reconciliation cycles. Only explicitly bound setters re-evaluate.
-
-Example:
-
-```js
-const titleEl = document
-  .createElement("h2")
-  .setState({ count: 0 })
-  .setText(({ state }) => `Count: ${state.count}`);
-```
-
-State mutation triggers only the dependent setter without subtree reconstruction.
+This makes node identity stable and keeps the mutation scope explicit.
 
 ### E. Explicit and Configurable Reconciliation
 
-DOMPP treats reconciliation as an optional and explicit capability rather than a mandatory runtime phase.
+Some workloads intentionally regenerate child templates (e.g., reorder lists, rebuild rows). DOMPP supports an explicit reconcile mode where callers can opt into id-based matching:
 
 ```js
 installDomppReconcile({ overrideSetters: true });
-orderedList.setChildren(...templates, { matchById: true });
+list.setChildren(...templates, { matchById: true });
 ```
 
-Two design principles follow:
-
-1. Deterministic mutation should not incur reconciliation overhead.
-2. Structural matching strategies must be opt-in and semantically visible.
-
-Deterministic updates such as numeric counter increments do not require reconciliation because the mutation target is known and bounded. Structural regeneration scenarios may explicitly request id-based matching.
+Principle: reconciliation must be opt-in and visible at the call site.
 
 ### F. Engine-Level Optimization Hypothesis
 
-A central architectural hypothesis of DOMPP is that differential mutation optimization is more appropriately implemented at the browser engine level rather than within userland runtime memory.
+DOMPP’s central hypothesis is that if mutation intent is made explicit and uniform, browsers can optimize common patterns more aggressively than userland frameworks can, while preserving semantics. Candidate domains:
 
-Expected optimization domains include:
-
-* Differential child replacement rather than full subtree reset
-* Id-aware structural matching primitives
-* Style mutation diffing
-* Event handler identity short-circuiting
-* Mutation batching to reduce layout invalidation
-
-Under this model, the API surface remains deterministic and minimal, while engines are free to optimize internal execution paths provided observable DOM semantics remain unchanged.
-
-### G. Determinism and Developer Control
-
-DOMPP prioritizes explicit developer control over mutation boundaries. Unlike frameworks that implicitly reconcile on each render invocation, DOMPP enables developers to determine when reconciliation is semantically meaningful.
-
-This preserves transparency, improves traceability, and aligns mutation semantics with the mental model of native DOM execution.
+- id-aware child matching
+- differential child replacement (avoid full subtree resets)
+- event-handler identity shortcuts
+- batching to reduce layout invalidation
 
 ---
 
-## IV. Empirical Implications
+## IV. Prototype Implementation (JavaScript Library)
 
-Given that rendering cost scales with input size [1] and DOM size grows over time [2], minimizing reconciliation overhead becomes increasingly important. DOMPP reduces virtual tree construction, diff traversal overhead, dependency graph maintenance, and memory duplication while preserving native browser optimization.
+### A. Implementation Strategy
 
-### A. Benchmarked App Complexity Summary
+The current prototype is a JavaScript library that installs methods on native elements (via `src/` and optional addons). It demonstrates API ergonomics and enables controlled experiments, but it is not a browser-engine change.
 
-Let n denote the number of list items rendered and k denote a constant number of fixed UI elements.
+### B. Modes
 
-| Scenario                    | Time Complexity | Space Complexity |
-| --------------------------- | --------------- | ---------------- |
-| Counter (retained mutation) | O(1)            | O(1)             |
-| Counter (framework diff)    | O(1)            | O(1)             |
-| Keyed list insertion        | O(n)            | O(n)             |
-
-Counter benchmarks operate in constant time due to fixed UI size. Differences arise in constant factors and intermediate work performed. DOMPP’s retained mutation performs a single direct text update, minimizing overhead.
-
-List benchmarks require O(n) traversal across frameworks. DOMPP with explicit matchById aligns work to necessary structural updates without maintaining a virtual tree, reducing constant-factor overhead.
-
-### B. Runtime Results (CDN-Only Track)
-
-Measurements were collected using the CDN-only harness with 5 warm-up runs and 30 measured runs per scenario, following the protocol in [`benchmarks/PROTOCOL.md`](../../benchmarks/PROTOCOL.md) and the CSV schema in [`benchmarks/templates/runtime_raw_template.csv`](../../benchmarks/templates/runtime_raw_template.csv). Durations report mean / p50 / p95 in milliseconds per iteration; heap values are mean MB.
-
-| Framework | Scenario | Operation | Duration (ms) mean / p50 / p95 | Heap mean (MB) |
-| --- | --- | --- | --- | --- |
-| DOMPP | counter | counter_burst | 6.928 / 6.918 / 6.925 | 2.326 |
-| DOMPP | counter-reconcile | counter_burst | 6.914 / 6.914 / 6.919 | 5.291 |
-| DOMPP | counter-reconcile-no-match-by-id | counter_burst | 6.915 / 6.916 / 6.920 | 3.557 |
-| DOMPP | ordered-list-keyed | list_add | 6.746 / 6.748 / 6.804 | 19.449 |
-| React | counter | counter_burst | 6.914 / 6.914 / 6.920 | 5.795 |
-| React | ordered-list-keyed | list_add | 6.748 / 6.734 / 6.818 | 24.607 |
-| Solid | counter | counter_burst | 6.913 / 6.914 / 6.918 | 6.283 |
-| Solid | ordered-list-keyed | list_add | 7.651 / 7.608 / 7.960 | 9.230 |
-| Vue | counter | counter_burst | 6.914 / 6.915 / 6.918 | 7.250 |
-| Vue | ordered-list-keyed | list_add | 6.770 / 6.774 / 6.816 | 20.026 |
-
-### C. Runtime Analysis
-
-Across counters, the mean durations are tightly clustered (~6.91–6.93 ms) because the workload is constant-size and the harness measures a fixed operation per iteration. The more discriminating signal here is heap usage: DOMPP’s direct mutation (`counter`) shows the lowest mean heap footprint (2.326 MB), while reconcile variants raise heap due to additional reconciliation bookkeeping (5.291 MB with `matchById`). React/Solid/Vue exhibit higher heap means (5.795–7.250 MB), consistent with framework-managed render paths and retained structures.
-
-For ordered-list keyed updates, all frameworks perform O(n) work and the measured durations remain in a narrow band, with Solid slower in this run (mean 7.651 ms). Heap usage grows with list size and shows larger variance; DOMPP remains below React/Vue in mean heap and peaks, but above Solid in this specific run. Importantly, DOMPP in this benchmark is still a runtime library, not a native browser/engine feature. If standardized as a native DOM extension, the expectation is that the constant overheads (JS-level reconciliation and allocation) can be further reduced by engine-level integration, potentially improving both latency and memory characteristics [1][2][5].
+- **Base DOMPP**: chainable setters, direct mutation.
+- **Stateful**: element-local state + callback-driven setters.
+- **Reconcile addon**: patch-style `setChildren(..., { matchById: true })` matching.
 
 ---
 
-## V. Discussion
+## V. Evaluation Plan
 
-DOMPP reframes reconciliation as either an engine-level optimization problem or a developer-controlled optional mechanism. This repositioning reduces abstraction layering while maintaining expressive power and auditability.
+### A. Research Questions
+
+RQ1. Does deterministic retained mutation reduce constant overhead (time and heap) for localized updates compared to framework render paths?
+
+RQ2. For list updates that require O(n) work, does explicit `matchById` matching reduce unnecessary DOM churn while preserving semantics?
+
+RQ3. Which parts of the remaining overhead plausibly move from userland to the engine if the API were standardized?
+
+### B. Workloads (CDN-only Track)
+
+This repository includes no-build workloads under `benchmarks/apps-cdn/`:
+
+- **Counter**: localized text update.
+- **Ordered list (keyed)**: prepend + one targeted update, stable identity by id.
+- **Big tree**: mixed localized updates + static subtree to simulate realistic DOM size.
+
+### C. Harness, Metrics, and Protocol
+
+Measurements follow `benchmarks/PROTOCOL.md` and the CSV schema in `benchmarks/templates/runtime_raw_template.csv`.
+
+At minimum:
+
+- `duration_ms` per operation
+- `heap_used_mb` (when available)
+- environment lock (browser/OS/commit) for reproducibility
+
+### D. Threats to Validity (What we will control/report)
+
+- **Measurement point**: "end of JS" vs "visual commit" (e.g., next frame). Report what is measured and avoid mixing definitions.
+- **Workload equivalence**: ensure the same semantics across frameworks (especially keyed identity and update patterns).
+- **Warm-up and JIT effects**: separate warm-up runs and report `n` and distributions.
+- **CDN builds and versions**: record exact framework versions and build mode (prod vs dev).
+- **Browser variance**: avoid over-generalization from a single browser/machine.
 
 ---
 
-## VI. Implications for Standardization
+## VI. Results (To Be Filled)
 
-Potential standardization directions include mutation-intent signaling APIs, engine-hinted bulk insertion methods, and explicit subtree batching semantics.
-
----
-
-## VII. Conclusion
-
-Empirical evidence shows that rendering strategies significantly influence performance scaling and that DOM structures steadily grow in complexity. DOMPP proposes enhancing native DOM ergonomics and delegating reconciliation to the browser engine. By enabling deterministic mutation and configurable reconciliation, DOMPP offers a minimal yet scalable alternative.
+- Runtime tables and plots derived from `benchmarks/results/`.
+- Interpretation focuses on constant factors, allocation pressure, and update locality rather than a single overall ranking.
 
 ---
 
-## REFERENCES
+## VII. Discussion
 
-[1] MDN Web Docs, "Document Object Model (DOM)."
+DOMPP is intentionally narrow: it is a small, explicit mutation vocabulary plus optional reconciliation. The expected advantage is not asymptotic complexity, but reduced intermediate work and more predictable execution.
 
-[2] WHATWG, "DOM Standard."
+---
 
-[3] "The Evolution of JavaScript Frameworks: Performance, Scalability, and Developers Experience," Journal of Web Engineering, vol. 18, no. 4, pp. 215–234, 2023.
+## VIII. Implications for Standardization
 
-[4] "The Evolution of Frontend Architecture: From Virtual DOM to Server Components," ACM Computing Surveys, vol. 56, no. 2, pp. 45–70, 2024.
+DOMPP can be reframed as a standards discussion about mutation-intent signaling and engine-hinted bulk updates rather than a new UI framework:
 
-[5] "Million.js: A Fast Compiler-Augmented Virtual DOM for the Web," IEEE Transactions on Software Engineering, vol. 48, no. 9, pp. 3210–3223, 2022.
+- an explicit API surface for common mutation forms
+- an opt-in structural matching mode for regenerated child templates
+- well-specified semantics that preserve existing DOM behavior
 
-[6] "Anatomizing Deep Learning Inference in Web Browsers," ACM Transactions on Web, vol. 18, no. 3, pp. 1–28, 2024.
+---
 
-[7] "Client-side Optimization Techniques," International Journal of Web Performance, vol. 12, no. 1, pp. 55–78, 2024.
+## IX. Conclusion
 
-[8] "Asynchronous JavaScript and DOM Effects," Experimental Computer Science Reports, vol. 9, no. 2, pp. 112–130, 2023.
+DOMPP proposes that improving native DOM ergonomics and making mutation intent explicit can reduce constant-factor overhead for common UI updates. A JavaScript prototype supports early evaluation, while the long-term hypothesis is that engine integration could further optimize structural matching and batching under unchanged platform semantics.
 
-[9] "Evolution of Popularity and Multiaspectual Comparison of Widely Used Web Development Frameworks," Journal of Frontend Engineering, vol. 7, no. 2, pp. 101–125, 2023.
+---
 
-[10] "A Survey of Bugs in AI-Generated Code," Journal of Software Engineering Research and Development, vol. 13, no. 4, pp. 245–270, 2025.
+## References (Working Set)
 
-[11] "Human-Written vs. AI-Generated Code: A Large-Scale Study of Defects, Vulnerabilities, and Complexity," arXiv preprint, 2025.
+[1] MDN Web Docs. Document Object Model (DOM).
 
-[12] "Evaluation of the Code Quality Generated by Generative AI," Empirical Software Engineering, vol. 30, no. 1, pp. 1–29, 2025.
+[2] WHATWG. DOM Standard.
 
-[13] "A Review of Research on AI-Assisted Code Generation and AI-Driven Code Review," ACM Computing Surveys, vol. 57, no. 1, pp. 1–45, 2025.
+[3] X. Chamberland-Thibeault and S. Hallé. *An Empirical Study of Web Page Structural Properties* (longitudinal structural profiling; Wayback Machine methodology). PDF: `docs/preprints/references/An_Empirical_Study_of_Web_Page_Structural_Properties.pdf`.
 
-[14] "Toward Automated and Trustworthy Scientific Analysis and Visualization with LLM-Generated Code," arXiv preprint, 2025.
+[4] R. Ollila. *Modern Web Frameworks: A Comparison of Rendering Performance* (benchmarking rendering strategies; emphasizes scaling and validity caveats). PDF: `docs/preprints/references/Modern_Web_Frameworks_A_Comparison_of_Rendering_Performance.pdf`.
 
-[15] "Human in the Loop Chain of Code Prompting for Deterministic Tool Development with Generative AI," Software & Systems Modeling, vol. 24, no. 3, pp. 411–430, 2025.
+[5] A. Bai. *Million.js: A Fast Compiler-Augmented Virtual DOM for the Web* (compiler-augmented VDOM; benchmarks vs direct DOM updates). PDF: `docs/preprints/references/Million.js - A Fast Compiler-Augmented Virtual DOM for the Web.pdf`.
 
-[16] "Agentic Pipelines in Embedded Software Engineering," ACM Transactions on Embedded Computing Systems, vol. 25, no. 2, pp. 1–30, 2026.
+[6] M. Ajit Varma. *The Evolution of Frontend Architecture: From Virtual DOM to Server Components* (survey; server-driven/hybrid architectures and tooling). PDF: `docs/preprints/references/The Evolution of Frontend Architecture - From Virtual DOM to Server Components.pdf`.
 
-[17] "Software Quality Assurance and AI: A Systems-Theoretic Approach," Journal of Systems and Software, vol. 198, 111632, 2025.
+[7] J. Vepsinen. *Emergence of hybrid rendering models in web application development* (Aalto University thesis; islands/hydration/hybrid techniques). PDF: `docs/preprints/references/Emergence of hybrid rendering models in web application development.pdf`.
 
-[18] "Modern Web Frameworks: A Comparison of Rendering Performance," IEEE, 2023.
+[8] *The Evolution of JavaScript Frameworks - Performance, Scalability, and Developers Experience* (framework comparison with explicit validity/applicability discussion; includes WebAssembly↔DOM interop notes). PDF: `docs/preprints/references/The Evolution of JavaScript Frameworks - Performance, Scalability, and Developers Experience.pdf`.
+
+[9] *A Comparative Review of Server Rendering and Client Side Rendering in Web Development* (SSR vs CSR overview; note: this PDF appears to be largely non-text-extractable in this repo snapshot). PDF: `docs/preprints/references/A Comparative Review of Server Rendering and Client Side Rendering in Web Development.pdf`.
