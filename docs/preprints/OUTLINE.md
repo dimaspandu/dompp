@@ -83,7 +83,7 @@ DOMPP is expressed as chainable methods on native elements:
 
 Optional addon primitives used in demonstrations:
 
-- `setState(initial | (ctx) => void)` for element-local state and deterministic update entrypoints
+- `setState(initial | (ctx) => void)` for element-local state and deterministic update entry points
 - `setChildren(...templates, { matchById: true })` in reconcile mode for id-aware structural matching
 
 Each setter:
@@ -108,6 +108,24 @@ Example pattern:
 - build nested subtrees with `setChildren(...)`,
 - apply `setText(...)`/`setAttributes(...)` close to the node they affect.
 
+**Listing 1. Structure-preserving construction (nested `setChildren`).**
+
+```js
+import "../../src/index.js";
+
+document.getElementById("app").setChildren(
+  document.createElement("article").setChildren(
+    document.createElement("h2").setText("Hello DOMPP"),
+    document.createElement("p").setText("Structure in code mirrors the DOM tree."),
+    document.createElement("a")
+      .setAttributes({ href: "#details" })
+      .setText("Details")
+  )
+);
+```
+
+Full examples: `examples/minimal-counter/index.html`, `README.md`.
+
 ### B. Localized Retained Updates (O(1) Target)
 
 Goal: update a stable node without subtree regeneration.
@@ -118,6 +136,28 @@ Examples:
 - toggle a single attribute/class via `setAttributes(...)`,
 - update a style map via `setStyles(...)`.
 
+**Listing 2. Retained update: mutate one existing node (no re-render).**
+
+```js
+import "../../src/index.js";
+
+let count = 0;
+const titleEl = document.createElement("h2").setText("Count: 0");
+
+function update() {
+  titleEl.setText(`Count: ${count}`);
+}
+
+document.getElementById("app").setChildren(
+  titleEl,
+  document.createElement("button")
+    .setText("Increment")
+    .setEvents({ click: () => { count += 1; update(); } })
+);
+```
+
+Full example: `examples/minimal-counter/counter.js`.
+
 ### C. Event Binding as Explicit Mutation
 
 Goal: make handler installation and replacement explicit.
@@ -126,6 +166,20 @@ Example pattern:
 
 - bind handlers with `setEvents({ click: fn, ... })`,
 - update handler identity deliberately (e.g., replacing a closure) when semantics require it.
+
+**Listing 3. Event binding is an explicit mutation (`setEvents`).**
+
+```js
+import "../../src/index.js";
+
+const button = document.createElement("button")
+  .setText("Click")
+  .setEvents({
+    click(event) {
+      console.log("clicked", event.type);
+    }
+  });
+```
 
 ### D. Element-Local State (Deterministic Entry Point)
 
@@ -137,6 +191,28 @@ Example pattern:
 - compute derived outputs via callback forms of setters,
 - mutate state via `setState(updater)` to trigger only bound setters.
 
+**Listing 4. Element-local state and deterministic updates (`setState`).**
+
+```js
+import "../../src/index.js";
+import { installDomppStateful } from "../../src/reactive/stateful.js";
+
+installDomppStateful();
+
+const titleEl = document.createElement("h2")
+  .setState({ count: 0 })
+  .setText(({ state }) => `Count: ${state.count}`);
+
+document.getElementById("app").setChildren(
+  titleEl,
+  document.createElement("button")
+    .setText("+1")
+    .setEvents({ click: () => titleEl.setState(({ state }) => { state.count += 1; }) })
+);
+```
+
+Full example: `examples/stateful-counter/counter.js`.
+
 ### E. Regenerated Templates with Explicit Reconciliation
 
 Goal: support list workloads where templates are recreated but stable DOM identity is desired.
@@ -147,6 +223,28 @@ Example pattern:
 - call `list.setChildren(...templates, { matchById: true })`.
 
 This makes the reconciliation boundary explicit and opt-in at the mutation site.
+
+**Listing 5. Regenerated templates with explicit id-based matching (`matchById`).**
+
+```js
+import "../../src/index.js";
+import { installDomppReconcile } from "../../src/addons/reconcile.addon.js";
+
+installDomppReconcile({ overrideSetters: true });
+
+const list = document.createElement("ol");
+const items = [{ id: "a", text: "A" }, { id: "b", text: "B" }];
+
+const templates = items.map((item) =>
+  document.createElement("li")
+    .setAttributes({ id: item.id })
+    .setText(item.text)
+);
+
+list.setChildren(...templates, { matchById: true });
+```
+
+Full example: `examples/reconcile-match-by-id-ordered-list/counter.js`.
 
 ---
 
@@ -202,7 +300,7 @@ The current repository implementation is a JavaScript prototype. Any measurement
 
 ## VII. Implications for Standardization
 
-DOMPP can be reframed as a standards discussion about mutation-intent signaling and engine-hinted bulk updates:
+DOMPP can be reframed as a standards discussion about mutation-intent signalling and engine-hinted bulk updates:
 
 - a small explicit mutation vocabulary that preserves existing DOM semantics,
 - an opt-in id-aware structural matching mode for regenerated templates,
