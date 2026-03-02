@@ -1,2 +1,0 @@
-participant_id,framework,task_id,start_time,end_time,duration_min,defects_count,completed,notes
-P01,dompp,T01,2026-02-19T10:00:00Z,2026-02-19T10:35:00Z,35,0,true,

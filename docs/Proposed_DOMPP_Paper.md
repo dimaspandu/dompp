@@ -12,9 +12,9 @@ Correspondence: dimas.pandu@example.com
 
 ## Abstract
 
-This paper proposes DOM++ (DOMPP), a minimal set of chainable DOM mutation helpers (`setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents`, and `setState`) designed to improve consistency between initial render and incremental updates in retained-DOM architectures. The proposal is motivated by three observations: (1) low-level DOM mutation remains central to browser UI systems, (2) reactive and incremental systems benefit from explicit, deterministic update primitives, and (3) AI-assisted coding shifts the bottleneck from code generation to runtime clarity and maintainability. The core claim is not that this API replaces existing Web APIs or framework ecosystems, but that a narrow, semantics-preserving layer can reduce authoring complexity without introducing virtual DOM or wrapper objects. We present the API design, implementation rationale, and a comprehensive evaluation plan including runtime benchmarks, authoring studies, readability assessments, and debuggability metrics.
+This paper proposes DOM++ (DOMPP), a minimal set of chainable DOM mutation helpers (`setText`, `setChildren`, `setStyles`, `setAttributes`, `setEvents`, and `setState`) designed to improve consistency between initial render and incremental updates in retained-DOM architectures. The proposal is motivated by three observations: (1) low-level DOM mutation remains central to browser UI systems, (2) reactive and incremental systems benefit from explicit, deterministic update primitives, and (3) many real UI updates are small, localized, and intentful, but are often expressed through heterogeneous mutation idioms. The core claim is not that this API replaces existing Web APIs or framework ecosystems, but that a narrow, semantics-preserving layer can reduce authoring complexity without introducing virtual DOM or wrapper objects. We present the API design, implementation rationale, and a demonstration-driven evaluation based on time/space complexity and mutation-intent analysis (treating the JavaScript prototype as an executable specification rather than a performance claim).
 
-**Keywords:** DOM; retained mode UI; incremental updates; reactive programming; API design; benchmark methodology; setState
+**Keywords:** DOM; retained mode UI; incremental updates; reactive programming; API design; complexity analysis; setState
 
 ---
 
@@ -29,7 +29,7 @@ Frontend development has experienced significant framework proliferation over th
 - **Onboarding friction** for fullstack developers whose primary expertise is backend systems
 - **Portability loss** when UI logic is tightly coupled to one framework runtime
 
-At the same time, AI-assisted coding tools can now generate repetitive UI boilerplate quickly. Under this constraint, the bottleneck shifts from "writing code fast" to "running a model that is easy to reason about, profile, and maintain."
+As UI stacks become more toolchain-heavy and rendering strategies diversify, the bottleneck increasingly shifts from writing DOM code to reasoning about when and why mutations occur, and to ensuring that update behavior remains explicit and debuggable.
 
 ### 1.2. Problem Statement
 
@@ -48,12 +48,12 @@ This paper presents:
 
 1. A minimal chainable DOM mutation API proposal with six core methods
 2. Implementation rationale aligned with incremental computation principles
-3. A comprehensive evaluation plan covering runtime, authoring, readability, and debuggability
+3. A demonstration-driven evaluation framing based on time/space complexity and explicit mutation boundaries
 4. Discussion of standardization pathways and practical adoption scenarios
 
 ### 1.4. Paper Organization
 
-Section 2 reviews related work in DOM manipulation, reactive programming, and program comprehension. Section 3 presents the DOMPP API design and semantics. Section 4 details the implementation. Section 5 describes the evaluation methodology. Section 6 discusses expected outcomes and limitations. Section 7 concludes.
+Section 2 reviews related work in DOM manipulation, reactive programming, and rendering architectures. Section 3 presents the DOMPP API design and semantics. Section 4 details the implementation. Section 5 presents demonstrations and complexity analysis. Section 6 discusses expected outcomes and limitations. Section 7 concludes.
 
 ---
 
@@ -92,16 +92,13 @@ Program comprehension research highlights how representational complexity affect
 
 DOMPP targets extraneous load reduction by providing a uniform mutation vocabulary.
 
-### 2.4. Existing Benchmark Caveats
+### 2.4. Evaluation Caveats (Prototype vs. Engine)
 
-Framework benchmarks face several pitfalls:
+DOMPP in this repository is a JavaScript prototype. Direct performance measurement of the prototype primarily reflects userland overhead (allocations, callback dispatch, bookkeeping) rather than the proposed end state where the setters are native engine primitives. Therefore, this paper treats the prototype as an executable specification and focuses evaluation on:
 
-- Development vs. production mode confusion
-- Insufficient warmup leading to JIT measurement artifacts
-- GC noise in memory measurements
-- Task selection bias favoring certain architectures
-
-The proposed evaluation plan addresses these through standardized environment recording and repeated runs.
+- explicit mutation intent and boundaries (what is mutated, when, and why),
+- time and space complexity arguments under a DOM-level cost model,
+- and limitations that must be addressed by future engine-integrated validation.
 
 ---
 
@@ -283,69 +280,36 @@ Future optimization: batch DOM reads/writes to minimize layout thrashing.
 
 ---
 
-## 5. Evaluation Plan
+## 5. Demonstrations and Complexity Analysis
 
 ### 5.1. Research Questions
 
-- **RQ1**: What is the runtime overhead and update latency compared to direct DOM API use?
-- **RQ2**: How does authoring efficiency and defect rate compare?
-- **RQ3**: What are the readability/comprehension outcomes?
-- **RQ4**: How does debug traceability compare (time-to-root-cause, stack clarity)?
-- **RQ5**: What are the fullstack onboarding outcomes?
-- **RQ6**: How does AI-assisted maintenance compare (fix-time, defect introduction)?
-- **RQ7**: Does `setState` composition improve ergonomics vs. chained setters?
+- **RQ1**: What mutation patterns does DOMPP make explicit and uniform compared to baseline DOM idioms?
+- **RQ2**: Under a DOM-level cost model, what are the time and space complexity characteristics of these patterns?
+- **RQ3**: Which categories of overhead are prototype-specific (userland) vs plausibly engine-integratable if the setters were native?
+- **RQ4**: When is optional reconciliation (`matchById`) semantically justified, and what is its asymptotic cost envelope?
 
-### 5.2. Benchmark Tracks
+### 5.2. Demonstration Use Cases
 
-- **`cdn_only`**: DOMPP, React, Vue, Solid (no build step)
-- **`build_required`**: Svelte, Angular (production build)
+The repository implementation is used as an executable specification for demonstrations, including:
 
-Rankings are reported per-track to avoid unfair comparisons.
+- structure-preserving construction
+- localized retained updates (text/attributes/styles)
+- explicit event binding patterns
+- element-local state composition via `setState`
+- regenerated list templates with explicit id-based reconciliation (`matchById`)
 
-### 5.3. Workloads
+### 5.3. Complexity Model
 
-1. **`counter_burst`**: Rapid counter increments measuring update latency
-2. **`ordered_list_keyed`**: List reordering with ID-based reconciliation
-3. **`filter_sort`**: Dynamic filtering and sorting
-4. **`event_rebind`**: Event handler replacement patterns
+Let `k` be the number of fixed nodes in a widget (constant) and `n` be the number of children in a list region.
 
-### 5.4. Metrics
+Key claims are stated in terms of time/space complexity and mutation-intent transparency:
 
-#### 5.4.1. Runtime Metrics
+- localized retained updates on stable node references are **O(1)** time and **O(1)** additional space (ignoring value allocations),
+- structural list updates are generally **O(n)**, and explicit id-based matching can reduce DOM churn while preserving identity,
+- intermediate representation construction and implicit reconciliation are avoidable categories of work for many localized updates.
 
-- Initial render time
-- Update latency (p50, p95, p99)
-- Memory delta
-- Long task count
-
-#### 5.4.2. Authoring Metrics
-
-- Implementation completion time
-- Defect count per implementation
-
-#### 5.4.3. Readability Metrics
-
-- Comprehension accuracy (forced-choice questions)
-- Time to answer comprehension questions
-
-#### 5.4.4. Traceability Metrics
-
-- Time to root cause (debugging tasks)
-- Stack depth to cause
-- Mutation path identification success rate
-
-#### 5.4.5. State Composition Metrics
-
-- `setState` batching efficiency
-- Layout thrashing reduction
-- Code size comparison vs. chained setters
-
-### 5.5. Fairness Controls
-
-- Production-equivalent mode per framework
-- Warm-up runs before measurement
-- Standardized environment recording (browser version, CPU, memory)
-- No mixed ranking between `cdn_only` and `build_required`
+The paper deliberately avoids treating runtime benchmark measurements of the JavaScript prototype as primary evidence, because such measurements predominantly capture userland overhead rather than the intended end state (native engine primitives).
 
 ---
 
@@ -402,13 +366,7 @@ If evidence supports DOMPP's benefits, browser vendors could consider:
 
 ### 7.3. Construct Validity
 
-- **Benchmark confounds**: JIT warmup, browser version variance, GC noise
 - **Semantics debates**: Event replacement policy may not match all use cases
-
-### 7.4. AI Assistance Confounds
-
-- Tool quality and prompting skill can affect authoring/readability outcomes
-- Model version differences may affect AI-maintenance study results
 
 ---
 
@@ -421,7 +379,7 @@ Key claims are intentionally constrained:
 - **In scope**: Engine-level API improvement for mutation consistency
 - **Out of scope**: Universal framework replacement
 
-Future work includes empirical validation through the proposed benchmark suite and authoring studies.
+Future work includes engine-integrated validation (to evaluate constant factors without userland overhead), formalization of optional reconciliation semantics, and a standards-oriented explainer that maps mutation intent to engine optimization opportunities.
 
 ---
 
@@ -437,11 +395,7 @@ The author declares no conflicts of interest.
 
 ### Data Availability Statement
 
-Benchmark data and implementation code are available at: https://github.com/dompp/dompp
-
-### AI Use Disclosure
-
-AI-assisted tools were used for code generation and initial draft editing. All technical content, experimental design, and conclusions are the author's own.
+Implementation code and demonstrations are available in the repository.
 
 ### Acknowledgments
 

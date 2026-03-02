@@ -1,9 +1,0 @@
-OS: Windows 11 23H2
-CPU: Ryzen 7 5800X
-RAM: 32GB
-Browser: Chrome 122.0.0.0 (64-bit)
-Node: v20.11.1
-Commit: <git rev-parse HEAD>
-Track: A (cdn_only)
-Date:
-Thermal condition: cold start / room 23°C

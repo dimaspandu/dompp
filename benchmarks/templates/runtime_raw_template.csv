@@ -1,2 +1,0 @@
-timestamp,run_id,framework,scenario,operation,iteration,duration_ms,heap_used_mb,long_tasks_count,browser,browser_version,os,node_version,build_mode,commit_hash,notes
-2026-02-19T10:00:00Z,run_0001,dompp,counter_burst,counter_burst,1,0.00,0.00,0,chrome,XX,windows,22.9.0,production,abcdef0,

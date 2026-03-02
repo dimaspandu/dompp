@@ -6,59 +6,53 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.12] - 2026-02-28
+
+### Removed
+- Removed the experimental benchmark suite and all benchmark artifacts from the repository:
+  - CDN-only harness apps, scripts, templates, and recorded results.
+
+### Changed
+- Documentation no longer links to the removed benchmark suite.
+
+### Notes
+- The paper direction is now demonstration- and complexity-analysis-driven; the JavaScript prototype remains an executable specification rather than a performance claim.
+
+---
+
 ## [0.1.11] - 2026-02-28
 
 ### Changed
-- Updated DOMPP CDN app demo Todo List to use reconcile + `matchById` (keyed identity) on add:
-  - `benchmarks/apps-cdn/dompp/app.html`
 - Revised and refocused preprint outline:
   - simplified structure and evaluation framing
   - expanded Related Work with clearer citations to local reference PDFs
   - `docs/preprints/OUTLINE.md`
 
 ### Notes
-- This release updates paper-facing documentation and aligns the DOMPP CDN demo with keyed reconciliation semantics.
+- This release updates paper-facing documentation.
 
 ---
 
 ## [0.1.10] - 2026-02-23
 
 ### Added
-- Automated CDN benchmark runner and summarizer scripts:
-  - `benchmarks/scripts/run-cdn-benchmark.mjs`
-  - `benchmarks/scripts/summarize-runtime.mjs`
-- Runtime benchmark outputs:
-  - `benchmarks/results/runtime_raw.csv`
-  - `benchmarks/results/runtime_summary.json`
+- Experimental benchmarking scripts and recorded results (later removed).
 
 ### Changed
-- Updated DOMPP stateful counter demo formatting consistency:
-  - `benchmarks/apps-cdn/dompp/counter-stateful.html`
-- Added runtime benchmark results table and analysis to paper outline:
-  - `docs/preprints/OUTLINE.md`
+- Updated preprint outline with early runtime-results discussion (later replaced by demonstration + complexity framing).
 
 ### Notes
-- Benchmark results reflect CDN-only track runs on local environment; DOMPP remains a runtime library in this setup.
+- This release primarily added experimental measurement tooling and paper artifacts.
 
 ---
 
 ## [0.1.9] - 2026-02-21
 
 ### Added
-- Runnable CDN-only benchmark harness apps:
-  - `benchmarks/apps-cdn/` with `dompp`, `react`, `vue`, and `solid` workloads.
-- DOMPP reconcile benchmark variants for counter:
-  - `counter-reconcile` (with `matchById`)
-  - `counter-reconcile-no-match-by-id` (stable references without `matchById`)
-- Build-required benchmark track guidance:
-  - `benchmarks/apps-build-required/README.md` for `svelte` and `angular`.
+- Experimental benchmark harness apps and protocol artifacts (later removed).
 
 ### Changed
-- Benchmark documentation and protocol now define two fairness tracks:
-  - `cdn_only`
-  - `build_required`
-- Experimental paper outline updated to reflect keyed ordered-list workload and track-based reporting:
-  - `benchmarks/PAPER_OUTLINE_EXPERIMENT.md`
+- Experimental paper/evaluation artifacts expanded (later revised).
 - Proposal document strengthened with:
   - additional scientific references for comprehension/cognitive-load arguments
   - non-normative optimization expectations for setter semantics (`setChildren`, `setStyles`, `setAttributes`, `setEvents`)
@@ -104,15 +98,13 @@ This project follows semantic versioning principles.
 ## [0.1.7] - 2026-02-20
 
 ### Changed
-- Documentation language normalized to English (no emoji/emoticon style) across updated root/docs/benchmark markdown files.
+- Documentation language normalized to English (no emoji/emoticon style) across updated root/docs markdown files.
 - Root README updated with:
   - explicit project identity note: `DOMPP = DOM++`
   - MDN-style native Web API proposal snippet aligned with the paper direction.
 - Proposal document refined with repository-aligned implementation status and standardization pathway notes:
   - `docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md`
-- Benchmark docs clarified to reflect current repository state:
-  - protocol/templates/scripts are available now
-  - cross-framework runnable harness apps are still planned.
+- Repository documentation clarified to reflect current implementation status.
 
 ### Notes
 - This release is documentation-focused and introduces no runtime API changes.
@@ -167,18 +159,10 @@ This project follows semantic versioning principles.
 ## [0.1.4] - 2026-02-19
 
 ### Added
-- Experimental benchmark suite scaffold under `benchmarks/`:
-  - paper outline for evidence-driven evaluation
-  - cross-framework harness design
-  - reproducibility protocol
-  - CSV templates for runtime/authoring/readability studies
-  - table/plot templates for paper reporting
-  - Node scripts for runtime CSV validation and aggregation.
-- Benchmark artifacts workspace:
-  - `benchmarks/results/.gitkeep`
+- Experimental evaluation artifacts scaffold (later removed).
 
 ### Changed
-- Root README documentation index now includes benchmark suite docs.
+- Root README documentation index expanded for research artifacts (later revised).
 
 ### Notes
 - This release focuses on research methodology and measurement tooling.

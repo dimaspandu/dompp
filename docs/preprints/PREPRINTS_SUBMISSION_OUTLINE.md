@@ -22,7 +22,7 @@ Write a concise abstract covering:
 
 - Problem: fragmented UI abstractions and mutation inconsistency
 - Proposal: minimal chainable DOM mutation helpers
-- Method: benchmarks + authoring/readability/traceability design
+- Method: demonstrations + time/space complexity analysis (prototype as executable spec)
 - Scope boundaries: not a framework replacement claim
 
 ## 2. Keywords
@@ -34,13 +34,12 @@ Suggested keywords:
 - incremental updates
 - reactive programming
 - API design
-- benchmark methodology
+- complexity analysis
 
 ## 3. Introduction
 
 - Practical motivation (framework fragmentation, abstraction traceability cost)
 - Why this matters for fullstack teams
-- Why AI-assisted coding shifts focus to runtime clarity and engine-level ergonomics
 - Contributions list (bullet form)
 
 ## 4. Background and Related Work
@@ -48,7 +47,7 @@ Suggested keywords:
 - DOM and Web platform mutation model
 - Reactive and incremental computation foundations
 - Program comprehension and cognitive-load constraints
-- Existing benchmark caveats and fairness pitfalls
+- Existing performance-comparison caveats and fairness pitfalls
 
 ## 5. Proposal: Chainable DOM Mutation API
 
@@ -68,50 +67,21 @@ Include:
 
 ## 6. Research Questions
 
-- RQ1: Runtime overhead and update latency
-- RQ2: Authoring efficiency and defect rate
-- RQ3: Readability/comprehension outcomes
-- RQ4: Debug traceability outcomes
-- RQ5: Fullstack onboarding outcomes
-- RQ6: AI-assisted maintenance outcomes
-- RQ7: State composition ergonomics (`setState` vs chained setters)
+- RQ1: What mutation patterns does DOMPP make explicit and uniform?
+- RQ2: Under a DOM-level cost model, what are the time/space complexity characteristics of these patterns?
+- RQ3: Which optimizations are plausibly engine-integratable given unchanged DOM semantics?
 
-## 7. Methodology
+## 7. Methodology (Demonstrations + Complexity)
 
-### 7.1 Tracks
-
-- `cdn_only`: dompp, react, vue, solid
-- `build_required`: svelte, angular
-
-### 7.2 Workloads
-
-- `counter_burst`
-- `ordered_list_keyed`
-- `filter_sort`
-- `event_rebind`
-
-### 7.3 Metrics
-
-- Runtime: initial render, update latency (p50/p95), memory delta, long tasks
-- Authoring: completion time, defects
-- Readability: accuracy, time
-- Traceability: time-to-root-cause, stack-depth-to-cause
-- AI-maintainability: fix-time and defect-introduction rate
-- State composition: `setState` batching efficiency, layout thrashing reduction
-
-### 7.4 Fairness Controls
-
-- production-equivalent mode per framework
-- warm-up + repeated runs
-- standardized environment recording
-- no mixed ranking between `cdn_only` and `build_required`
+- Demonstrate use cases with small, runnable code examples (construction, localized updates, events, local state, optional reconciliation).
+- Analyze time and space complexity for each use case under a DOM-level cost model.
+- Explicitly separate prototype overhead from the engine-level hypothesis.
 
 ## 8. Results Plan
 
-- runtime summary tables
-- confidence intervals
-- per-track comparison
-- explicit failure/anomaly notes
+- demonstration code listings for each use case
+- time/space complexity summary tables per use case
+- explicit limitations and assumptions of the cost model
 
 ## 9. Discussion
 
@@ -124,7 +94,6 @@ Include:
 - implementation bias
 - environment sensitivity
 - participant skill skew
-- AI model/prompt variance
 
 ## 11. Conclusion
 
@@ -140,7 +109,6 @@ Prepare these sections for submission:
 - Funding
 - Conflicts of Interest
 - Data Availability Statement
-- AI Use Disclosure (methods or equivalent section)
 - Ethics statement (if human/animal participants are involved)
 - Acknowledgments
 
@@ -152,6 +120,4 @@ Prepare these sections for submission:
 - Research paper structure includes IMRaD-style core sections
 - All figures/tables/captions complete
 - Data and supplementary files prepared (or repository links)
-- AI usage disclosed (if used)
 - Journal policy compatibility checked before cross-submission
-
