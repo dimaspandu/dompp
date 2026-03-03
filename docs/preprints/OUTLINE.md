@@ -34,26 +34,39 @@ This paper explores a complementary direction: improving the ergonomics of direc
 
 ## II. Background and Related Work
 
-### A. The DOM as a Contract
+### A. Web Platform Mutation Primitives (Baseline)
 
-Platform specifications define the observable semantics of DOM mutation. Any proposal that extends DOM ergonomics must preserve these semantics and interoperate with existing authoring models. [1], [2]
+DOMPP is intentionally framed as an ergonomic layer over existing DOM semantics rather than a competing rendering architecture. The relevant baseline is the platform-defined behavior of DOM mutation primitives such as:
 
-### B. Empirical Context: DOM Growth and Structural Complexity
+- text mutation (`textContent`), [3]
+- child replacement / subtree rewiring (`replaceChildren` and related child insertion/removal operations), [4]
+- attribute mutation (`setAttribute`, `removeAttribute`), [5], [6]
+- and event listener installation (`addEventListener`). [7]
 
-Longitudinal structural profiling of real-world pages motivates paying attention to DOM size and update locality. One study reports that page size follows an inverse exponential distribution and that almost all surveyed pages contain fewer than 2,000 HTML tags, suggesting that constant factors and predictable locality matter for common interactive updates. [3]
+Any extension to DOM ergonomics must preserve observable semantics defined by the DOM Standard and remain compatible with existing Web authoring practices. [1], [2]
 
-### C. Rendering Architectures and Reconciliation
+### B. Imperative Mutation vs Declarative Reconciliation
 
-Prior work frames a key tradeoff between:
+UI systems commonly trade explicit, imperative DOM mutation for declarative authoring. In declarative models, updates are derived by reconciliation (diffing) and then executed as DOM operations. DOMPP targets a middle ground:
 
-- imperative code that calls DOM APIs directly, and
-- declarative frameworks that generate DOM calls dynamically based on reconciliation strategies.
+- it retains imperative control and stable node identity (retained references),
+- but optionally supports explicit, opt-in structural matching (`matchById`) for list workloads where templates are regenerated.
 
-The relevant cost is not only the mutation itself, but also the work required to determine which mutations to perform. Framework comparisons emphasize that results depend heavily on workload equivalence, identity handling, measurement definition, and environment control. [4], [8]
+Framework comparisons emphasize that results depend on workload equivalence, identity strategy (keyed vs positional), and measurement definition. [9], [13] This motivates DOMPP's evaluation framing: focus on a DOM-level cost model and operation categories, and treat prototype runtime timings as secondary evidence.
 
-### D. Compiler-Augmented and Hybrid Models
+### C. Reactive and Incremental Computation Foundations
 
-Recent approaches reduce runtime diffing overhead via compilation or hybrid rendering strategies. A compiler-augmented virtual DOM system (Million.js) demonstrates that compiler transformations can narrow gaps to direct DOM updates in some cases, while direct DOM updates remain an important baseline for scripting-time overhead. [5] Survey work on frontend architecture further highlights the shift toward server-driven and hybrid models (e.g., streaming SSR, server components), which increases diversity in rendering strategies and strengthens the case for a stable, low-level mutation vocabulary. [6], [7]
+Although DOMPP itself is not a reactive graph system, its motivation overlaps with prior work on incremental and reactive computation: avoid recomputing or re-materializing more than necessary when inputs change. Surveys of reactive programming [14] and foundational work on adaptive functional programming [15] and incremental computation with names [16] provide conceptual grounding for why "update locality" and stable identity (naming) matter when designing update mechanisms.
+
+DOMPP can be viewed as bringing a similar locality principle to DOM mutation: keep stable references for frequent updates, and make structural matching explicit when regeneration is intentional.
+
+### D. Human Factors: Auditability and Cognitive Load
+
+DOMPP's "auditability" goal (mutations are visible at the call site) is motivated by program comprehension concerns. Prior work surveys how tools and theories support comprehension tasks in evolving codebases. [17] Cognitive load research suggests that reducing hidden mechanisms and intermediate representations can aid reasoning about behavior. [18] While DOMPP does not claim to eliminate complexity, it attempts to keep the mutation boundary explicit and mechanically local.
+
+### E. Compiler-Augmented and Hybrid Rendering Trends
+
+Recent approaches attempt to reduce diffing and scheduling overhead through compilation or hybrid architectures. A compiler-augmented virtual DOM approach (Million.js) illustrates that compilation can narrow the gap to direct DOM updates for some workloads. [10] Broader survey-style discussions of frontend architecture describe shifts toward hybrid/server-driven rendering (e.g., server components, streaming), increasing diversity in how DOM mutations are produced and scheduled. [11], [12] This diversity strengthens the case for a stable, low-level mutation vocabulary that remains useful across architectures.
 
 ---
 
@@ -260,7 +273,17 @@ Let:
 
 DOMPP does not change the theoretical lower bound of DOM operations needed for a given visible outcome. Its claim is about reducing intermediate work and making the mutation boundary explicit.
 
-### B. Localized Updates
+### B. Evaluation Method: DOM Operation Counts (Non-timing)
+
+Because the current implementation is a JavaScript prototype, end-to-end script timings primarily measure userland overhead (allocations, callback dispatch, bookkeeping) rather than the long-term "engine-integrated primitive" hypothesis. Therefore, the primary empirical signal used in this paper is operation counting under a DOM-level cost model:
+
+1. instrument a run of each demonstration to count DOM mutations by category (text changes, attribute changes, child inserts/removes/moves, event listener add/remove),
+2. compare counts between usage patterns (retained reference update vs regenerated template + `matchById`),
+3. and interpret results alongside asymptotic bounds (O(1) localized update vs O(n) list traversal).
+
+This avoids overstating prototype timing results while still providing an experiment grounded in observable DOM work.
+
+### C. Localized Updates
 
 For retained updates that target a known node:
 
@@ -269,7 +292,7 @@ For retained updates that target a known node:
 - `setStyles` on a bounded style map: **time O(1)**, **space O(1)**.
 - `setEvents` on a bounded handler map: **time O(1)**, **space O(1)**.
 
-### C. List Updates and Identity
+### D. List Updates and Identity
 
 For a list of `n` items:
 
@@ -281,7 +304,7 @@ DOMPP makes the identity strategy explicit:
 - retained references (no template recreation) avoid reconciliation entirely for many updates,
 - regenerated templates can opt into `matchById` when structural matching is intended.
 
-### D. Prototype vs Engine-Integrated Interpretation
+### E. Prototype vs Engine-Integrated Interpretation
 
 The current repository implementation is a JavaScript prototype. Any measurement of script execution time on this prototype would largely capture userland overhead (JS allocations, callback dispatch, bookkeeping). Because the long-term hypothesis is that these setters could be native engine primitives, prototype benchmark numbers are not used as primary evidence. Instead, this paper uses complexity analysis plus demonstrations to argue about:
 
@@ -304,7 +327,7 @@ DOMPP can be reframed as a standards discussion about mutation-intent signalling
 
 - a small explicit mutation vocabulary that preserves existing DOM semantics,
 - an opt-in id-aware structural matching mode for regenerated templates,
-- and well-specified behavior for setter composition (text/children/styles/attributes/events) that remains interoperable with today’s DOM.
+- and well-specified behavior for setter composition (text/children/styles/attributes/events) that remains interoperable with today's DOM.
 
 ---
 
@@ -314,20 +337,42 @@ DOMPP proposes a deterministic, chainable mutation interface on native DOM nodes
 
 ---
 
-## References (Working Set)
+## References
 
-[1] MDN Web Docs. Document Object Model (DOM).
+[1] WHATWG, "DOM Standard." https://dom.spec.whatwg.org/ (accessed 2026-02-21).
 
-[2] WHATWG. DOM Standard.
+[2] MDN Web Docs, "Document Object Model (DOM)." https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model (accessed 2026-02-21).
 
-[3] X. Chamberland-Thibeault and S. Hallé. *An Empirical Study of Web Page Structural Properties*. PDF: `docs/preprints/references/An_Empirical_Study_of_Web_Page_Structural_Properties.pdf`.
+[3] MDN Web Docs, "Node: textContent property." https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent (accessed 2026-02-21).
 
-[4] R. Ollila. *Modern Web Frameworks: A Comparison of Rendering Performance*. PDF: `docs/preprints/references/Modern_Web_Frameworks_A_Comparison_of_Rendering_Performance.pdf`.
+[4] MDN Web Docs, "Element: replaceChildren() method." https://developer.mozilla.org/en-US/docs/Web/API/Element/replaceChildren (accessed 2026-02-21).
 
-[5] A. Bai. *Million.js: A Fast Compiler-Augmented Virtual DOM for the Web*. PDF: `docs/preprints/references/Million.js - A Fast Compiler-Augmented Virtual DOM for the Web.pdf`.
+[5] MDN Web Docs, "Element: setAttribute() method." https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute (accessed 2026-02-21).
 
-[6] M. Ajit Varma. *The Evolution of Frontend Architecture: From Virtual DOM to Server Components*. PDF: `docs/preprints/references/The Evolution of Frontend Architecture - From Virtual DOM to Server Components.pdf`.
+[6] MDN Web Docs, "Element: removeAttribute() method." https://developer.mozilla.org/en-US/docs/Web/API/Element/removeAttribute (accessed 2026-02-21).
 
-[7] J. Vepsinen. *Emergence of hybrid rendering models in web application development*. PDF: `docs/preprints/references/Emergence of hybrid rendering models in web application development.pdf`.
+[7] MDN Web Docs, "EventTarget: addEventListener() method." https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener (accessed 2026-02-21).
 
-[8] *The Evolution of JavaScript Frameworks - Performance, Scalability, and Developers Experience*. PDF: `docs/preprints/references/The Evolution of JavaScript Frameworks - Performance, Scalability, and Developers Experience.pdf`.
+[8] X. Chamberland-Thibeault and S. Halle, "An Empirical Study of Web Page Structural Properties," manuscript (PDF), n.d.
+
+[9] R. Ollila, "Modern Web Frameworks: A Comparison of Rendering Performance," manuscript (PDF), n.d.
+
+[10] A. Bai, "Million.js: A Fast Compiler-Augmented Virtual DOM for the Web," manuscript (PDF), n.d.
+
+[11] M. Ajit Varma, "The Evolution of Frontend Architecture: From Virtual DOM to Server Components," manuscript (PDF), n.d.
+
+[12] J. Vepsinen, "Emergence of hybrid rendering models in web application development," manuscript (PDF), n.d.
+
+[13] "The Evolution of JavaScript Frameworks - Performance, Scalability, and Developers Experience," manuscript (PDF), n.d.
+
+[14] E. Bainomugisha, A. L. Carreton, T. Van Cutsem, S. Mostinckx, and W. De Meuter, "A Survey on Reactive Programming," *ACM Computing Surveys*, vol. 45, no. 4, 2013. doi: 10.1145/2501654.2501666.
+
+[15] U. A. Acar, G. E. Blelloch, and R. Harper, "Adaptive Functional Programming," *ACM Transactions on Programming Languages and Systems*, vol. 28, no. 6, pp. 990-1034, 2006. doi: 10.1145/1119479.1119480.
+
+[16] M. A. Hammer, J. Dunfield, K. Headley, N. Labich, J. S. Foster, M. W. Hicks, and D. Van Horn, "Incremental Computation with Names," in *Proceedings of OOPSLA*, pp. 748-766, 2015. doi: 10.1145/2814270.2814305.
+
+[17] M.-A. D. Storey, "Theories, Tools and Research Methods in Program Comprehension: Past, Present and Future," *Software Quality Journal*, vol. 14, no. 3, pp. 187-208, 2006. doi: 10.1007/s11219-006-9216-4.
+
+[18] J. Sweller, "Cognitive Load During Problem Solving: Effects on Learning," *Cognitive Science*, vol. 12, no. 2, pp. 257-285, 1988. doi: 10.1016/0364-0213(88)90023-7.
+
+[19] TC39, "The TC39 Process." https://tc39.es/process-document/ (accessed 2026-02-21).
