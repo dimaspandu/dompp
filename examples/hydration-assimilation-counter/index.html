@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOM++ Hydration Assimilation Counter</title>
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 32px;
+      line-height: 1.4;
+    }
+
+    section,
+    #counter {
+      margin-bottom: 16px;
+    }
+
+    #counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      min-width: 36px;
+      min-height: 32px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Hydration Assimilation: Counter</h1>
+
+  <!-- Simulated SSR content -->
+  <section id="greetings">
+    <h2>Hello, World!</h2>
+    <p>Nice to see you!</p>
+  </section>
+
+  <!-- Simulated SSR content -->
+  <div id="counter">
+    <h2>0</h2>
+    <button type="button">-</button>
+    <button type="button">+</button>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+

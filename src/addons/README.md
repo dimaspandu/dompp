@@ -25,12 +25,14 @@ Currently this module includes:
 
 * `vquery.addon.js`
 * `reconcile.addon.js`
+* `hydration.addon.js`
 
 It exports two utilities:
 
 * `$` for safe single-element selection
 * `v` for concise element creation
 * `installDomppReconcile` for diff/patch-style set* reconciliation
+* `installDomppHydration` for hydration/assimilation workflows
 
 ---
 
@@ -134,3 +136,49 @@ Explicit methods are always available:
 * `patchStyles(...)`
 * `patchAttributes(...)`
 * `patchEvents(...)`
+
+---
+
+## Hydration Addon
+
+`hydration.addon.js` adds hydration helpers for existing server-rendered DOM.
+
+```js
+import "../../src/index.js";
+import { installDomppHydration } from "../../src/addons/hydration.addon.js";
+
+installDomppHydration();
+```
+
+Available method:
+
+* `hydrateChildren(recipe)`
+
+`recipe` receives:
+
+* `el`
+* `children` (element-only children)
+* `childNodes` (raw nodes, including text/comment)
+* `firstChild`
+* `lastChild`
+
+Example:
+
+```js
+document.getElementById("counter").hydrateChildren(({ children }) => {
+  const [countEl, decBtn, incBtn] = children;
+  let count = Number(countEl.textContent || 0);
+
+  return [
+    countEl,
+    decBtn.setEvents({ click: () => countEl.setText(--count) }),
+    incBtn.setEvents({ click: () => countEl.setText(++count) })
+  ];
+});
+```
+
+Optional override:
+
+* `installDomppHydration({ overrideSetChildren: true })`
+
+When enabled, `setChildren(recipe)` behaves like `hydrateChildren(recipe)`.

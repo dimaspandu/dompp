@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOM++ Hydration Assimilation List</title>
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 32px;
+    }
+
+    #catalog {
+      max-width: 620px;
+      display: grid;
+      gap: 14px;
+    }
+
+    #filter {
+      min-width: 240px;
+      min-height: 30px;
+      padding: 0 8px;
+    }
+
+    #items {
+      display: grid;
+      gap: 8px;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .product-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .product-row[data-selected="true"] {
+      border-color: #0d6efd;
+      background: #eef5ff;
+    }
+
+    button {
+      min-height: 30px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hydration Assimilation: Product List</h1>
+
+  <!-- Simulated SSR HTML -->
+  <section id="catalog">
+    <label for="filter">Filter product:</label>
+    <input id="filter" type="search" placeholder="Type product name..." />
+
+    <ul id="items">
+      <li class="product-row" data-name="apple">
+        <span>Apple</span>
+        <button type="button">Select</button>
+      </li>
+      <li class="product-row" data-name="banana">
+        <span>Banana</span>
+        <button type="button">Select</button>
+      </li>
+      <li class="product-row" data-name="orange">
+        <span>Orange</span>
+        <button type="button">Select</button>
+      </li>
+      <li class="product-row" data-name="mango">
+        <span>Mango</span>
+        <button type="button">Select</button>
+      </li>
+    </ul>
+
+    <p id="summary">Selected: 0</p>
+  </section>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DOM++ Hydration + Stateful Counter</title>
+  <style>
+    body {
+      font-family: system-ui;
+      padding: 32px;
+    }
+
+    #counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      min-width: 36px;
+      min-height: 32px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Hydration + Stateful Counter</h1>
+
+  <!-- Simulated SSR markup -->
+  <section id="counter">
+    <h2 id="counter-value">0</h2>
+    <button id="counter-decrement" type="button">-</button>
+    <button id="counter-increment" type="button">+</button>
+  </section>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

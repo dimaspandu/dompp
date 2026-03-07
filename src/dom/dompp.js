@@ -25,6 +25,44 @@
  * Be extremely cautious when modifying prototype behavior.
  * Any change here affects ALL instances globally.
  */
+const isNodeLike = (value) =>
+  typeof Node !== "undefined" && value instanceof Node;
+
+const toNodeList = (values) => {
+  const out = [];
+
+  const pushOne = (value) => {
+    if (value == null || value === false) {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      value.forEach(pushOne);
+      return;
+    }
+
+    if (isNodeLike(value)) {
+      out.push(value);
+      return;
+    }
+
+    out.push(document.createTextNode(String(value)));
+  };
+
+  values.forEach(pushOne);
+  return out;
+};
+
+export const createDomppContext = (node) => ({
+  el: node,
+  // Element children only (no whitespace Text nodes).
+  children: Array.from(node.children ?? []),
+  // Raw node list when text/comment nodes are needed.
+  childNodes: Array.from(node.childNodes ?? []),
+  firstChild: node.firstChild ?? null,
+  lastChild: node.lastChild ?? null
+});
+
 export function installDompp() {
 
   /**
@@ -84,6 +122,18 @@ export function installDompp() {
    * This prevents accidental HTML injection and keeps
    * the operation safe by default.
    *
+   * HYDRATION MODE:
+   * setChildren((ctx) => nextChildren)
+   *
+   * The callback receives:
+   * - el
+   * - children (element-only children)
+   * - childNodes (raw nodes)
+   * - firstChild / lastChild
+   *
+   * This enables assimilation/hydration flows where
+   * existing DOM nodes are reused and augmented.
+   *
    * IMPORTANT:
    * This method performs a full subtree replacement.
    * Contributors should avoid adding diff logic here.
@@ -96,13 +146,14 @@ export function installDompp() {
    * - DocumentFragment
    */
   function setChildren(...children) {
-    this.replaceChildren(
-      ...children.map(c =>
-        typeof c === "string"
-          ? document.createTextNode(c)
-          : c
-      )
-    );
+    let nextChildren = children;
+
+    if (children.length === 1 && typeof children[0] === "function") {
+      const resolved = children[0](createDomppContext(this));
+      nextChildren = Array.isArray(resolved) ? resolved : [resolved];
+    }
+
+    this.replaceChildren(...toNodeList(nextChildren));
     return this;
   }
 

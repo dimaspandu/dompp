@@ -1,4 +1,4 @@
-import { DOMPP_SETTERS } from "../dom/dompp.js";
+import { createDomppContext, DOMPP_SETTERS } from "../dom/dompp.js";
 
 /**
  * DOM++ Stateful Addon
@@ -33,12 +33,14 @@ export function installDomppStateful() {
    * - el: element owner (kept for backward compatibility)
    */
   function createContext(el) {
+    const domContext = createDomppContext(el);
+
     return {
       state: el.__dompp_state,
       setState(next) {
         return el.setState(next);
       },
-      el
+      ...domContext
     };
   }
 

@@ -6,6 +6,34 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.13] - 2026-03-07
+
+### Added
+- New hydration addon:
+  - `src/addons/hydration.addon.js`
+  - `installDomppHydration(...)`
+  - `hydrateChildren(recipe)` for hydration/assimilation flows.
+- New hydration-focused examples:
+  - `examples/hydration-assimilation-counter/`
+  - `examples/hydration-assimilation-list/`
+  - `examples/hydration-stateful-counter/`
+
+### Changed
+- `setChildren(...)` now supports callback-based hydration context in core DOM module:
+  - callback context exposes `el`, `children`, `childNodes`, `firstChild`, `lastChild`.
+- Stateful context now includes the same DOM hydration context for consistent callback ergonomics:
+  - `src/reactive/stateful.js`.
+- Addons documentation expanded with hydration addon usage:
+  - `src/addons/README.md`.
+- Root ideation script refocused into a hydration/assimilation runnable flow:
+  - `ideation.js`.
+
+### Notes
+- Hydration can be authored either with `setChildren(...)` callback style or explicit `hydrateChildren(...)`.
+- Reconcile/stateful composition is demonstrated in dedicated examples.
+
+---
+
 ## [0.1.12] - 2026-02-28
 
 ### Removed
