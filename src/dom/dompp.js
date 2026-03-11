@@ -28,6 +28,33 @@
 const isNodeLike = (value) =>
   typeof Node !== "undefined" && value instanceof Node;
 
+const toCamelCase = (cssProp) =>
+  cssProp.replace(/-([a-z])/g, (_, ch) => ch.toUpperCase());
+
+const readInlineStyles = (node) => {
+  const styles = {};
+  const styleDecl = node.style;
+
+  for (let i = 0; i < styleDecl.length; i += 1) {
+    const prop = styleDecl[i];
+    styles[toCamelCase(prop)] = styleDecl.getPropertyValue(prop);
+  }
+
+  return styles;
+};
+
+const readAttributes = (node) => {
+  const attributes = {};
+
+  for (const attr of Array.from(node.attributes ?? [])) {
+    attributes[attr.name] = attr.value;
+  }
+
+  return attributes;
+};
+
+const readEvents = (node) => ({ ...(node.__dompp_handlers ?? {}) });
+
 const toNodeList = (values) => {
   const out = [];
 
@@ -62,6 +89,40 @@ export const createDomppContext = (node) => ({
   firstChild: node.firstChild ?? null,
   lastChild: node.lastChild ?? null
 });
+
+export const createDomppSetterContext = (node, setterName) => {
+  const dom = createDomppContext(node);
+
+  if (setterName === "setText") {
+    return {
+      ...dom,
+      text: node.textContent ?? "",
+    };
+  }
+
+  if (setterName === "setStyles") {
+    return {
+      ...dom,
+      styles: readInlineStyles(node),
+    };
+  }
+
+  if (setterName === "setAttributes") {
+    return {
+      ...dom,
+      attributes: readAttributes(node),
+    };
+  }
+
+  if (setterName === "setEvents") {
+    return {
+      ...dom,
+      events: readEvents(node),
+    };
+  }
+
+  return dom;
+};
 
 export function installDompp() {
 
@@ -104,7 +165,11 @@ export function installDompp() {
    * - DocumentFragment
    */
   function setText(text) {
-    this.textContent = text;
+    const nextText = typeof text === "function"
+      ? text(createDomppSetterContext(this, "setText"))
+      : text;
+
+    this.textContent = nextText;
     return this;
   }
 
@@ -149,7 +214,7 @@ export function installDompp() {
     let nextChildren = children;
 
     if (children.length === 1 && typeof children[0] === "function") {
-      const resolved = children[0](createDomppContext(this));
+      const resolved = children[0](createDomppSetterContext(this, "setChildren"));
       nextChildren = Array.isArray(resolved) ? resolved : [resolved];
     }
 
@@ -177,7 +242,11 @@ export function installDompp() {
    * DOM++ intentionally avoids magic behavior.
    */
   defineOn(Element.prototype, "setStyles", function (styles = {}) {
-    Object.assign(this.style, styles);
+    const nextStyles = typeof styles === "function"
+      ? styles(createDomppSetterContext(this, "setStyles"))
+      : styles;
+
+    Object.assign(this.style, nextStyles ?? {});
     return this;
   });
 
@@ -192,9 +261,12 @@ export function installDompp() {
    * null/undefined -> attribute is removed
    */
   defineOn(Element.prototype, "setAttributes", function (attrs = {}) {
+    const nextAttrs = typeof attrs === "function"
+      ? attrs(createDomppSetterContext(this, "setAttributes"))
+      : attrs;
 
-    for (const k in attrs) {
-      const v = attrs[k];
+    for (const k in (nextAttrs ?? {})) {
+      const v = nextAttrs[k];
 
       if (v === false || v == null) {
         this.removeAttribute(k);
@@ -229,17 +301,20 @@ export function installDompp() {
    * This is a deliberate performance tradeoff.
    */
   defineOn(Element.prototype, "setEvents", function (events = {}) {
+    const nextEvents = typeof events === "function"
+      ? events(createDomppSetterContext(this, "setEvents"))
+      : events;
 
     this.__dompp_handlers ??= {};
 
-    for (const e in events) {
+    for (const e in (nextEvents ?? {})) {
 
       if (this.__dompp_handlers[e]) {
         this.removeEventListener(e, this.__dompp_handlers[e]);
       }
 
-      this.addEventListener(e, events[e]);
-      this.__dompp_handlers[e] = events[e];
+      this.addEventListener(e, nextEvents[e]);
+      this.__dompp_handlers[e] = nextEvents[e];
     }
 
     return this;

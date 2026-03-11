@@ -161,7 +161,25 @@ Best used during initial tree construction or when a full replacement is intenti
 
 For reactive updates, prefer mutating existing nodes instead of replacing subtrees.
 
----
+#### Callback context: `children` vs `childNodes`
+
+When using the callback form:
+
+```js
+container.setChildren(({ children, childNodes }) => {
+  // children: element-only collection (no text/comment nodes)
+  // childNodes: all nodes, including text and comment nodes
+  return [...childNodes, document.createElement("li").setText("New item")];
+});
+```
+
+Use `children` when you want stable element indexing (e.g. `children[0]` is always the first element).
+Use `childNodes` when you want to preserve or reuse non-element nodes such as text nodes or HTML comments.
+
+Example: in hydration flows you typically destructure `children` to map existing elements,
+while in setter callbacks you might use `childNodes` to append without dropping whitespace or text nodes.
+
+--- 
 
 ### `setStyles(styles)`
 

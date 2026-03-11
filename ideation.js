@@ -1,58 +1,44 @@
-/**
- * Ideation: hydration / assimilation flow
- *
- * Seed HTML expected in the document:
- *
- * <section id="greetings">
- *   <h1>Hello, World!</h1>
- *   <p>Nice to see you!</p>
- * </section>
- *
- * <div id="counter">
- *   <h1>0</h1>
- *   <button type="button">-</button>
- *   <button type="button">+</button>
- * </div>
- */
+let hasBeenUpdated = false;
 
-import "./src/index.js";
-import { installDomppHydration } from "./src/addons/hydration.addon.js";
+const message = document.createElement("h1")
+  .setStyles({
+    backgroundColor: "#39bdff",
+    color: "#fff",
+    padding: "8px 12px",
+    borderRadius: "8px",
+  })
+  .setText("Hello, World!");
 
-installDomppHydration();
+const btnUpdate = document.createElement("button")
+  .setAttributes({
+    disabled: false,
+    type: "button",
+  })
+  .setText("UPDATE")
+  .setEvents({
+    click() {
+      if (hasBeenUpdated) return;
 
-const greetings = document.getElementById("greetings");
-const counter = document.getElementById("counter");
+      // Core callback updater: ambil previous value dari setter context.
+      message
+        .setStyles(({ styles }) => ({
+          ...styles,
+          backgroundColor: "#05e66e",
+        }))
+        .setText(({ text }) => `${text} (updated)`);
 
-if (greetings) {
-  greetings.hydrateChildren(({ children }) => {
-    const [titleEl, descriptionEl] = children;
+      btnUpdate
+        .setAttributes(({ attributes }) => ({
+          ...attributes,
+          disabled: true,
+        }))
+        .setText(({ text }) => `${text}D`);
 
-    return [
-      titleEl,
-      descriptionEl.setText("Nice to see you from hydrated DOM++!")
-    ];
+      hasBeenUpdated = true;
+    },
   });
-}
 
-if (counter) {
-  counter.hydrateChildren(({ children }) => {
-    const [countEl, decrementButton, incrementButton] = children;
-    let count = Number.parseInt(countEl.textContent ?? "0", 10);
-
-    return [
-      countEl,
-      decrementButton.setEvents({
-        click() {
-          count -= 1;
-          countEl.setText(String(count));
-        }
-      }),
-      incrementButton.setEvents({
-        click() {
-          count += 1;
-          countEl.setText(String(count));
-        }
-      })
-    ];
-  });
-}
+document.getElementById("greetings").setChildren(
+  message,
+  btnUpdate
+);

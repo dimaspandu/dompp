@@ -6,6 +6,28 @@ This project follows semantic versioning principles.
 
 ---
 
+## [0.1.14] - 2026-03-11
+
+### Added
+- Core setter callback example:
+  - `examples/setter-callback-core/`
+- Stateful setter callback example:
+  - `examples/setter-callback-stateful/`
+- Preprint final section writing template:
+  - `docs/preprints/FINAL_SECTION_TEMPLATE.md`
+
+### Changed
+- Core DOM setters now support callback-style updates with previous values:
+  - `setText`, `setStyles`, `setAttributes`, `setEvents`
+  - `setChildren` now uses setter context instead of the plain DOM context
+  - `createDomppSetterContext(...)` added to surface prior values and DOM context
+- Stateful addon now merges setter context into reactive callbacks:
+  - `src/reactive/stateful.js`
+- DOM module documentation now clarifies `children` vs `childNodes` in setter callbacks:
+  - `src/dom/README.md`
+- Root ideation demo updated to showcase core setter callbacks:
+  - `ideation.js`
+
 ## [0.1.13] - 2026-03-07
 
 ### Added

@@ -1,4 +1,8 @@
-import { createDomppContext, DOMPP_SETTERS } from "../dom/dompp.js";
+import {
+  createDomppContext,
+  createDomppSetterContext,
+  DOMPP_SETTERS
+} from "../dom/dompp.js";
 
 /**
  * DOM++ Stateful Addon
@@ -196,7 +200,10 @@ export function installDomppStateful() {
 
       const runner = () => {
 
-        const nextResult = first(createContext(this));
+        const nextResult = first({
+          ...createContext(this),
+          ...createDomppSetterContext(this, name),
+        });
 
         /**
          * Memoization check.
