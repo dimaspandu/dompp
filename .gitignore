@@ -6,4 +6,5 @@ dist
 coverage
 *.log
 docs/Proposed_DOMPP_Paper.docx
-docs/preprints/references/
+docs/__preprints
+docs/__preprints/

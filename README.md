@@ -4,6 +4,7 @@ DOMPP (read as DOM plus plus) is an experiment in ergonomic APIs on top of the n
 The name "DOM++" is inspired by C++ naming style: DOM extended with small, explicit, chainable methods and no wrapper objects.
 
 This project focuses on deterministic mutation primitives, fine-grained updates, and low abstraction overhead.
+It is intentionally small and modular so that mutation, reactivity, reconciliation, and hydration can be studied independently.
 
 ---
 
@@ -13,16 +14,25 @@ This project focuses on deterministic mutation primitives, fine-grained updates,
 * [DOM Module](./src/dom/README.md)
 * [Reactive Module](./src/reactive/README.md)
 * [Addons](./src/addons/README.md)
-* [Example: Minimal Counter](./examples/minimal-counter/README.md)
-* [Example: Mini Post](./examples/mini-post/README.md)
-* [Example: Reactive Counter](./examples/reactive-counter/README.md)
-* [Example: Stateful Counter](./examples/stateful-counter/README.md)
-* [Example: VQuery Counter](./examples/vquery-counter/README.md)
-* [Example: Reconcile Counter](./examples/reconcile-counter/README.md)
-* [Example: Reconcile Match By Id Ordered List](./examples/reconcile-match-by-id-ordered-list/README.md)
-* [Example: Reconcile Match By Id](./examples/reconcile-match-by-id/README.md)
-* [Example: Reconcile Stateful Counter](./examples/reconcile-stateful-counter/README.md)
 * [Proposal: DOM Extension for ECMAScript](./docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md)
+* [Paper: Proposed DOMPP](./docs/Proposed_DOMPP_Paper.md)
+
+Examples:
+
+* [Minimal Counter](./examples/minimal-counter/README.md)
+* [Mini Post](./examples/mini-post/README.md)
+* [Reactive Counter](./examples/reactive-counter/README.md)
+* [Stateful Counter](./examples/stateful-counter/README.md)
+* [VQuery Counter](./examples/vquery-counter/README.md)
+* [Reconcile Counter](./examples/reconcile-counter/README.md)
+* [Reconcile Match By Id Ordered List](./examples/reconcile-match-by-id-ordered-list/README.md)
+* [Reconcile Match By Id](./examples/reconcile-match-by-id/README.md)
+* [Reconcile Stateful Counter](./examples/reconcile-stateful-counter/README.md)
+* [Hydration Assimilation Counter](./examples/hydration-assimilation-counter/README.md)
+* [Hydration Assimilation List](./examples/hydration-assimilation-list/README.md)
+* [Hydration + Stateful Counter](./examples/hydration-stateful-counter/README.md)
+* [Setter Callback Core](./examples/setter-callback-core/README.md)
+* [Setter Callback Stateful](./examples/setter-callback-stateful/README.md)
 
 ---
 
@@ -35,34 +45,6 @@ This project focuses on deterministic mutation primitives, fine-grained updates,
 
 DOMPP is not intended to replace production frameworks.
 It exists to understand and validate design tradeoffs.
-
----
-
-## Native Web API Proposal Direction
-
-Based on the proposal paper, DOMPP is also positioned as an experiment toward a possible native Web Platform API (via DOM/WHATWG standardization pathways, then MDN-style documentation).
-
-Expected API documentation snippet (MDN-style format):
-
-```md
-## Element.prototype.setChildren()
-
-The `setChildren()` method of `Element` replaces the element's children
-with the provided nodes or strings, and returns the element itself.
-
-### Syntax
-element.setChildren(...children)
-
-### Parameters
-- `...children`
-  - A sequence of `Node` or string values.
-
-### Return value
-- The same `Element` instance (for chaining).
-```
-
-Proposal semantics are documented in:
-`docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md`
 
 ---
 
@@ -93,55 +75,37 @@ document.body.setChildren(
 
 ---
 
-## Project Structure
+## Setter Callback Mode (Core)
 
-```text
-src/
-  dom/
-    dompp.js
-  reactive/
-    signal.js
-    stateful.js
-    scheduler.js
-  addons/
-    vquery.addon.js
-    reconcile.addon.js
-  index.js
+Core DOMPP supports callback updaters for each setter. The callback receives the previous value and DOM context:
 
-examples/
-  serve.js
-  minimal-counter/
-  mini-post/
-  reactive-counter/
-  stateful-counter/
-  vquery-counter/
-  reconcile-counter/
-  reconcile-match-by-id-ordered-list/
-  reconcile-match-by-id/
-  reconcile-stateful-counter/
+```js
+const title = document.createElement("h2").setText("Count: 0");
+
+// Later...
+
+title.setText(({ text }) => text.replace("0", "1"));
 ```
 
----
+Supported callbacks:
 
-## Quick Start
+* `setText(({ text }) => ...)`
+* `setStyles(({ styles }) => ...)`
+* `setAttributes(({ attributes }) => ...)`
+* `setEvents(({ events }) => ...)`
+* `setChildren(({ childNodes }) => ...)`
 
-Run examples:
-
-```bash
-node examples/serve.js
-```
-
-Open:
-
-`http://localhost:3000`
+This enables hydration/assimilation patterns without adding a reactive system.
 
 ---
 
 ## Addons Overview
 
+DOMPP keeps the core small. Optional addons extend behavior without changing mutation semantics.
+
 ### `stateful`
 
-Adds element-local state and callback-based setter bindings.
+Adds element-local state and reactive setter bindings:
 
 ```js
 import "./src/index.js";
@@ -172,40 +136,107 @@ installDomppReconcile({ overrideSetters: true });
 list.setChildren(...nodes, { matchById: true });
 ```
 
+### `hydration`
+
+Adds `hydrateChildren(recipe)` to assimilate existing DOM trees (SSR/static HTML) without recreating the subtree:
+
+```js
+import "./src/index.js";
+import { installDomppHydration } from "./src/addons/hydration.addon.js";
+
+installDomppHydration();
+
+document.getElementById("counter").hydrateChildren(({ children }) => {
+  const [countEl, decBtn, incBtn] = children;
+  let count = Number(countEl.textContent || 0);
+
+  return [
+    countEl,
+    decBtn.setEvents({ click: () => countEl.setText(--count) }),
+    incBtn.setEvents({ click: () => countEl.setText(++count) })
+  ];
+});
+```
+
+### `vquery`
+
+Small DOM helpers:
+
+* `$(selectorOrElement)` for safe single-element selection
+* `v(tag)` for concise element creation
+
+---
+
+## Project Structure
+
+```text
+src/
+  dom/
+    dompp.js
+  reactive/
+    signal.js
+    stateful.js
+    scheduler.js
+  addons/
+    vquery.addon.js
+    reconcile.addon.js
+    hydration.addon.js
+  index.js
+
+examples/
+  serve.js
+  minimal-counter/
+  mini-post/
+  reactive-counter/
+  stateful-counter/
+  vquery-counter/
+  reconcile-counter/
+  reconcile-match-by-id-ordered-list/
+  reconcile-match-by-id/
+  reconcile-stateful-counter/
+  hydration-assimilation-counter/
+  hydration-assimilation-list/
+  hydration-stateful-counter/
+  setter-callback-core/
+  setter-callback-stateful/
+```
+
+---
+
+## Quick Start (Examples)
+
+Run the example server:
+
+```bash
+node examples/serve.js
+```
+
+Open:
+
+`http://localhost:3000`
+
+This auto-generates a list of examples.
+
 ---
 
 ## Example Snippets
 
 Each snippet is intentionally short and highlights the core idea of that example.
 
-### `minimal-counter`
+### `setter-callback-core`
 
 ```js
 import "../../src/index.js";
 
-let count = 0;
-const titleEl = document.createElement("h2").setText("Count: 0");
-
-function update() {
-  titleEl.setText(`Count: ${count}`);
-}
-```
-
-### `reactive-counter`
-
-```js
-import "../../src/index.js";
-import { createSignal } from "../../src/reactive/signal.js";
-
-const [count, setCount] = createSignal(0);
 const title = document.createElement("h2").setText("Count: 0");
 
-count.subscribe(value => {
-  title.setText(`Count: ${value}`);
-});
+// Update using previous value without stateful addon
+setInterval(() => {
+  title.setText(({ text }) => `Count: ${Number(text.split(":")[1]) + 1}`);
+}, 1000);
 ```
 
-### `stateful-counter`
+### `setter-callback-stateful`
 
 ```js
 import "../../src/index.js";
@@ -213,81 +244,34 @@ import { installDomppStateful } from "../../src/reactive/stateful.js";
 
 installDomppStateful();
 
-const titleEl = document.createElement("h2")
-  .setState({ count: 0 })
-  .setText(({ state }) => `Count: ${state.count}`);
-```
-
-### `vquery-counter`
-
-```js
-import "../../src/index.js";
-import { $, v } from "../../src/addons/vquery.addon.js";
-
-const title = v("h2").setText("Count: 0");
-
-$("#app").setChildren(title);
-```
-
-### `mini-post`
-
-```js
-import "../../src/index.js";
-import { createSignal } from "../../src/reactive/signal.js";
-
-const [posts, setPosts] = createSignal([]);
-const feed = document.createElement("div");
-
-const postNode = document.createElement("div").setText("New post");
-feed.prepend(postNode);
-setPosts(prev => [{ id: Date.now(), text: "New post" }, ...prev]);
-```
-
-### `reconcile-counter`
-
-```js
-import "../../src/index.js";
-import { installDomppReconcile } from "../../src/addons/reconcile.addon.js";
-
-installDomppReconcile({ overrideSetters: true });
-
-app.setChildren(title, status, row);
-```
-
-### `reconcile-match-by-id-ordered-list`
-
-```js
-installDomppReconcile({ overrideSetters: true });
-installDomppStateful();
-
-const templates = items.map(item =>
-  document.createElement("li").setAttributes({ id: item.id })
-);
-orderedList.setChildren(...templates, { matchById: true });
-```
-
-### `reconcile-match-by-id`
-
-```js
-installDomppReconcile({ overrideSetters: true });
-
-const templates = buildTemplateNodes();
-list.setChildren(...templates, { matchById: true });
-```
-
-### `reconcile-stateful-counter`
-
-```js
-installDomppReconcile({ overrideSetters: true });
-installDomppStateful();
+const app = document.getElementById("app").setState({ n: 0 });
 
 app.setChildren(({ state, setState }) => [
-  document.createElement("h2").setChildren(`Count: ${state.count}`),
+  document.createElement("h2").setText(`Count: ${state.n}`),
   document.createElement("button")
-    .setChildren("+")
-    .setEvents({ click: () => setState(({ state }) => { state.count += 1; }) }),
-  { matchById: true }
+    .setText("+")
+    .setEvents({ click: () => setState(({ state }) => { state.n += 1; }) })
 ]);
+```
+
+### `hydration-assimilation-counter`
+
+```js
+import "../../src/index.js";
+import { installDomppHydration } from "../../src/addons/hydration.addon.js";
+
+installDomppHydration();
+
+document.getElementById("counter").hydrateChildren(({ children }) => {
+  const [countEl, decBtn, incBtn] = children;
+  let count = Number(countEl.textContent || 0);
+
+  return [
+    countEl,
+    decBtn.setEvents({ click: () => countEl.setText(--count) }),
+    incBtn.setEvents({ click: () => countEl.setText(++count) })
+  ];
+});
 ```
 
 ---

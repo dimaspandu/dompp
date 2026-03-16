@@ -120,6 +120,14 @@ Sets `textContent` on the element.
 el.setText("Hello");
 ```
 
+**Callback form (core DOM++):**
+
+```js
+el.setText(({ text }) => `${text} (updated)`);
+```
+
+The callback receives the previous value (`text`) plus the DOM context.
+
 **Why it exists:**
 
 * Shorter than assigning `textContent`
@@ -145,6 +153,17 @@ container.setChildren(
   document.createElement("hr")
 );
 ```
+
+**Callback form (core DOM++):**
+
+```js
+container.setChildren(({ childNodes }) => [
+  ...childNodes,
+  document.createElement("li").setText("New item"),
+]);
+```
+
+The callback receives DOM context and can reuse existing nodes.
 
 **Design notes:**
 
@@ -192,6 +211,15 @@ el.setStyles({
 });
 ```
 
+**Callback form (core DOM++):**
+
+```js
+el.setStyles(({ styles }) => ({
+  ...styles,
+  color: "tomato",
+}));
+```
+
 **Why no class helpers?**
 
 Class management introduces policy decisions (merge, toggle, dedupe).
@@ -216,6 +244,15 @@ input.setAttributes({
 });
 ```
 
+**Callback form (core DOM++):**
+
+```js
+input.setAttributes(({ attributes }) => ({
+  ...attributes,
+  "data-ready": "true",
+}));
+```
+
 This removes the need for repetitive conditional logic.
 
 ---
@@ -228,6 +265,17 @@ Attaches event listeners while safely replacing previous handlers.
 button.setEvents({
   click: onClick
 });
+```
+
+**Callback form (core DOM++):**
+
+```js
+button.setEvents(({ events }) => ({
+  ...events,
+  click() {
+    console.log("clicked");
+  },
+}));
 ```
 
 **Internal behavior:**
@@ -269,7 +317,26 @@ are **not part of the core DOM module**.
 
 They are provided by the `stateful` addon, which layers reactive behavior on top of these primitives without modifying their responsibilities.
 
+In that addon, elements also gain:
+
+```js
+el.setState({ count: 1 });
+```
+
 This keeps the core mutation engine small and stable while allowing optional higher-level capabilities.
+
+---
+
+## Related Modules
+
+The DOM module is the foundation that higher-level layers build on:
+
+* `src/reactive/stateful.js` â€” adds element-local state and reactive setter callbacks.
+* `src/addons/reconcile.addon.js` â€” optional reconcile layer that patches setters to simulate diff-like updates.
+* `src/addons/hydration.addon.js` â€” hydration/assimilation helper for reusing server-rendered DOM.
+* `src/addons/README.md` â€” overview of addon APIs and their intended use cases.
+
+These modules extend the core mutation primitives without changing their semantics.
 
 ---
 
