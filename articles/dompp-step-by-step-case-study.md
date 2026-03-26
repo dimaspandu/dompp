@@ -176,6 +176,113 @@ This is how DOM++ scales without turning into a framework. You keep control, but
 
 ---
 
+---
+
+## 7) The Same Case Study in JSX (Babel CDN)
+
+If you prefer JSX syntax, you can author the same DOMPP UI declaratively and let Babel transform it in the browser. The key is a small JSX factory function that maps JSX into DOMPP mutations.
+
+### JSX Factory (`d`)
+
+```js
+function d(tag, props, ...children) {
+  const node = document.createElement(tag);
+
+  if (props) {
+    const { style, className, class: classAttr, on, ...attrs } = props;
+
+    if (className || classAttr) {
+      node.setAttributes({ class: className || classAttr });
+    }
+
+    if (style) {
+      node.setStyles(style);
+    }
+
+    if (on) {
+      node.setEvents(on);
+    }
+
+    if (Object.keys(attrs).length) {
+      node.setAttributes(attrs);
+    }
+  }
+
+  if (children.length) {
+    node.setChildren(...children.flat());
+  }
+
+  return node;
+}
+```
+
+With the pragma below, Babel routes JSX to `d(...)` instead of React:
+
+```js
+/** @jsx d */
+```
+
+### JSX Version of the Stateful Panel
+
+```jsx
+const panel = <section className="panel" />;
+panel
+  .setState({ total: 0 })
+  .setChildren(({ state, setState }) => [
+    <h3>{`Total: ${state.total}`}</h3>,
+    <button on={{
+      click: () => setState(({ state }) => {
+        state.total += 10000;
+      })
+    }}>Donate 10k</button>
+  ]);
+```
+
+### JSX Version of Cross-Element Updates
+
+```jsx
+const summary = <div />;
+summary
+  .setState({ total: 0 })
+  .setChildren(({ state }) => [
+    <strong>{`Total: ${state.total}`}</strong>
+  ]);
+
+const view = (
+  <section>
+    {summary}
+    <div className="actions">
+      <button on={{
+        click: () => summary.setState(({ state }) => {
+          state.total += 10000;
+        })
+      }}>Donate 10k</button>
+      <button className="secondary" on={{
+        click: () => summary.setState(({ state }) => {
+          state.total += 25000;
+        })
+      }}>Donate 25k</button>
+    </div>
+  </section>
+);
+```
+
+### Why This Works Well
+
+- JSX is only syntax sugar; DOMPP still works on real DOM nodes.
+- `d(...)` maps JSX props to DOMPP helpers (`setAttributes`, `setStyles`, `setEvents`).
+- You keep DOMPP’s explicit state model, but author UI in a more declarative style.
+
+### Live Demo
+
+A JSX version of the demo is included here:
+
+- `examples/dompp-step-by-step-case-study-jsx/`
+
+You can run it via `node examples/serve.js` and open:
+
+- `http://localhost:3000/examples/dompp-step-by-step-case-study-jsx/`
+
 ## Final Notes
 
 DOM++ is a great fit when:
@@ -188,5 +295,7 @@ If you want to explore further, build a larger example like a campaign list or a
 ---
 
 Thanks for reading. If you want a longer case study version or a walkthrough with a full project, just let me know.
+
+
 
 
