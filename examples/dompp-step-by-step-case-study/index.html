@@ -1,0 +1,77 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMPP Step-by-Step Case Study</title>
+  <style>
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      margin: 0;
+      padding: 32px 20px 60px;
+      background: #f5f7fb;
+      color: #111827;
+    }
+    h1 {
+      margin-bottom: 8px;
+    }
+    p {
+      margin-top: 0;
+      color: #4b5563;
+    }
+    .stack {
+      display: grid;
+      gap: 18px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 20px rgba(17, 24, 39, 0.05);
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+    .card small {
+      color: #6b7280;
+    }
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-weight: 600;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+    }
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+    .note {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="stack">
+    <h1>DOMPP Step-by-Step Case Study</h1>
+    <p>Live examples that match the article: basic usage, stateful panel, cross-element updates, and matchById preservation.</p>
+    <div id="app" class="stack"></div>
+  </div>
+
+  <script type="module" src="./main.js"></script>
+</body>
+</html>

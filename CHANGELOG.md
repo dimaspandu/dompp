@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -6,7 +6,7 @@ This project follows semantic versioning principles.
 
 ---
 
-## [0.1.14] - 2026-03-11
+## [0.1.15] - 2026-03-26\n\n### Added\n- Step-by-step DOM++ Medium-style article:\n  - rticles/dompp-step-by-step-case-study.md\n- Step-by-step DOM++ live demo:\n  - examples/dompp-step-by-step-case-study/\n\n### Changed\n- Updated DOM++ state/reconcile article to align examples with matchById usage and prepend/append behavior:\n  - rticles/dompp-state-reconcile-case-study.md\n\n## [0.1.14] - 2026-03-11
 
 ### Added
 - Core setter callback example:
@@ -336,3 +336,4 @@ Initial public foundation of DOMPP.
 - Fine-grained mutation model
 - Extremely small runtime
 - Explicit over magical behavior
+

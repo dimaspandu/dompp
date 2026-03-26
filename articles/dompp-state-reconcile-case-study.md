@@ -71,17 +71,16 @@ summary.setChildren(({ state }) => [
   el("strong").setText(`Total: ${state.total}`)
 ]);
 
-const donateButton = el("button").setText("Donate 10k");
-
-donateButton.setEvents({
-  click: () => {
-    summary.setState(({ state }) => {
-      state.total += 10000;
-    });
-  }
-});
-
-const section = el("section").setChildren(summary, donateButton);
+const section = el("section").setChildren(
+  summary,
+  el("button").setText("Donate 10k").setEvents({
+    click: () => {
+      summary.setState(({ state }) => {
+        state.total += 10000;
+      });
+    }
+  })
+);
 ```
 
 **What this code does, explicitly:**
@@ -169,3 +168,4 @@ const counter = el("div")
 DOMPP is not trying to hide the DOM—it is trying to make it comfortable. State lives on the element, updates are explicit, and reconcile is opt-in when you need it.
 
 If you can hold those three ideas, you can scale from a toy counter to a full UI without losing clarity.
+
