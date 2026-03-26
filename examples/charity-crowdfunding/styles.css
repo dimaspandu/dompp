@@ -1,0 +1,311 @@
+﻿@import url("https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Space+Grotesk:wght@400;600;700&display=swap");
+
+:root {
+  color-scheme: light;
+  --ink: #10151b;
+  --muted: #5b6572;
+  --accent: #ff7a59;
+  --accent-2: #1f6feb;
+  --bg: #f6f4ef;
+  --card: #fffdf9;
+  --border: #e2dcd1;
+  --success: #1f9d55;
+  --shadow: 0 20px 50px rgba(16, 21, 27, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Space Grotesk", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at 15% 20%, rgba(255, 233, 195, 0.8), transparent 45%),
+    radial-gradient(circle at 80% 0%, rgba(199, 224, 255, 0.7), transparent 35%),
+    var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--accent-2);
+}
+
+.page {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+.hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.hero h1 {
+  font-family: "Fraunces", "Times New Roman", serif;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  margin: 0 0 12px;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 520px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: rgba(255, 122, 89, 0.15);
+  color: #b1462d;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--accent);
+  color: #1b0c04;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.button.secondary {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  color: var(--ink);
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.filters {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 18px;
+  border: 1px solid var(--border);
+}
+
+.filters label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  font-family: inherit;
+  background: #fff;
+}
+
+.layout {
+  margin-top: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+}
+
+@media (max-width: 980px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 220px;
+  position: relative;
+  overflow: hidden;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.card .meta {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.card .progress {
+  height: 8px;
+  background: #efe8dd;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.card .progress > span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #ffc65c);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+.card .numbers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.card-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.custom-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.custom-row .primary {
+  border: none;
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: var(--accent-2);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card-actions button {
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  background: rgba(31, 111, 235, 0.12);
+  color: #1f3b8c;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card-actions button.primary {
+  background: var(--accent-2);
+  color: #fff;
+}
+
+.card-detail {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.spotlight,
+.summary,
+.toast,
+.ledger {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: #ffffff;
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.spotlight h2,
+.summary h2,
+.ledger h2 {
+  margin: 0 0 12px;
+  font-family: "Fraunces", "Times New Roman", serif;
+}
+
+.summary .metric {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.summary strong {
+  font-size: 1.2rem;
+}
+
+.toast {
+  margin-top: 16px;
+  background: rgba(31, 157, 85, 0.1);
+  border-color: rgba(31, 157, 85, 0.4);
+  color: #0f5c33;
+}
+
+.empty {
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: 18px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.ledger-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.ledger-item {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--card);
+}
+
+.ledger-item small {
+  color: var(--muted);
+}
+
+footer {
+  margin-top: 32px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+
