@@ -14,8 +14,8 @@ It is intentionally small and modular so that mutation, reactivity, reconciliati
 * [DOM Module](./src/dom/README.md)
 * [Reactive Module](./src/reactive/README.md)
 * [Addons](./src/addons/README.md)
-* [Proposal: DOM Extension for ECMAScript](./docs/ECMASCRIPT_DOM_EXTENSION_PROPOSAL.md)
-* [Paper: Proposed DOMPP](./docs/Proposed_DOMPP_Paper.md)
+
+Note: Long-form proposal/paper docs are planned but not included in this repo yet.
 
 Examples:
 
@@ -304,6 +304,10 @@ Contributions are welcome, especially around:
 * documentation quality
 
 Before large changes, open a discussion to align direction.
+
+For practical setup, conventions, and expectations, see:
+
+* [CONTRIBUTING](./CONTRIBUTING.md)
 
 ---
 

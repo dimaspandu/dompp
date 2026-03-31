@@ -10,6 +10,8 @@ This module is intentionally small and focuses on three responsibilities:
 
 There is no hidden dependency tracking, proxy magic, or lifecycle system. Every update path is explicit and traceable.
 
+Note: `stateful.js` behaves like an addon built on top of the reactive primitives, but it is kept here because it depends directly on scheduler and signal patterns and is part of the reactive layer.
+
 ---
 
 ## Scope of This Module

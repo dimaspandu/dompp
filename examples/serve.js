@@ -18,13 +18,11 @@
  *   PORT=5173 node examples/serve.js
  */
 
-import http from "http";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
+const http = require("http");
+const fs = require("fs");
+const path = require("path");
 
-const __filename = fileURLToPath(import.meta.url);
-const examplesDir = path.dirname(__filename);
+const examplesDir = __dirname;
 const rootDir = path.resolve(examplesDir, "..");
 
 const PORT = process.env.PORT || 3000;

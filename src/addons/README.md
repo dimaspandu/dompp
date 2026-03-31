@@ -34,6 +34,10 @@ It exports two utilities:
 * `installDomppReconcile` for diff/patch-style set* reconciliation
 * `installDomppHydration` for hydration/assimilation workflows
 
+Related:
+
+* `installDomppStateful` lives in `src/reactive/stateful.js`. It is an addon-like layer that depends on reactive primitives, so it is documented in the reactive module.
+
 ---
 
 ## API

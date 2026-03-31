@@ -331,10 +331,10 @@ This keeps the core mutation engine small and stable while allowing optional hig
 
 The DOM module is the foundation that higher-level layers build on:
 
-* `src/reactive/stateful.js` â€” adds element-local state and reactive setter callbacks.
-* `src/addons/reconcile.addon.js` â€” optional reconcile layer that patches setters to simulate diff-like updates.
-* `src/addons/hydration.addon.js` â€” hydration/assimilation helper for reusing server-rendered DOM.
-* `src/addons/README.md` â€” overview of addon APIs and their intended use cases.
+* `src/reactive/stateful.js` - adds element-local state and reactive setter callbacks.
+* `src/addons/reconcile.addon.js` - optional reconcile layer that patches setters to simulate diff-like updates.
+* `src/addons/hydration.addon.js` - hydration/assimilation helper for reusing server-rendered DOM.
+* `src/addons/README.md` - overview of addon APIs and their intended use cases.
 
 These modules extend the core mutation primitives without changing their semantics.
 
