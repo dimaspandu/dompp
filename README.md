@@ -96,7 +96,14 @@ Supported callbacks:
 * `setStyles(({ styles }) => ...)`
 * `setAttributes(({ attributes }) => ...)`
 * `setEvents(({ events }) => ...)`
-* `setChildren(({ childNodes }) => ...)`
+* `setChildren(({ children, childNodes }) => ...)`
+
+  The `setChildren` callback provides two properties for accessing child nodes:
+  - `children` — Element-only children (excludes whitespace Text nodes)
+  - `childNodes` — Raw node list (includes Text nodes, comments, etc.)
+
+  Use `children` when you only need Element references (e.g., hydration/assimilation).
+  Use `childNodes` when you need to preserve or inspect all node types.
 
 This enables hydration/assimilation patterns without adding a reactive system.
 
