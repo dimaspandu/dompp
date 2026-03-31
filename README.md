@@ -33,6 +33,9 @@ Examples:
 * [Hydration + Stateful Counter](./examples/hydration-stateful-counter/README.md)
 * [Setter Callback Core](./examples/setter-callback-core/README.md)
 * [Setter Callback Stateful](./examples/setter-callback-stateful/README.md)
+* [DOMPP State Reconcile Demo](./examples/dompp-state-reconcile-demo/README.md)
+* [DOMPP Step-by-Step Case Study](./examples/dompp-step-by-step-case-study/README.md)
+* [DOMPP Step-by-Step Case Study JSX](./examples/dompp-step-by-step-case-study-jsx/README.md)
 
 ---
 

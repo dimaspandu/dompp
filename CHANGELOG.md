@@ -6,7 +6,25 @@ This project follows semantic versioning principles.
 
 ---
 
-## [0.1.16] - 2026-03-31\n\n### Changed\n- Moved index.html to root directory for direct Netlify deployment:\n  - Updated all example links to use ./examples/ prefix\n- Removed duplicate src/ folder from examples/ directory\n- Cleaned up repository structure:\n  - Removed articles/ directory\n  - Removed docs/ directory\n  - Removed netlify.toml, package.json, package-lock.json\n\n### Added\n- CONTRIBUTING.md with contribution guidelines\n- README.md files for example projects:\n  - examples/dompp-state-reconcile-demo/README.md\n  - examples/dompp-step-by-step-case-study/README.md\n  - examples/dompp-step-by-step-case-study-jsx/README.md\n\n## [0.1.15] - 2026-03-26\n\n### Added\n- Step-by-step DOM++ Medium-style article:\n  - rticles/dompp-step-by-step-case-study.md\n- Step-by-step DOM++ live demo:\n  - examples/dompp-step-by-step-case-study/\n\n### Changed\n- Updated DOM++ state/reconcile article to align examples with matchById usage and prepend/append behavior:\n  - rticles/dompp-state-reconcile-case-study.md\n\n## [0.1.14] - 2026-03-11
+## [0.1.16] - 2026-03-31
+
+### Changed
+- Moved index.html to root directory for direct Netlify deployment:
+  - Updated all example links to use ./examples/ prefix
+- Removed duplicate src/ folder from examples/ directory
+- Cleaned up repository structure:
+  - Removed articles/ directory
+  - Removed docs/ directory
+  - Removed netlify.toml, package.json, package-lock.json
+
+### Added
+- CONTRIBUTING.md with contribution guidelines
+- README.md files for example projects:
+  - examples/dompp-state-reconcile-demo/README.md
+  - examples/dompp-step-by-step-case-study/README.md
+  - examples/dompp-step-by-step-case-study-jsx/README.md
+
+## [0.1.15] - 2026-03-26\n\n### Added\n- Step-by-step DOM++ Medium-style article:\n  - rticles/dompp-step-by-step-case-study.md\n- Step-by-step DOM++ live demo:\n  - examples/dompp-step-by-step-case-study/\n\n### Changed\n- Updated DOM++ state/reconcile article to align examples with matchById usage and prepend/append behavior:\n  - rticles/dompp-state-reconcile-case-study.md\n\n## [0.1.14] - 2026-03-11
 
 ### Added
 - Core setter callback example:
