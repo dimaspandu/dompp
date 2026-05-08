@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOM++ - setState Example</title>
+</head>
+<body>
+  <div id="container"></div>
+  <script type="module" src="../../src/index.js"></script>
+  <script type="module">
+    const container = document.getElementById("container");
+
+    const counterEl = document.createElement("div").setState({ count: 0 });
+
+    counterEl.setChildren(
+      document.createElement("h1").setText("setState Example"),
+      // document.createElement("p")
+      //   .setState({ count: 0 })
+      //   .setText(({ state }) => `Count: ${state.count}`),
+      document.createElement("button")
+        .setState({ count: 0 })
+        .setText(({ state }) => `Count: ${state.count}`)
+        .setEvents({
+          click: ({ setState }) => setState(prev => ({ count: prev.count + 1 }))
+        }),
+      document.createElement("button")
+        .setState({ count: 0 })
+        .setText(({ state }) => `Count: ${state.count}`)
+        .setEvents({
+          click: ({ setState }) => setState(prev => ({ count: prev.count - 1 }))
+        })
+    );
+
+    container.setChildren(counterEl);
+  </script>
+</body>
+</html>

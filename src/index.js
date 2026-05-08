@@ -1,5 +1,3 @@
-import { installDompp } from "./dom/dompp.js";
+import { installDompp } from "./1.0.1/index.js";
 
 installDompp();
-
-export * from "./dom/dompp.js";

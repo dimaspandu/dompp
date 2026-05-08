@@ -121,6 +121,13 @@ export const createDomppSetterContext = (node, setterName) => {
     };
   }
 
+  if (setterName === "setState") {
+    return {
+      ...dom,
+      state: node.__dompp_state ?? {},
+    };
+  }
+
   return dom;
 };
 
@@ -320,6 +327,71 @@ export function installDompp() {
     return this;
   });
 
+  /**
+   * setState(state)
+   *
+   * Manages element-local state with reactive bindings.
+   *
+   * This is a core API that enables stateful elements without requiring
+   * additional addons. Provides deterministic updates and prevents
+   * unnecessary DOM mutations.
+   */
+  defineOn(Element.prototype, "setState", function (next) {
+    // Ensure element has state storage
+    if (!this.__dompp_state) {
+      this.__dompp_state = {};
+      this.__dompp_bindings = new Set();
+      this.__dompp_flushScheduled = false;
+    }
+
+    let changed = false;
+
+    if (typeof next === "function") {
+      const prev = { ...this.__dompp_state };
+      next({
+        state: this.__dompp_state,
+        setState: (n) => this.setState(n),
+        ...createDomppContext(this)
+      });
+
+      for (const key in this.__dompp_state) {
+        if (!Object.is(prev[key], this.__dompp_state[key])) {
+          changed = true;
+          break;
+        }
+      }
+    } else {
+      for (const key in next) {
+        if (!Object.is(this.__dompp_state[key], next[key])) {
+          changed = true;
+          break;
+        }
+      }
+
+      if (changed) {
+        Object.assign(this.__dompp_state, next);
+      }
+    }
+
+    if (changed) {
+      // Schedule batched flush
+      if (!this.__dompp_flushScheduled) {
+        this.__dompp_flushScheduled = true;
+        queueMicrotask(() => {
+          this.__dompp_flushScheduled = false;
+          if (this.__dompp_bindings) {
+            const runners = Array.from(this.__dompp_bindings);
+            for (const run of runners) {
+              run();
+            }
+          }
+        });
+      }
+    }
+
+    return this;
+  });
+
   // --------------------------------------------------
   // DocumentFragment support (intentionally minimal)
   // --------------------------------------------------
@@ -341,19 +413,95 @@ export function installDompp() {
   defineOn(DocumentFragment.prototype, "setChildren", setChildren);
 }
 
-/**
- * Registry of setters used by the stateful addon.
- *
- * IMPORTANT:
- * Only Element setters belong here.
- *
- * DocumentFragment intentionally does NOT participate
- * in stateful bindings.
- */
-export const DOMPP_SETTERS = [
-  "setText",
-  "setChildren",
-  "setStyles",
-  "setAttributes",
-  "setEvents"
-];
+  /**
+   * Wraps setters to support reactive callbacks with state access.
+   *
+   * Enables patterns like:
+   * element.setText(({ state }) => `Count: ${state.count}`)
+   */
+  function wrapSetterForState(name) {
+    const original = Element.prototype[name];
+
+    if (!original || original.__dompp_wrapped) {
+      return;
+    }
+
+    function wrapped(...args) {
+      const first = args[0];
+
+      // Fast path for non-reactive usage.
+      if (typeof first !== "function") {
+        return original.apply(this, args);
+      }
+
+      // Ensure state storage
+      if (!this.__dompp_state) {
+        this.__dompp_state = {};
+        this.__dompp_bindings = new Set();
+        this.__dompp_flushScheduled = false;
+      }
+
+      let previousResult;
+
+      const runner = () => {
+        const context = {
+          state: this.__dompp_state,
+          setState: (n) => this.setState(n),
+          ...createDomppContext(this),
+          ...createDomppSetterContext(this, name),
+        };
+
+        const nextResult = first(context);
+
+        // Memoization check
+        if (Object.is(previousResult, nextResult)) {
+          return;
+        }
+
+        previousResult = nextResult;
+
+        // Normalize children output
+        if (name === "setChildren") {
+          const children = Array.isArray(nextResult) ? nextResult : [nextResult];
+          original.call(this, ...children);
+          return;
+        }
+
+        original.call(this, nextResult);
+      };
+
+      this.__dompp_bindings.add(runner);
+      runner(); // Initial run
+
+      return this;
+    }
+
+    wrapped.__dompp_wrapped = true;
+
+    Object.defineProperty(Element.prototype, name, {
+      value: wrapped,
+      writable: false,
+      configurable: true,
+    });
+  }
+
+  // Wrap all setters to support reactive callbacks
+  ["setText", "setChildren", "setStyles", "setAttributes", "setEvents"].forEach(wrapSetterForState);
+
+  /**
+   * Registry of setters used by the stateful addon.
+   *
+   * IMPORTANT:
+   * Only Element setters belong here.
+   *
+   * DocumentFragment intentionally does NOT participate
+   * in stateful bindings.
+   */
+  export const DOMPP_SETTERS = [
+    "setText",
+    "setChildren",
+    "setStyles",
+    "setAttributes",
+    "setEvents",
+    "setState"
+  ];

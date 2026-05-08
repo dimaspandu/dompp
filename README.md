@@ -60,6 +60,7 @@ DOMPP adds a small set of chainable mutation helpers:
 * `setStyles(...)`
 * `setAttributes(...)`
 * `setEvents(...)`
+* `setState(...)`
 
 Basic usage:
 
@@ -92,11 +93,12 @@ title.setText(({ text }) => text.replace("0", "1"));
 
 Supported callbacks:
 
-* `setText(({ text }) => ...)`
-* `setStyles(({ styles }) => ...)`
-* `setAttributes(({ attributes }) => ...)`
-* `setEvents(({ events }) => ...)`
-* `setChildren(({ children, childNodes }) => ...)`
+* `setText(({ text, state }) => ...)`
+* `setStyles(({ styles, state }) => ...)`
+* `setAttributes(({ attributes, state }) => ...)`
+* `setEvents(({ events, state }) => ...)`
+* `setChildren(({ children, childNodes, state }) => ...)`
+* `setState(({ state }) => ...)`
 
   The `setChildren` callback provides two properties for accessing child nodes:
   - `children` — Element-only children (excludes whitespace Text nodes)
@@ -113,16 +115,14 @@ This enables hydration/assimilation patterns without adding a reactive system.
 
 DOMPP keeps the core small. Optional addons extend behavior without changing mutation semantics.
 
-### `stateful`
+### `stateful` (Now Core)
 
-Adds element-local state and reactive setter bindings:
+Element-local state and reactive setter bindings are now part of the core API:
 
 ```js
 import "./src/index.js";
-import { installDomppStateful } from "./src/reactive/stateful.js";
 
-installDomppStateful();
-
+// setState is now available by default
 const app = document.getElementById("app").setState({ count: 0 });
 
 app.setChildren(({ state, setState }) => [
@@ -132,6 +132,8 @@ app.setChildren(({ state, setState }) => [
     .setEvents({ click: () => setState(({ state }) => { state.count += 1; }) })
 ]);
 ```
+
+The `installDomppStateful` function is kept for backward compatibility but is no longer required.
 
 ### `reconcile`
 
