@@ -31,7 +31,7 @@ export function installDomppStateful() {
   // NOTE: Stateful functionality is now part of the core DOMPP API.
   // This function is kept for backward compatibility but does nothing.
   // setState is now available by default after installDompp().
-}
+
   /**
    * Builds a stable callback context for stateful updaters/bindings.
    *

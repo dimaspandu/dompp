@@ -1,204 +1,222 @@
-/**
- * DOM++ Examples Server
- *
- * Features:
- * - Serves the repository root
- * - Auto-generates example index
- * - Supports ES modules
- * - Directory trailing slash redirect
- * - Path alias (/dompp -> /src/index.js)
- * - Zero dependency
- *
- * Usage:
- *
- *   node examples/server.js
- *
- * Optional:
- *
- *   PORT=5173 node examples/server.js
- */
+import { createServer } from "http";
 
-const http = require("http");
-const fs = require("fs");
-const path = require("path");
+import {
+  existsSync,
+  createReadStream,
+  statSync
+} from "fs";
 
-const examplesDir = __dirname;
-const rootDir = path.resolve(examplesDir, "..");
+import {
+  extname,
+  join,
+  dirname
+} from "path";
 
-const PORT = process.env.PORT || 4173;
+import { fileURLToPath } from "url";
 
-const MIME = {
+// =====================================
+// PATHS
+// =====================================
+
+const __filename =
+  fileURLToPath(import.meta.url);
+
+const __dirname =
+  dirname(__filename);
+
+// examples/
+// ├── server.js
+// ├── index.html
+// ├── 01-basic-text/
+// │   └── index.html
+// └── etc...
+
+const ROOT_DIR = __dirname;
+
+const PORT =
+  process.env.PORT || 5173;
+
+// =====================================
+// MIME TYPES
+// =====================================
+
+const mimeTypes = {
   ".html": "text/html",
   ".js": "text/javascript",
+  ".mjs": "text/javascript",
   ".css": "text/css",
   ".json": "application/json",
-  ".map": "application/json",
+  ".svg": "image/svg+xml",
 };
 
-/**
- * Generate examples index automatically.
- */
-function generateIndex() {
+// =====================================
+// SERVE FILE
+// =====================================
 
-  const dirs = fs.readdirSync(examplesDir, { withFileTypes: true })
-    .filter(d => d.isDirectory())
-    .map(d => d.name);
+function serveFile(res, filePath) {
 
-  const links = dirs.map(dir => `
-    <li>
-      <a href="/examples/${dir}/">
-        ${dir.split("-").map(s => s[0].toUpperCase() + s.slice(1)).join(" ")}
-      </a>
-    </li>
-  `).join("");
+  if (!existsSync(filePath)) {
 
-  return `
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8" />
-<title>DOM++ Playground</title>
+    res.writeHead(404);
 
-<style>
-body {
-  font-family: system-ui;
-  padding: 40px;
-  max-width: 720px;
-  margin: auto;
-}
+    res.end("Not found");
 
-h1 {
-  margin-bottom: 12px;
-}
-
-ul {
-  line-height: 1.9;
-}
-
-a {
-  text-decoration: none;
-  font-weight: 600;
-}
-
-a:hover {
-  text-decoration: underline;
-}
-
-code {
-  background: #eee;
-  padding: 2px 6px;
-  border-radius: 6px;
-}
-</style>
-</head>
-
-<body>
-
-<h1>DOM++ Examples</h1>
-
-<p>Select an example:</p>
-
-<ul>
-${links}
-</ul>
-
-</body>
-</html>
-`;
-}
-
-/**
- * Resolve safe file path from repo root.
- */
-function resolvePath(urlPath) {
-
-  // Alias support
-  if (urlPath === "/dompp") {
-    return path.join(rootDir, "src/index.js");
+    return;
   }
 
-  return path.join(rootDir, urlPath);
+  const ext =
+    extname(filePath);
+
+  const contentType =
+    mimeTypes[ext] || "text/plain";
+
+  res.writeHead(200, {
+    "Content-Type": contentType
+  });
+
+  createReadStream(filePath)
+    .pipe(res);
 }
 
-const server = http.createServer((req, res) => {
+// =====================================
+// SERVER
+// =====================================
 
-  try {
+createServer((req, res) => {
 
-    // Root -> examples index
-    if (req.url === "/") {
+  let urlPath =
+    req.url.split("?")[0];
 
-      res.writeHead(200, {
-        "Content-Type": "text/html",
-      });
+  console.log("REQ:", urlPath);
 
-      res.end(generateIndex());
-      return;
+  // =================================
+  // OPTIONAL PREFIX SUPPORT
+  // /examples/01-basic-text/
+  // =================================
+
+  if (
+    urlPath.startsWith("/examples/")
+  ) {
+
+    urlPath =
+      urlPath.slice(
+        "/examples".length
+      );
+
+    if (urlPath === "") {
+      urlPath = "/";
     }
-
-    let filePath = resolvePath(req.url);
-
-    // Redirect directory without trailing slash
-    if (
-      fs.existsSync(filePath) &&
-      fs.statSync(filePath).isDirectory() &&
-      !req.url.endsWith("/")
-    ) {
-
-      res.writeHead(301, {
-        Location: req.url + "/",
-      });
-
-      res.end();
-      return;
-    }
-
-    // Directory -> index.html
-    if (
-      fs.existsSync(filePath) &&
-      fs.statSync(filePath).isDirectory()
-    ) {
-      filePath = path.join(filePath, "index.html");
-    }
-
-    if (!fs.existsSync(filePath)) {
-
-      res.writeHead(404);
-      res.end("404 - Not Found");
-      return;
-    }
-
-    const ext = path.extname(filePath);
-    const type = MIME[ext] || "application/octet-stream";
-
-    const data = fs.readFileSync(filePath);
-
-    res.writeHead(200, {
-      "Content-Type": type,
-    });
-
-    res.end(data);
-
-  } catch (err) {
-
-    res.writeHead(500);
-    res.end("500 - Server Error");
-
-    console.error(err);
   }
 
-});
+  // =================================
+  // ROOT
+  // =================================
 
-server.listen(PORT, () => {
+  if (urlPath === "/") {
 
-  console.log(`
-DOM++ examples server running:
+    return serveFile(
+      res,
+      join(ROOT_DIR, "index.html")
+    );
+  }
 
-http://localhost:${PORT}
+  // =================================
+  // SPECIAL:
+  // /src/*
+  // -> ../src/*
+  // =================================
 
-Examples:
-http://localhost:${PORT}/examples/
+  if (
+    urlPath.startsWith("/src/")
+  ) {
 
-Tests:
-http://localhost:${PORT}/tests/
-`);
+    const srcPath = join(
+      ROOT_DIR,
+      "..",
+      urlPath.slice(1)
+    );
+
+    return serveFile(
+      res,
+      srcPath
+    );
+  }
+
+  // =================================
+  // NORMAL FILE PATH
+  // =================================
+
+  const filePath =
+    join(ROOT_DIR, urlPath);
+
+  // =================================
+  // DIRECT FILE
+  // =================================
+
+  if (
+    existsSync(filePath) &&
+    !statSync(filePath).isDirectory()
+  ) {
+
+    return serveFile(
+      res,
+      filePath
+    );
+  }
+
+  // =================================
+  // DIRECTORY -> index.html
+  // =================================
+
+  if (
+    existsSync(filePath) &&
+    statSync(filePath).isDirectory()
+  ) {
+
+    return serveFile(
+      res,
+      join(filePath, "index.html")
+    );
+  }
+
+  // =================================
+  // HTML FILE SUPPORT
+  // /about -> /about.html
+  // =================================
+
+  const htmlFile =
+    join(
+      ROOT_DIR,
+      urlPath + ".html"
+    );
+
+  if (existsSync(htmlFile)) {
+
+    return serveFile(
+      res,
+      htmlFile
+    );
+  }
+
+  // =================================
+  // NOT FOUND
+  // =================================
+
+  res.writeHead(404);
+
+  res.end("Not found");
+
+}).listen(PORT, () => {
+
+  console.log("");
+  console.log(
+    `Server running at:`
+  );
+
+  console.log(
+    `http://localhost:${PORT}`
+  );
+
+  console.log("");
+
 });

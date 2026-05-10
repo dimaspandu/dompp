@@ -1,507 +1,570 @@
-/**
- * Installs DOM++ methods onto native DOM prototypes.
- *
- * DOM++ is intentionally designed as a prototype enhancement layer
- * rather than a wrapper-based API. This allows developers to work
- * directly with native DOM nodes while gaining a small set of
- * ergonomic utilities.
- *
- * IMPORTANT DESIGN GOALS:
- *
- * - Zero abstraction over native DOM
- * - Chainable APIs
- * - Minimal runtime overhead
- * - No virtual DOM
- * - No mutation observers
- * - No dependency on reactive systems
- *
- * These helpers should feel like they "belong" to the platform.
- *
- * SAFETY:
- * Methods are only defined if they do not already exist in order
- * to prevent overriding userland or third-party implementations.
- *
- * NOTE FOR CONTRIBUTORS:
- * Be extremely cautious when modifying prototype behavior.
- * Any change here affects ALL instances globally.
- */
-const isNodeLike = (value) =>
-  typeof Node !== "undefined" && value instanceof Node;
+// =====================================
+// DOM++ Browser Build
+// Stateful Included By Default
+// Vanilla-Friendly
+// =====================================
 
-const toCamelCase = (cssProp) =>
-  cssProp.replace(/-([a-z])/g, (_, ch) => ch.toUpperCase());
+(function () {
 
-const readInlineStyles = (node) => {
-  const styles = {};
-  const styleDecl = node.style;
+  // =====================================
+  // Utilities
+  // =====================================
 
-  for (let i = 0; i < styleDecl.length; i += 1) {
-    const prop = styleDecl[i];
-    styles[toCamelCase(prop)] = styleDecl.getPropertyValue(prop);
-  }
+  const isNodeLike = (value) =>
+    typeof Node !== "undefined" &&
+    value instanceof Node;
 
-  return styles;
-};
+  const toCamelCase = (cssProp) =>
+    cssProp.replace(/-([a-z])/g, (_, ch) => ch.toUpperCase());
 
-const readAttributes = (node) => {
-  const attributes = {};
+  const readInlineStyles = (node) => {
+    const styles = {};
+    const styleDecl = node.style;
 
-  for (const attr of Array.from(node.attributes ?? [])) {
-    attributes[attr.name] = attr.value;
-  }
+    for (let i = 0; i < styleDecl.length; i += 1) {
+      const prop = styleDecl[i];
 
-  return attributes;
-};
-
-const readEvents = (node) => ({ ...(node.__dompp_handlers ?? {}) });
-
-const toNodeList = (values) => {
-  const out = [];
-
-  const pushOne = (value) => {
-    if (value == null || value === false) {
-      return;
+      styles[toCamelCase(prop)] =
+        styleDecl.getPropertyValue(prop);
     }
 
-    if (Array.isArray(value)) {
-      value.forEach(pushOne);
-      return;
-    }
-
-    if (isNodeLike(value)) {
-      out.push(value);
-      return;
-    }
-
-    out.push(document.createTextNode(String(value)));
+    return styles;
   };
 
-  values.forEach(pushOne);
-  return out;
-};
+  const readAttributes = (node) => {
+    const attributes = {};
 
-export const createDomppContext = (node) => ({
-  el: node,
-  // Element children only (no whitespace Text nodes).
-  children: Array.from(node.children ?? []),
-  // Raw node list when text/comment nodes are needed.
-  childNodes: Array.from(node.childNodes ?? []),
-  firstChild: node.firstChild ?? null,
-  lastChild: node.lastChild ?? null
-});
+    for (const attr of Array.from(node.attributes ?? [])) {
+      attributes[attr.name] = attr.value;
+    }
 
-export const createDomppSetterContext = (node, setterName) => {
-  const dom = createDomppContext(node);
+    return attributes;
+  };
 
-  if (setterName === "setText") {
+  const readEvents = (node) => ({
+    ...(node.__dompp_handlers ?? {})
+  });
+
+  const toNodeList = (values) => {
+    const out = [];
+
+    const pushOne = (value) => {
+
+      if (
+        value == null ||
+        value === false
+      ) {
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        value.forEach(pushOne);
+        return;
+      }
+
+      if (isNodeLike(value)) {
+        out.push(value);
+        return;
+      }
+
+      out.push(
+        document.createTextNode(String(value))
+      );
+    };
+
+    values.forEach(pushOne);
+
+    return out;
+  };
+
+  // =====================================
+  // Context
+  // =====================================
+
+  function createDomppContext(node) {
     return {
-      ...dom,
-      text: node.textContent ?? "",
+      el: node,
+      children: Array.from(node.children ?? []),
+      childNodes: Array.from(node.childNodes ?? []),
+      firstChild: node.firstChild ?? null,
+      lastChild: node.lastChild ?? null
     };
   }
 
-  if (setterName === "setStyles") {
-    return {
-      ...dom,
-      styles: readInlineStyles(node),
-    };
+  function createDomppSetterContext(
+    node,
+    setterName
+  ) {
+
+    const dom = createDomppContext(node);
+
+    if (setterName === "setText") {
+      return {
+        ...dom,
+        text: node.textContent ?? ""
+      };
+    }
+
+    if (setterName === "setStyles") {
+      return {
+        ...dom,
+        styles: readInlineStyles(node)
+      };
+    }
+
+    if (setterName === "setAttributes") {
+      return {
+        ...dom,
+        attributes: readAttributes(node)
+      };
+    }
+
+    if (setterName === "setEvents") {
+      return {
+        ...dom,
+        events: readEvents(node)
+      };
+    }
+
+    if (setterName === "setState") {
+      return {
+        ...dom,
+        state: node.__dompp_state ?? {}
+      };
+    }
+
+    return dom;
   }
 
-  if (setterName === "setAttributes") {
-    return {
-      ...dom,
-      attributes: readAttributes(node),
-    };
+  // =====================================
+  // Internal State
+  // =====================================
+
+  function ensureState(el) {
+
+    if (!el.__dompp_state) {
+
+      el.__dompp_state = {};
+      el.__dompp_bindings = new Set();
+      el.__dompp_flushScheduled = false;
+    }
   }
 
-  if (setterName === "setEvents") {
-    return {
-      ...dom,
-      events: readEvents(node),
-    };
+  function flushBindings(el) {
+
+    el.__dompp_flushScheduled = false;
+
+    if (!el.__dompp_bindings) {
+      return;
+    }
+
+    const runners =
+      Array.from(el.__dompp_bindings);
+
+    for (const run of runners) {
+      run();
+    }
   }
 
-  if (setterName === "setState") {
-    return {
-      ...dom,
-      state: node.__dompp_state ?? {},
-    };
+  function scheduleFlush(el) {
+
+    if (el.__dompp_flushScheduled) {
+      return;
+    }
+
+    el.__dompp_flushScheduled = true;
+
+    queueMicrotask(() => {
+      flushBindings(el);
+    });
   }
 
-  return dom;
-};
+  // =====================================
+  // Prototype Installer
+  // =====================================
 
-export function installDompp() {
+  function defineOn(proto, name, fn) {
 
-  /**
-   * Defines a non-writable method on a prototype.
-   *
-   * WHY Object.defineProperty?
-   *
-   * - Prevents accidental reassignment:
-   *     element.setText = somethingElse
-   *
-   * - Keeps behavior stable across the app lifetime.
-   *
-   * Guard clause ensures we never override an existing method.
-   *
-   * The configurable flag remains true to allow controlled
-   * evolution of the engine if absolutely necessary.
-   */
-  const defineOn = (proto, name, fn) => {
     if (!proto[name]) {
+
       Object.defineProperty(proto, name, {
         value: fn,
         writable: false,
-        configurable: true,
+        configurable: true
       });
     }
-  };
+  }
 
-  /**
-   * Shared implementation: setText
-   *
-   * A thin wrapper around textContent with chain support.
-   *
-   * WHY NOT innerText?
-   * innerText triggers layout calculations because it is CSS-aware.
-   * textContent is significantly faster and does not cause reflow.
-   *
-   * Works safely on:
-   * - Element
-   * - DocumentFragment
-   */
+  // =====================================
+  // Core Setters
+  // =====================================
+
   function setText(text) {
-    const nextText = typeof text === "function"
-      ? text(createDomppSetterContext(this, "setText"))
-      : text;
+
+    const nextText =
+      typeof text === "function"
+        ? text(
+            createDomppSetterContext(
+              this,
+              "setText"
+            )
+          )
+        : text;
 
     this.textContent = nextText;
+
     return this;
   }
 
-  /**
-   * Shared implementation: setChildren
-   *
-   * Replaces all child nodes using replaceChildren(),
-   * which is the modern and efficient alternative to:
-   *
-   *   element.innerHTML = ""
-   *   element.append(...)
-   *
-   * STRING HANDLING:
-   * Strings are automatically converted into TextNodes.
-   * This prevents accidental HTML injection and keeps
-   * the operation safe by default.
-   *
-   * HYDRATION MODE:
-   * setChildren((ctx) => nextChildren)
-   *
-   * The callback receives:
-   * - el
-   * - children (element-only children)
-   * - childNodes (raw nodes)
-   * - firstChild / lastChild
-   *
-   * This enables assimilation/hydration flows where
-   * existing DOM nodes are reused and augmented.
-   *
-   * IMPORTANT:
-   * This method performs a full subtree replacement.
-   * Contributors should avoid adding diff logic here.
-   *
-   * DOM++ intentionally favors predictable behavior
-   * over hidden heuristics.
-   *
-   * Supported on:
-   * - Element
-   * - DocumentFragment
-   */
   function setChildren(...children) {
+
     let nextChildren = children;
 
-    if (children.length === 1 && typeof children[0] === "function") {
-      const resolved = children[0](createDomppSetterContext(this, "setChildren"));
-      nextChildren = Array.isArray(resolved) ? resolved : [resolved];
+    if (
+      children.length === 1 &&
+      typeof children[0] === "function"
+    ) {
+
+      const resolved = children[0](
+        createDomppSetterContext(
+          this,
+          "setChildren"
+        )
+      );
+
+      nextChildren = Array.isArray(resolved)
+        ? resolved
+        : [resolved];
     }
 
-    this.replaceChildren(...toNodeList(nextChildren));
+    this.replaceChildren(
+      ...toNodeList(nextChildren)
+    );
+
     return this;
   }
 
-  // --------------------------------------------------
-  // Element-only methods
-  // --------------------------------------------------
+  // =====================================
+  // Install Base Setters
+  // =====================================
 
-  defineOn(Element.prototype, "setText", setText);
-  defineOn(Element.prototype, "setChildren", setChildren);
+  defineOn(
+    Element.prototype,
+    "setText",
+    setText
+  );
 
-  /**
-   * setStyles(styles)
-   *
-   * Assigns style properties via Object.assign.
-   *
-   * WHY NOT setAttribute("style")?
-   * Direct style mutation avoids string parsing and is faster.
-   *
-   * NOTE:
-   * This does not auto-prefix properties.
-   * DOM++ intentionally avoids magic behavior.
-   */
-  defineOn(Element.prototype, "setStyles", function (styles = {}) {
-    const nextStyles = typeof styles === "function"
-      ? styles(createDomppSetterContext(this, "setStyles"))
-      : styles;
+  defineOn(
+    Element.prototype,
+    "setChildren",
+    setChildren
+  );
 
-    Object.assign(this.style, nextStyles ?? {});
-    return this;
-  });
+  defineOn(
+    Element.prototype,
+    "setStyles",
+    function (styles = {}) {
 
-  /**
-   * setAttributes(attrs)
-   *
-   * Applies attributes with boolean semantics.
-   *
-   * RULES:
-   * true  -> attribute is added with empty string
-   * false -> attribute is removed
-   * null/undefined -> attribute is removed
-   */
-  defineOn(Element.prototype, "setAttributes", function (attrs = {}) {
-    const nextAttrs = typeof attrs === "function"
-      ? attrs(createDomppSetterContext(this, "setAttributes"))
-      : attrs;
+      const nextStyles =
+        typeof styles === "function"
+          ? styles(
+              createDomppSetterContext(
+                this,
+                "setStyles"
+              )
+            )
+          : styles;
 
-    for (const k in (nextAttrs ?? {})) {
-      const v = nextAttrs[k];
+      Object.assign(
+        this.style,
+        nextStyles ?? {}
+      );
 
-      if (v === false || v == null) {
-        this.removeAttribute(k);
-      } else {
-        this.setAttribute(k, v === true ? "" : v);
-      }
+      return this;
     }
+  );
 
-    return this;
-  });
+  defineOn(
+    Element.prototype,
+    "setAttributes",
+    function (attrs = {}) {
 
-  /**
-   * setEvents(events)
-   *
-   * Attaches event listeners with automatic deduplication.
-   *
-   * PROBLEM THIS SOLVES:
-   * Rebinding events repeatedly can cause duplicate handlers
-   * and memory leaks.
-   *
-   * INTERNAL STRATEGY:
-   * Each element stores its handlers in a private property:
-   *
-   *   __dompp_handlers
-   *
-   * When a handler is replaced, the previous one is removed first.
-   *
-   * WHY NOT use WeakMap?
-   * Storing directly on the node is faster and avoids
-   * additional allocations.
-   *
-   * This is a deliberate performance tradeoff.
-   */
-  defineOn(Element.prototype, "setEvents", function (events = {}) {
-    const nextEvents = typeof events === "function"
-      ? events(createDomppSetterContext(this, "setEvents"))
-      : events;
+      const nextAttrs =
+        typeof attrs === "function"
+          ? attrs(
+              createDomppSetterContext(
+                this,
+                "setAttributes"
+              )
+            )
+          : attrs;
 
-    this.__dompp_handlers ??= {};
+      for (const k in (nextAttrs ?? {})) {
 
-    for (const e in (nextEvents ?? {})) {
+        const v = nextAttrs[k];
 
-      if (this.__dompp_handlers[e]) {
-        this.removeEventListener(e, this.__dompp_handlers[e]);
-      }
+        if (
+          v === false ||
+          v == null
+        ) {
 
-      this.addEventListener(e, nextEvents[e]);
-      this.__dompp_handlers[e] = nextEvents[e];
-    }
+          this.removeAttribute(k);
 
-    return this;
-  });
+        } else {
 
-  /**
-   * setState(state)
-   *
-   * Manages element-local state with reactive bindings.
-   *
-   * This is a core API that enables stateful elements without requiring
-   * additional addons. Provides deterministic updates and prevents
-   * unnecessary DOM mutations.
-   */
-  defineOn(Element.prototype, "setState", function (next) {
-    // Ensure element has state storage
-    if (!this.__dompp_state) {
-      this.__dompp_state = {};
-      this.__dompp_bindings = new Set();
-      this.__dompp_flushScheduled = false;
-    }
-
-    let changed = false;
-
-    if (typeof next === "function") {
-      const prev = { ...this.__dompp_state };
-      next({
-        state: this.__dompp_state,
-        setState: (n) => this.setState(n),
-        ...createDomppContext(this)
-      });
-
-      for (const key in this.__dompp_state) {
-        if (!Object.is(prev[key], this.__dompp_state[key])) {
-          changed = true;
-          break;
+          this.setAttribute(
+            k,
+            v === true ? "" : v
+          );
         }
       }
-    } else {
-      for (const key in next) {
-        if (!Object.is(this.__dompp_state[key], next[key])) {
-          changed = true;
-          break;
+
+      return this;
+    }
+  );
+
+  defineOn(
+    Element.prototype,
+    "setEvents",
+    function (events = {}) {
+
+      const nextEvents =
+        typeof events === "function"
+          ? events(
+              createDomppSetterContext(
+                this,
+                "setEvents"
+              )
+            )
+          : events;
+
+      this.__dompp_handlers ??= {};
+
+      for (const e in (nextEvents ?? {})) {
+
+        if (this.__dompp_handlers[e]) {
+
+          this.removeEventListener(
+            e,
+            this.__dompp_handlers[e]
+          );
+        }
+
+        this.addEventListener(
+          e,
+          nextEvents[e]
+        );
+
+        this.__dompp_handlers[e] =
+          nextEvents[e];
+      }
+
+      return this;
+    }
+  );
+
+  defineOn(
+    Element.prototype,
+    "setState",
+    function (next) {
+
+      ensureState(this);
+
+      let changed = false;
+
+      if (typeof next === "function") {
+
+        const prev = {
+          ...this.__dompp_state
+        };
+
+        next({
+          state: this.__dompp_state,
+          setState: (n) => this.setState(n),
+          ...createDomppContext(this)
+        });
+
+        for (const key in this.__dompp_state) {
+
+          if (
+            !Object.is(
+              prev[key],
+              this.__dompp_state[key]
+            )
+          ) {
+            changed = true;
+            break;
+          }
+        }
+
+      } else {
+
+        for (const key in next) {
+
+          if (
+            !Object.is(
+              this.__dompp_state[key],
+              next[key]
+            )
+          ) {
+            changed = true;
+            break;
+          }
+        }
+
+        if (changed) {
+          Object.assign(
+            this.__dompp_state,
+            next
+          );
         }
       }
 
       if (changed) {
-        Object.assign(this.__dompp_state, next);
+        scheduleFlush(this);
       }
+
+      return this;
+    }
+  );
+
+  // =====================================
+  // Fragment Support
+  // =====================================
+
+  defineOn(
+    DocumentFragment.prototype,
+    "setText",
+    setText
+  );
+
+  defineOn(
+    DocumentFragment.prototype,
+    "setChildren",
+    setChildren
+  );
+
+  // =====================================
+  // Reactive Wrappers
+  // =====================================
+
+  function wrapSetterForState(name) {
+
+    const original =
+      Element.prototype[name];
+
+    if (
+      !original ||
+      original.__dompp_wrapped
+    ) {
+      return;
     }
 
-    if (changed) {
-      // Schedule batched flush
-      if (!this.__dompp_flushScheduled) {
-        this.__dompp_flushScheduled = true;
-        queueMicrotask(() => {
-          this.__dompp_flushScheduled = false;
-          if (this.__dompp_bindings) {
-            const runners = Array.from(this.__dompp_bindings);
-            for (const run of runners) {
-              run();
-            }
-          }
-        });
+    function wrapped(...args) {
+
+      const first = args[0];
+
+      // Fast path
+
+      if (typeof first !== "function") {
+        return original.apply(this, args);
       }
-    }
 
-    return this;
-  });
+      ensureState(this);
 
-  // --------------------------------------------------
-  // DocumentFragment support (intentionally minimal)
-  // --------------------------------------------------
+      let previousResult;
 
-  /**
-   * Fragments are not elements.
-   *
-   * They do not support:
-   * - styles
-   * - attributes
-   * - events
-   *
-   * Only install mutation helpers that make semantic sense.
-   *
-   * This restraint is intentional and protects the engine
-   * from API surface creep.
-   */
-  defineOn(DocumentFragment.prototype, "setText", setText);
-  defineOn(DocumentFragment.prototype, "setChildren", setChildren);
-}
+      const runner = () => {
 
-/**
- * Wraps setters to support reactive callbacks with state access.
- *
- * Enables patterns like:
- * element.setText(({ state }) => `Count: ${state.count}`)
- */
-function wrapSetterForState(name) {
-  const original = Element.prototype[name];
+        const context = {
+          state: this.__dompp_state,
+          setState: (n) => this.setState(n),
 
-  if (!original || original.__dompp_wrapped) {
-    return;
-  }
+          ...createDomppContext(this),
 
-  function wrapped(...args) {
-    const first = args[0];
+          ...createDomppSetterContext(
+            this,
+            name
+          )
+        };
 
-    // Fast path for non-reactive usage.
-    if (typeof first !== "function") {
-      return original.apply(this, args);
-    }
+        const nextResult =
+          first(context);
 
-    // Ensure state storage
-    if (!this.__dompp_state) {
-      this.__dompp_state = {};
-      this.__dompp_bindings = new Set();
-      this.__dompp_flushScheduled = false;
-    }
+        // Memoization
 
-    let previousResult;
+        if (
+          Object.is(
+            previousResult,
+            nextResult
+          )
+        ) {
+          return;
+        }
 
-    const runner = () => {
-      const context = {
-        state: this.__dompp_state,
-        setState: (n) => this.setState(n),
-        ...createDomppContext(this),
-        ...createDomppSetterContext(this, name),
+        previousResult = nextResult;
+
+        // Children normalization
+
+        if (name === "setChildren") {
+
+          const children =
+            Array.isArray(nextResult)
+              ? nextResult
+              : [nextResult];
+
+          original.call(
+            this,
+            ...children
+          );
+
+          return;
+        }
+
+        original.call(
+          this,
+          nextResult
+        );
       };
 
-      const nextResult = first(context);
+      this.__dompp_bindings.add(
+        runner
+      );
 
-      // Memoization check
-      if (Object.is(previousResult, nextResult)) {
-        return;
+      runner();
+
+      return this;
+    }
+
+    wrapped.__dompp_wrapped = true;
+
+    Object.defineProperty(
+      Element.prototype,
+      name,
+      {
+        value: wrapped,
+        writable: false,
+        configurable: true
       }
-
-      previousResult = nextResult;
-
-      // Normalize children output
-      if (name === "setChildren") {
-        const children = Array.isArray(nextResult) ? nextResult : [nextResult];
-        original.call(this, ...children);
-        return;
-      }
-
-      original.call(this, nextResult);
-    };
-
-    this.__dompp_bindings.add(runner);
-    runner(); // Initial run
-
-    return this;
+    );
   }
 
-  wrapped.__dompp_wrapped = true;
+  [
+    "setText",
+    "setChildren",
+    "setStyles",
+    "setAttributes",
+    "setEvents"
+  ].forEach(wrapSetterForState);
 
-  Object.defineProperty(Element.prototype, name, {
-    value: wrapped,
-    writable: false,
-    configurable: true,
-  });
-}
+  // =====================================
+  // Global
+  // =====================================
 
-// Wrap all setters to support reactive callbacks
-["setText", "setChildren", "setStyles", "setAttributes", "setEvents"].forEach(wrapSetterForState);
+  window.DOMPP = {
+    version: "1.0.0",
+    createDomppContext,
+    createDomppSetterContext
+  };
 
-/**
- * Registry of setters used by the stateful addon.
- *
- * IMPORTANT:
- * Only Element setters belong here.
- *
- * DocumentFragment intentionally does NOT participate
- * in stateful bindings.
- */
-export const DOMPP_SETTERS = [
-  "setText",
-  "setChildren",
-  "setStyles",
-  "setAttributes",
-  "setEvents",
-  "setState"
-];
+})();
