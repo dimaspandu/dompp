@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Functional State</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+    }
+
+    button {
+      padding: 12px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Functional State</h1>
+
+<div id="app"></div>
+
+<script src="../../src/1.0.0/index.js"></script>
+
+<script>
+
+const functional =
+  document.createElement("button")
+    .setAttributes({
+      class: "box"
+    })
+    .setState({
+      value: 1
+    })
+    .setText(({ state }) => {
+      return `Value: ${state.value}`;
+    })
+    .setEvents(() => ({
+      click() {
+
+        functional.setState(
+          ({ state }) => {
+
+            state.value *= 2;
+
+          }
+        );
+
+      }
+    }));
+
+app.append(functional);
+
+</script>
+
+</body>
+</html>

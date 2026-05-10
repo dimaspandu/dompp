@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Reactive Children</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+    }
+
+    button {
+      padding: 12px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Reactive Children</h1>
+
+<div id="app"></div>
+
+<script src="../../src/1.0.0/index.js"></script>
+
+<script>
+
+const todo =
+  document.createElement("div")
+    .setAttributes({
+      class: "box"
+    })
+    .setState({
+      items: ["Apple", "Orange"]
+    });
+
+todo.setChildren(({ state }) => {
+
+  return [
+
+    document.createElement("h3")
+      .setText("Todo List"),
+
+    ...state.items.map((item) =>
+      document.createElement("div")
+        .setText(item)
+    ),
+
+    document.createElement("button")
+      .setText("Add Item")
+      .setEvents(() => ({
+        click() {
+
+          todo.setState(({ state }) => {
+
+            state.items.push(
+              "Item " +
+              (state.items.length + 1)
+            );
+
+          });
+
+        }
+      }))
+  ];
+});
+
+app.append(todo);
+
+</script>
+
+</body>
+</html>

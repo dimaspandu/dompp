@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Reactive Components</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+    }
+
+    button {
+      padding: 12px 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Reactive Components</h1>
+
+<div id="app"></div>
+
+<script src="../../src/1.0.0/index.js"></script>
+
+<script>
+
+function createCard(title) {
+
+  return document.createElement("div")
+    .setAttributes({
+      class: "box"
+    })
+    .setState({
+      likes: 0
+    })
+    .setChildren(({ state, setState }) => [
+
+      document.createElement("h2")
+        .setText(title),
+
+      document.createElement("p")
+        .setText(() => {
+          return `Likes: ${state.likes}`;
+        }),
+
+      document.createElement("button")
+        .setText("Like")
+        .setEvents(() => ({
+          click() {
+            setState({
+              likes: state.likes + 1
+            });
+          }
+        }))
+    ]);
+}
+
+app.append(
+  createCard("Card A"),
+  createCard("Card B")
+);
+
+</script>
+
+</body>
+</html>
