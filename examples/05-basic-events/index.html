@@ -8,7 +8,7 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>Reactive Counter</title>
+  <title>Basic Events</title>
 
   <style>
     body {
@@ -24,7 +24,7 @@
 </head>
 <body>
 
-<h1>Reactive Counter</h1>
+<h1>Basic Events</h1>
 
 <div id="app"></div>
 
@@ -32,26 +32,20 @@
 
 <script>
 
-const counter =
+const button =
   document.createElement("button")
-    .setAttributes({
-      class: "box"
-    })
-    .setState({
-      count: 0
-    })
-    .setText(({ state }) => {
-      return `Count: ${state.count}`;
-    })
-    .setEvents(({ state, setState }) => ({
-      click() {
-        setState({
-          count: state.count + 1
-        });
-      }
-    }));
 
-app.append(counter);
+    .setText("Click Me")
+
+    .setEvents({
+      click() {
+
+        alert("Hello DOM++");
+
+      }
+    });
+
+app.append(button);
 
 </script>
 

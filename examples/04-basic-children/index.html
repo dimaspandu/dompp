@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Basic Children</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+    }
+
+    .card {
+      border: 1px solid #ddd;
+      padding: 16px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Basic Children</h1>
+
+<div id="app"></div>
+
+<script src="../../src/1.0.0/index.js"></script>
+
+<script>
+
+const card =
+  document.createElement("div")
+
+    .setAttributes({
+      class: "card"
+    })
+
+    .setChildren(
+
+      document.createElement("h2")
+        .setText("DOM++"),
+
+      document.createElement("p")
+        .setText(
+          "Children are declarative."
+        ),
+
+      document.createElement("button")
+        .setText("Learn More")
+    );
+
+app.append(card);
+
+</script>
+
+</body>
+</html>

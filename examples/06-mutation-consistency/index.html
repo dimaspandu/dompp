@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Mutation Consistency</title>
+
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+    }
+
+    button {
+      padding: 12px 16px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    .box {
+      border: 1px solid #ddd;
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Mutation Consistency</h1>
+
+<div id="app"></div>
+
+<script src="../../src/1.0.0/index.js"></script>
+
+<script>
+
+// =====================================
+// TEXT
+// =====================================
+
+const textBox =
+  document.createElement("div")
+
+    .setAttributes({
+      class: "box"
+    })
+
+    .setText("Initial Text");
+
+const textButton =
+  document.createElement("button")
+
+    .setText("Update Text")
+
+    .setEvents({
+      click() {
+
+        textBox.setText(
+          "Updated Text"
+        );
+
+      }
+    });
+
+// =====================================
+// STYLES
+// =====================================
+
+const styleBox =
+  document.createElement("div")
+
+    .setAttributes({
+      class: "box"
+    })
+
+    .setStyles({
+      background: "#eee"
+    })
+
+    .setText("Initial Styles");
+
+const styleButton =
+  document.createElement("button")
+
+    .setText("Update Styles")
+
+    .setEvents({
+      click() {
+
+        styleBox.setStyles({
+          background: "tomato",
+          color: "white"
+        });
+
+      }
+    });
+
+// =====================================
+// CHILDREN
+// =====================================
+
+const childrenBox =
+  document.createElement("div")
+
+    .setAttributes({
+      class: "box"
+    })
+
+    .setChildren(
+
+      document.createElement("h3")
+        .setText("Initial Children"),
+
+      document.createElement("p")
+        .setText("Paragraph A")
+    );
+
+const childrenButton =
+  document.createElement("button")
+
+    .setText("Replace Children")
+
+    .setEvents({
+      click() {
+
+        childrenBox.setChildren(
+
+          document.createElement("h3")
+            .setText("Updated Children"),
+
+          document.createElement("ul")
+
+            .setChildren(
+
+              document.createElement("li")
+                .setText("Item 1"),
+
+              document.createElement("li")
+                .setText("Item 2"),
+
+              document.createElement("li")
+                .setText("Item 3")
+            )
+        );
+
+      }
+    });
+
+// =====================================
+// APP
+// =====================================
+
+app.setChildren(
+
+  textBox,
+  textButton,
+
+  styleBox,
+  styleButton,
+
+  childrenBox,
+  childrenButton
+);
+
+</script>
+
+</body>
+</html>
