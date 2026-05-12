@@ -11,20 +11,60 @@
   <title>Basic Styles</title>
 
   <style>
+
     body {
       font-family: sans-serif;
       padding: 24px;
+      background: #f5f5f5;
+      color: #222;
     }
 
-    button {
-      padding: 12px 16px;
-      cursor: pointer;
+    h1 {
+      margin-bottom: 12px;
     }
+
+    .description {
+
+      max-width: 700px;
+
+      line-height: 1.7;
+
+      color: #666;
+
+      margin-bottom: 32px;
+    }
+
+    .card {
+
+      border-radius: 16px;
+
+      padding: 32px;
+
+      font-size: 24px;
+
+      font-weight: bold;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+    }
+
   </style>
 </head>
 <body>
 
-<h1>Basic Styles</h1>
+<h1>
+  Basic Styles
+</h1>
+
+<p class="description">
+
+setStyles() applies inline styles using
+a chainable API.
+
+Style updates are partial mutations,
+meaning existing styles remain unless overwritten.
+
+</p>
 
 <div id="app"></div>
 
@@ -33,15 +73,33 @@
 <script>
 
 const basicStyles =
-  document.createElement("div")
-    .setStyles({
-      background: "#f5f5f5",
-      color: "#333",
-      fontSize: "20px"
-    })
-    .setText("Styled Element");
 
-app.append(basicStyles);
+  document.createElement("div")
+
+    .setAttributes({
+      class: "card"
+    })
+
+    .setStyles({
+
+      background:
+        "#111",
+
+      color:
+        "white",
+
+      border:
+        "2px solid #333"
+
+    })
+
+    .setText(
+      "Styled Element"
+    );
+
+app.setChildren(
+  basicStyles
+);
 
 </script>
 

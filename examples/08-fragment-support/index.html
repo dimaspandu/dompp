@@ -8,7 +8,7 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>Basic Attributes</title>
+  <title>Fragment Support</title>
 
   <style>
 
@@ -48,19 +48,15 @@
       max-width: 500px;
     }
 
-    input {
+    .item {
 
-      width: 100%;
-
-      box-sizing: border-box;
-
-      padding: 14px;
+      padding: 12px;
 
       border-radius: 10px;
 
-      border: 1px solid #ddd;
+      background: #f0f0f0;
 
-      font-size: 16px;
+      margin-bottom: 12px;
     }
 
   </style>
@@ -68,15 +64,15 @@
 <body>
 
 <h1>
-  Basic Attributes
+  Fragment Support
 </h1>
 
 <p class="description">
 
-setAttributes() provides a unified API
-for applying DOM attributes.
+DOM++ also supports DocumentFragment.
 
-Boolean attributes are handled automatically.
+Fragments allow multiple nodes to be grouped
+without introducing unnecessary wrapper elements.
 
 </p>
 
@@ -86,7 +82,44 @@ Boolean attributes are handled automatically.
 
 <script>
 
-const basicAttributes =
+const fragment =
+
+  document.createDocumentFragment()
+
+    .setChildren(
+
+      document.createElement("div")
+
+        .setAttributes({
+          class: "item"
+        })
+
+        .setText(
+          "Fragment Child A"
+        ),
+
+      document.createElement("div")
+
+        .setAttributes({
+          class: "item"
+        })
+
+        .setText(
+          "Fragment Child B"
+        ),
+
+      document.createElement("div")
+
+        .setAttributes({
+          class: "item"
+        })
+
+        .setText(
+          "Fragment Child C"
+        )
+    );
+
+const card =
 
   document.createElement("div")
 
@@ -95,28 +128,11 @@ const basicAttributes =
     })
 
     .setChildren(
-
-      document.createElement("input")
-
-        .setAttributes({
-
-          type:
-            "text",
-
-          placeholder:
-            "Your name",
-
-          value:
-            "DOM++",
-
-          disabled:
-            false
-
-        })
+      fragment
     );
 
 app.setChildren(
-  basicAttributes
+  card
 );
 
 </script>

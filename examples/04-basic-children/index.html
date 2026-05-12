@@ -11,21 +11,75 @@
   <title>Basic Children</title>
 
   <style>
+
     body {
       font-family: sans-serif;
       padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .description {
+
+      max-width: 700px;
+
+      line-height: 1.7;
+
+      color: #666;
+
+      margin-bottom: 32px;
     }
 
     .card {
-      border: 1px solid #ddd;
-      padding: 16px;
-      border-radius: 12px;
+
+      background: white;
+
+      border-radius: 16px;
+
+      padding: 24px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+
+      max-width: 500px;
     }
+
+    button {
+
+      border: none;
+
+      background: black;
+
+      color: white;
+
+      padding: 12px 16px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+    }
+
   </style>
 </head>
 <body>
 
-<h1>Basic Children</h1>
+<h1>
+  Basic Children
+</h1>
+
+<p class="description">
+
+setChildren() declaratively builds child trees
+using native DOM nodes.
+
+DOM++ performs direct structural replacement
+without virtual DOM diffing.
+
+</p>
 
 <div id="app"></div>
 
@@ -34,6 +88,7 @@
 <script>
 
 const card =
+
   document.createElement("div")
 
     .setAttributes({
@@ -43,18 +98,27 @@ const card =
     .setChildren(
 
       document.createElement("h2")
-        .setText("DOM++"),
+
+        .setText(
+          "DOM++"
+        ),
 
       document.createElement("p")
+
         .setText(
           "Children are declarative."
         ),
 
       document.createElement("button")
-        .setText("Learn More")
+
+        .setText(
+          "Learn More"
+        )
     );
 
-app.append(card);
+app.setChildren(
+  card
+);
 
 </script>
 

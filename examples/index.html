@@ -2,95 +2,438 @@
 <html>
 <head>
   <meta charset="UTF-8" />
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
   />
-  <title>DOM++ Examples</title>
+
+  <title>
+    DOM++ Examples
+  </title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      font-family: sans-serif;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    body {
+      display: flex;
+      overflow: hidden;
+    }
+
+    /* ===================================
+       SIDEBAR
+    =================================== */
+
+    .sidebar {
+
+      width: 320px;
+
+      background: #111;
+
+      color: white;
+
+      display: flex;
+
+      flex-direction: column;
+
+      border-right:
+        1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-header {
+
+      padding: 24px;
+
+      border-bottom:
+        1px solid rgba(255,255,255,0.08);
+    }
+
+    .sidebar-header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    .sidebar-header p {
+
+      margin: 0;
+
+      color: rgba(255,255,255,0.7);
+
+      line-height: 1.6;
+
+      font-size: 14px;
+    }
+
+    .nav {
+
+      flex: 1;
+
+      overflow: auto;
+
+      padding: 12px;
+    }
+
+    .group-title {
+
+      font-size: 12px;
+
+      text-transform: uppercase;
+
+      letter-spacing: 1px;
+
+      opacity: 0.5;
+
+      margin:
+        24px 12px 12px;
+    }
+
+    .nav a {
+
+      display: block;
+
+      color: white;
+
+      text-decoration: none;
+
+      padding: 14px 16px;
+
+      border-radius: 12px;
+
+      margin-bottom: 6px;
+
+      transition:
+        background 0.15s ease;
+    }
+
+    .nav a:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    .nav a.active {
+      background: white;
+      color: black;
+      font-weight: bold;
+    }
+
+    /* ===================================
+       CONTENT
+    =================================== */
+
+    .content {
+
+      flex: 1;
+
+      display: flex;
+
+      flex-direction: column;
+
+      overflow: hidden;
+    }
+
+    .topbar {
+
+      height: 64px;
+
+      background: white;
+
+      border-bottom:
+        1px solid #ddd;
+
+      display: flex;
+
+      align-items: center;
+
+      padding: 0 24px;
+
+      font-weight: bold;
+    }
+
+    iframe {
+
+      flex: 1;
+
+      width: 100%;
+
+      border: none;
+
+      background: white;
+    }
+
+    /* ===================================
+       MOBILE
+    =================================== */
+
+    @media (max-width: 900px) {
+
+      body {
+        flex-direction: column;
+      }
+
+      .sidebar {
+
+        width: 100%;
+
+        height: 260px;
+
+        border-right: none;
+
+        border-bottom:
+          1px solid rgba(255,255,255,0.08);
+      }
+    }
+
+  </style>
 </head>
 <body>
 
-  <h1>DOM++ Examples</h1>
+<!-- ===================================
+     SIDEBAR
+=================================== -->
 
-  <ul>
-    <li>
-      <a href="/examples/01-basic-text/">
-        Basic Text
-      </a>
-    </li>
+<aside class="sidebar">
 
-    <li>
-      <a href="/examples/02-basic-styles/">
-        Basic Styles
-      </a>
-    </li>
+  <div class="sidebar-header">
 
-    <li>
-      <a href="/examples/03-basic-attributes/">
-        Basic Attributes
-      </a>
-    </li>
+    <h1>
+      DOM++
+    </h1>
 
-    <li>
-      <a href="/examples/04-basic-children/">
-        Basic Children
-      </a>
-    </li>
+    <p>
 
-    <li>
-      <a href="/examples/05-basic-events/">
-        Basic Events
-      </a>
-    </li>
+      Prototype-based reactive
+      DOM utilities.
 
-    <li>
-      <a href="/examples/06-mutation-consistency/">
-        Mutation Consistency
-      </a>
-    </li>
+      <br /><br />
 
-    <li>
-      <a href="/examples/07-children-vs-childnodes/">
-        Children vs ChildNodes
-      </a>
-    </li>
+      Examples progressively introduce:
+      mutations, composition,
+      reactivity, and stateful UI.
 
-    <li>
-      <a href="/examples/08-reactive-counter/">
-        Reactive Counter
-      </a>
-    </li>
+    </p>
 
-    <li>
-      <a href="/examples/09-reactive-children/">
-        Reactive Children
-      </a>
-    </li>
+  </div>
 
-    <li>
-      <a href="/examples/10-reusable-stateful-elements/">
-        Reusable Stateful Elements
-      </a>
-    </li>
+  <nav class="nav">
 
-    <li>
-      <a href="/examples/11-fragment-support/">
-        Fragment Support
-      </a>
-    </li>
+    <!-- =============================
+         BASICS
+    ============================== -->
 
-    <li>
-      <a href="/examples/12-functional-state/">
-        Functional State
-      </a>
-    </li>
+    <div class="group-title">
+      Basics
+    </div>
 
-    <li>
-      <a href="/examples/13-full-chaining/">
-        Full Chaining
-      </a>
-    </li>
-  </ul>
+    <a
+      href="/examples/01-basic-text/"
+      data-title="Basic Text"
+    >
+      01 — Basic Text
+    </a>
+
+    <a
+      href="/examples/02-basic-styles/"
+      data-title="Basic Styles"
+    >
+      02 — Basic Styles
+    </a>
+
+    <a
+      href="/examples/03-basic-attributes/"
+      data-title="Basic Attributes"
+    >
+      03 — Basic Attributes
+    </a>
+
+    <a
+      href="/examples/04-basic-children/"
+      data-title="Basic Children"
+    >
+      04 — Basic Children
+    </a>
+
+    <a
+      href="/examples/05-basic-events/"
+      data-title="Basic Events"
+    >
+      05 — Basic Events
+    </a>
+
+    <!-- =============================
+         MUTATION
+    ============================== -->
+
+    <div class="group-title">
+      Mutation
+    </div>
+
+    <a
+      href="/examples/06-mutation-consistency/"
+      data-title="Mutation Consistency"
+    >
+      06 — Mutation Consistency
+    </a>
+
+    <a
+      href="/examples/07-children-vs-childnodes/"
+      data-title="Children vs ChildNodes"
+    >
+      07 — Children vs ChildNodes
+    </a>
+
+    <a
+      href="/examples/08-fragment-support/"
+      data-title="Fragment Support"
+    >
+      08 — Fragment Support
+    </a>
+
+    <!-- =============================
+         REACTIVITY
+    ============================== -->
+
+    <div class="group-title">
+      Reactivity
+    </div>
+
+    <a
+      href="/examples/09-reactive-counter/"
+      data-title="Reactive Counter"
+    >
+      09 — Reactive Counter
+    </a>
+
+    <a
+      href="/examples/10-reactive-children/"
+      data-title="Reactive Children"
+    >
+      10 — Reactive Children
+    </a>
+
+    <a
+      href="/examples/11-reusable-stateful-elements/"
+      data-title="Reusable Stateful Elements"
+    >
+      11 — Reusable Stateful Elements
+    </a>
+
+    <a
+      href="/examples/12-cross-element-state/"
+      data-title="Cross-Element State"
+    >
+      12 — Cross-Element State
+    </a>
+
+  </nav>
+
+</aside>
+
+<!-- ===================================
+     CONTENT
+=================================== -->
+
+<main class="content">
+
+  <div
+    class="topbar"
+    id="title"
+  >
+
+    DOM++ Examples
+
+  </div>
+
+  <iframe
+    id="viewer"
+    src="/examples/01-basic-text/"
+  ></iframe>
+
+</main>
+
+<script>
+
+// =====================================
+// ELEMENTS
+// =====================================
+
+const iframe =
+  document.getElementById(
+    "viewer"
+  );
+
+const title =
+  document.getElementById(
+    "title"
+  );
+
+const links =
+  document.querySelectorAll(
+    ".nav a"
+  );
+
+// =====================================
+// NAVIGATION
+// =====================================
+
+for (const link of links) {
+
+  link.addEventListener(
+    "click",
+    (event) => {
+
+      event.preventDefault();
+
+      // ===============================
+      // UPDATE ACTIVE LINK
+      // ===============================
+
+      links.forEach((l) => {
+        l.classList.remove(
+          "active"
+        );
+      });
+
+      link.classList.add(
+        "active"
+      );
+
+      // ===============================
+      // UPDATE TITLE
+      // ===============================
+
+      title.textContent =
+        link.dataset.title;
+
+      // ===============================
+      // LOAD EXAMPLE
+      // ===============================
+
+      iframe.src =
+        link.href;
+    }
+  );
+}
+
+// =====================================
+// INITIAL ACTIVE LINK
+// =====================================
+
+links[0].classList.add(
+  "active"
+);
+
+</script>
 
 </body>
 </html>
