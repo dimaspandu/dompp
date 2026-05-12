@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    Reusable Stateful Elements
+  </title>
+
+  <style>
+
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .description {
+      max-width: 800px;
+      line-height: 1.7;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    .grid {
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
+      gap: 20px;
+    }
+
+    .card {
+
+      background: white;
+
+      border-radius: 16px;
+
+      padding: 24px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .likes {
+
+      font-size: 32px;
+
+      font-weight: bold;
+
+      margin:
+        16px 0;
+    }
+
+    button {
+
+      border: none;
+
+      background: black;
+
+      color: white;
+
+      padding: 12px 16px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>
+  Reusable Stateful Elements
+</h1>
+
+<p class="description">
+
+DOM++ does not use a component system.
+
+Instead, reusable UI can be created
+using plain JavaScript functions that
+return native DOM elements.
+
+Each returned element can contain
+its own isolated local state.
+
+</p>
+
+<div id="app"></div>
+
+<script src="../../src/1.0.0/index.js"></script>
+
+<script>
+
+// =====================================
+// FACTORY
+// =====================================
+
+function createCard(title) {
+
+  return document.createElement("div")
+
+    .setAttributes({
+      class: "card"
+    })
+
+    // ===============================
+    // LOCAL STATE
+    // ===============================
+
+    .setState({
+      likes: 0
+    })
+
+    // ===============================
+    // REACTIVE TREE
+    // ===============================
+
+    .setChildren(({ state, setState }) => [
+
+      // =============================
+      // TITLE
+      // =============================
+
+      document.createElement("h2")
+
+        .setText(title),
+
+      // =============================
+      // REACTIVE COUNT
+      // =============================
+
+      document.createElement("div")
+
+        .setAttributes({
+          class: "likes"
+        })
+
+        .setText(
+          `${state.likes}`
+        ),
+
+      // =============================
+      // BUTTON
+      // =============================
+
+      document.createElement("button")
+
+        .setText(
+          "Like"
+        )
+
+        .setEvents({
+          click() {
+
+            setState({
+              likes:
+                state.likes + 1
+            });
+
+          }
+        })
+    ]);
+}
+
+// =====================================
+// APP
+// =====================================
+
+app.setChildren(
+
+  document.createElement("div")
+
+    .setAttributes({
+      class: "grid"
+    })
+
+    .setChildren(
+
+      createCard("Card A"),
+
+      createCard("Card B"),
+
+      createCard("Card C")
+    )
+);
+
+</script>
+</body>
+</html>

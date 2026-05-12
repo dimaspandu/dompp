@@ -11,28 +11,108 @@
   <title>Mutation Consistency</title>
 
   <style>
+
     body {
       font-family: sans-serif;
       padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .page-description {
+      max-width: 800px;
+      line-height: 1.7;
+      color: #666;
+      margin-bottom: 40px;
+    }
+
+    .section {
+      margin-bottom: 48px;
+    }
+
+    .section-description {
+      color: #666;
+      margin-bottom: 16px;
+      line-height: 1.6;
+      max-width: 700px;
+    }
+
+    .card {
+      border-radius: 16px;
+      padding: 24px;
+      background: white;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+
+      margin-bottom: 16px;
+
+      transition:
+        all 0.25s ease;
     }
 
     button {
+
       padding: 12px 16px;
+
+      border: none;
+      border-radius: 10px;
+
       cursor: pointer;
-      margin-top: 12px;
+
+      background: black;
+      color: white;
     }
 
-    .box {
-      border: 1px solid #ddd;
-      padding: 16px;
-      border-radius: 12px;
-      margin-bottom: 24px;
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
     }
+
+    ul.summary {
+
+      background: white;
+
+      padding: 24px;
+
+      border-radius: 16px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+
+      line-height: 1.8;
+    }
+
+    code {
+      background: #eee;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
   </style>
 </head>
 <body>
 
 <h1>Mutation Consistency</h1>
+
+<p class="page-description">
+
+DOM++ uses a consistent mutation pattern
+across text, styles, attributes, children,
+events, and state.
+
+Every setter can be used both for:
+initialization and updates.
+
+Most setters also support derived mutation
+through callback syntax.
+
+</p>
 
 <div id="app"></div>
 
@@ -40,132 +120,671 @@
 
 <script>
 
-// =====================================
-// TEXT
-// =====================================
+app.setChildren(
 
-const textBox =
-  document.createElement("div")
+  // =====================================
+  // TEXT
+  // =====================================
 
-    .setAttributes({
-      class: "box"
-    })
-
-    .setText("Initial Text");
-
-const textButton =
-  document.createElement("button")
-
-    .setText("Update Text")
-
-    .setEvents({
-      click() {
-
-        textBox.setText(
-          "Updated Text"
-        );
-
-      }
-    });
-
-// =====================================
-// STYLES
-// =====================================
-
-const styleBox =
-  document.createElement("div")
+  document.createElement("section")
 
     .setAttributes({
-      class: "box"
-    })
-
-    .setStyles({
-      background: "#eee"
-    })
-
-    .setText("Initial Styles");
-
-const styleButton =
-  document.createElement("button")
-
-    .setText("Update Styles")
-
-    .setEvents({
-      click() {
-
-        styleBox.setStyles({
-          background: "tomato",
-          color: "white"
-        });
-
-      }
-    });
-
-// =====================================
-// CHILDREN
-// =====================================
-
-const childrenBox =
-  document.createElement("div")
-
-    .setAttributes({
-      class: "box"
+      class: "section"
     })
 
     .setChildren(
 
-      document.createElement("h3")
-        .setText("Initial Children"),
+      document.createElement("h2")
+        .setText("setText()"),
 
       document.createElement("p")
-        .setText("Paragraph A")
-    );
 
-const childrenButton =
-  document.createElement("button")
+        .setAttributes({
+          class: "section-description"
+        })
 
-    .setText("Replace Children")
+        .setText(
 
-    .setEvents({
-      click() {
+          "setText() can be used both " +
+          "for initialization and mutation. " +
 
-        childrenBox.setChildren(
+          "Callback mode allows mutations " +
+          "derived from the current text."
 
-          document.createElement("h3")
-            .setText("Updated Children"),
+        ),
 
-          document.createElement("ul")
+      (() => {
+
+        const box =
+          document.createElement("div")
+
+            .setAttributes({
+              class: "card"
+            })
+
+            .setText(
+              "Initial Text"
+            );
+
+        return document.createElement("div")
+
+          .setChildren(
+
+            box,
+
+            document.createElement("div")
+
+              .setAttributes({
+                class: "row"
+              })
+
+              .setChildren(
+
+                // =========================
+                // REPLACE
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Replace Text"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setText(
+                        "Text Replaced"
+                      );
+
+                    }
+                  }),
+
+                // =========================
+                // DERIVED
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Append Text"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setText(
+                        ({ text }) => {
+
+                          return (
+                            text + "!"
+                          );
+
+                        }
+                      );
+
+                    }
+                  })
+              )
+          );
+
+      })()
+    ),
+
+  // =====================================
+  // STYLES
+  // =====================================
+
+  document.createElement("section")
+
+    .setAttributes({
+      class: "section"
+    })
+
+    .setChildren(
+
+      document.createElement("h2")
+        .setText("setStyles()"),
+
+      document.createElement("p")
+
+        .setAttributes({
+          class: "section-description"
+        })
+
+        .setText(
+
+          "setStyles() performs partial " +
+          "mutation. Existing styles remain " +
+          "unless explicitly overwritten."
+
+        ),
+
+      (() => {
+
+        const box =
+          document.createElement("div")
+
+            .setAttributes({
+              class: "card"
+            })
+
+            .setStyles({
+              background: "#111",
+              color: "white",
+              padding: "32px"
+            })
+
+            .setText(
+              "Style Mutation"
+            );
+
+        return document.createElement("div")
+
+          .setChildren(
+
+            box,
+
+            document.createElement("div")
+
+              .setAttributes({
+                class: "row"
+              })
+
+              .setChildren(
+
+                // =========================
+                // PARTIAL UPDATE
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Background Only"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setStyles({
+                        background:
+                          "tomato"
+                      });
+
+                    }
+                  }),
+
+                // =========================
+                // DERIVED UPDATE
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Toggle Theme"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setStyles(
+                        ({ styles }) => ({
+
+                          background:
+                            styles.background === "white"
+                              ? "#111"
+                              : "white",
+
+                          color:
+                            styles.color === "white"
+                              ? "#111"
+                              : "white"
+
+                        })
+                      );
+
+                    }
+                  }),
+
+                // =========================
+                // TRANSFORM UPDATE
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Grow Padding"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setStyles(
+                        ({ styles }) => ({
+
+                          padding:
+
+                            (
+                              parseInt(
+                                styles.padding
+                              ) || 32
+                            ) + 8 + "px"
+
+                        })
+                      );
+
+                    }
+                  })
+              )
+          );
+
+      })()
+    ),
+
+  // =====================================
+  // ATTRIBUTES
+  // =====================================
+
+  document.createElement("section")
+
+    .setAttributes({
+      class: "section"
+    })
+
+    .setChildren(
+
+      document.createElement("h2")
+        .setText("setAttributes()"),
+
+      document.createElement("p")
+
+        .setAttributes({
+          class: "section-description"
+        })
+
+        .setText(
+
+          "setAttributes() performs partial " +
+          "attribute mutation with automatic " +
+          "boolean attribute handling."
+
+        ),
+
+      (() => {
+
+        const input =
+          document.createElement("input")
+
+            .setAttributes({
+              class: "card",
+              type: "text",
+              placeholder:
+                "Type something..."
+            });
+
+        return document.createElement("div")
+
+          .setChildren(
+
+            input,
+
+            document.createElement("div")
+
+              .setAttributes({
+                class: "row"
+              })
+
+              .setChildren(
+
+                // =========================
+                // DIRECT MUTATION
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Disable"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      input.setAttributes({
+                        disabled: true
+                      });
+
+                    }
+                  }),
+
+                // =========================
+                // DERIVED MUTATION
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Toggle Disabled"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      input.setAttributes(
+                        ({ attributes }) => ({
+
+                          disabled:
+                            attributes.disabled == null
+
+                        })
+                      );
+
+                    }
+                  }),
+
+                // =========================
+                // PARTIAL UPDATE
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Change Placeholder"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      input.setAttributes({
+                        placeholder:
+                          "Placeholder Updated"
+                      });
+
+                    }
+                  })
+              )
+          );
+
+      })()
+    ),
+
+  // =====================================
+  // CHILDREN
+  // =====================================
+
+  document.createElement("section")
+
+    .setAttributes({
+      class: "section"
+    })
+
+    .setChildren(
+
+      document.createElement("h2")
+        .setText("setChildren()"),
+
+      document.createElement("p")
+
+        .setAttributes({
+          class: "section-description"
+        })
+
+        .setText(
+
+          "setChildren() replaces the " +
+          "entire child tree. " +
+
+          "Append-like and transform-like " +
+          "behavior can be achieved through " +
+          "callback mode."
+
+        ),
+
+      (() => {
+
+        const box =
+          document.createElement("div")
+
+            .setAttributes({
+              class: "card"
+            })
 
             .setChildren(
 
-              document.createElement("li")
-                .setText("Item 1"),
+              document.createElement("h3")
+                .setText(
+                  "Initial Children"
+                ),
 
-              document.createElement("li")
-                .setText("Item 2"),
+              document.createElement("p")
+                .setText(
+                  "Paragraph A"
+                )
+            );
 
-              document.createElement("li")
-                .setText("Item 3")
+        return document.createElement("div")
+
+          .setChildren(
+
+            box,
+
+            document.createElement("div")
+
+              .setAttributes({
+                class: "row"
+              })
+
+              .setChildren(
+
+                // =========================
+                // FULL REPLACEMENT
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Replace Tree"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setChildren(
+
+                        document.createElement("h3")
+                          .setText(
+                            "Children Replaced"
+                          ),
+
+                        document.createElement("p")
+                          .setText(
+                            "Everything changed."
+                          )
+                      );
+
+                    }
+                  }),
+
+                // =========================
+                // SINGLE CHILD
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Single Child"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setChildren(
+
+                        document.createElement("h1")
+                          .setText(
+                            "Only One Child"
+                          )
+                      );
+
+                    }
+                  }),
+
+                // =========================
+                // APPEND-LIKE
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Append Child"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setChildren(
+                        ({ children }) => [
+
+                          ...children,
+
+                          document.createElement("p")
+                            .setText(
+                              "New Child"
+                            )
+                        ]
+                      );
+
+                    }
+                  }),
+
+                // =========================
+                // TRANSFORM
+                // =========================
+
+                document.createElement("button")
+
+                  .setText(
+                    "Insert Header"
+                  )
+
+                  .setEvents({
+                    click() {
+
+                      box.setChildren(
+                        ({ children }) => [
+
+                          document.createElement("h3")
+                            .setText(
+                              `Child Count: ${children.length}`
+                            ),
+
+                          ...children
+                        ]
+                      );
+
+                    }
+                  })
+              )
+          );
+
+      })()
+    ),
+
+  // =====================================
+  // SUMMARY
+  // =====================================
+
+  document.createElement("section")
+
+    .setAttributes({
+      class: "section"
+    })
+
+    .setChildren(
+
+      document.createElement("h2")
+        .setText(
+          "Mutation Summary"
+        ),
+
+      document.createElement("ul")
+
+        .setAttributes({
+          class: "summary"
+        })
+
+        .setChildren(
+
+          document.createElement("li")
+
+            .setChildren(
+
+              document.createElement("code")
+                .setText(
+                  "setText()"
+                ),
+
+              " replaces text content."
+            ),
+
+          document.createElement("li")
+
+            .setChildren(
+
+              document.createElement("code")
+                .setText(
+                  "setStyles()"
+                ),
+
+              " partially mutates inline styles."
+            ),
+
+          document.createElement("li")
+
+            .setChildren(
+
+              document.createElement("code")
+                .setText(
+                  "setAttributes()"
+                ),
+
+              " partially mutates attributes."
+            ),
+
+          document.createElement("li")
+
+            .setChildren(
+
+              document.createElement("code")
+                .setText(
+                  "setChildren()"
+                ),
+
+              " replaces the entire child tree."
+            ),
+
+          document.createElement("li")
+
+            .setChildren(
+
+              "All setters support the same mutation pattern:",
+
+              document.createElement("br"),
+
+              document.createElement("code")
+                .setText(
+                  "setSomething(next)"
+                ),
+
+              " or ",
+
+              document.createElement("code")
+                .setText(
+                  "setSomething(current => next)"
+                )
             )
-        );
+        )
+    )
 
-      }
-    });
-
-// =====================================
-// APP
-// =====================================
-
-app.setChildren(
-
-  textBox,
-  textButton,
-
-  styleBox,
-  styleButton,
-
-  childrenBox,
-  childrenButton
 );
 
 </script>

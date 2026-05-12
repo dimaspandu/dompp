@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Reactive Children</title>
+
+  <style>
+
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .description {
+      max-width: 800px;
+      line-height: 1.7;
+      color: #666;
+      margin-bottom: 32px;
+    }
+
+    .card {
+
+      background: white;
+
+      border-radius: 16px;
+
+      padding: 24px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+
+      max-width: 500px;
+    }
+
+    .item {
+
+      padding: 12px;
+
+      border-radius: 10px;
+
+      background: #f0f0f0;
+
+      margin-bottom: 12px;
+    }
+
+    button {
+
+      border: none;
+
+      background: black;
+
+      color: white;
+
+      padding: 12px 16px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>
+  Reactive Children
+</h1>
+
+<p class="description">
+
+setChildren() can also become reactive.
+
+When state changes, the entire child tree
+can be rebuilt declaratively.
+
+This enables dynamic lists and structural UI updates.
+
+</p>
+
+<div id="app"></div>
+
+<script src="../../src/1.0.0/index.js"></script>
+
+<script>
+
+const todo =
+
+  document.createElement("div")
+
+    .setAttributes({
+      class: "card"
+    })
+
+    // ===============================
+    // LOCAL STATE
+    // ===============================
+
+    .setState({
+      items: [
+        "Apple",
+        "Orange"
+      ]
+    })
+
+    // ===============================
+    // REACTIVE TREE
+    // ===============================
+
+    .setChildren(({ state }) => {
+
+      return [
+
+        // ===========================
+        // HEADER
+        // ===========================
+
+        document.createElement("h2")
+
+          .setText(
+            `Todo List (${state.items.length})`
+          ),
+
+        // ===========================
+        // ITEMS
+        // ===========================
+
+        ...state.items.map((item) =>
+
+          document.createElement("div")
+
+            .setAttributes({
+              class: "item"
+            })
+
+            .setText(item)
+        ),
+
+        // ===========================
+        // BUTTON
+        // ===========================
+
+        document.createElement("button")
+
+          .setText(
+            "Add Item"
+          )
+
+          .setEvents(() => ({
+            click() {
+
+              todo.setState(
+                ({ state }) => {
+
+                  state.items.push(
+
+                    "Item " +
+
+                    (
+                      state.items.length + 1
+                    )
+                  );
+
+                }
+              );
+
+            }
+          }))
+      ];
+
+    });
+
+app.setChildren(
+  todo
+);
+
+</script>
+</body>
+</html>
