@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    Existing DOM Enhancement
+  </title>
+
+  <style>
+
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .description {
+
+      max-width: 800px;
+
+      line-height: 1.7;
+
+      color: #666;
+
+      margin-bottom: 32px;
+    }
+
+    .important {
+
+      background:
+        linear-gradient(
+          135deg,
+          #fff8db,
+          #fff1a8
+        );
+
+      border:
+        1px solid #f0d000;
+
+      border-radius: 16px;
+
+      padding: 20px;
+
+      margin-bottom: 32px;
+
+      line-height: 1.7;
+
+      color: #5c4b00;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.06);
+    }
+
+    .important strong {
+      font-size: 18px;
+    }
+
+    .important ul {
+      margin-top: 12px;
+      padding-left: 20px;
+    }
+
+    .important li {
+      margin-bottom: 8px;
+    }
+
+    .important code {
+
+      background:
+        rgba(0,0,0,0.08);
+
+      padding:
+        2px 6px;
+
+      border-radius: 6px;
+
+      font-family: monospace;
+    }
+
+    .card {
+
+      background: white;
+
+      border-radius: 16px;
+
+      padding: 24px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+
+      max-width: 420px;
+    }
+
+    .count {
+
+      font-size: 56px;
+
+      font-weight: bold;
+
+      margin-bottom: 24px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+
+      border: none;
+
+      background: black;
+
+      color: white;
+
+      padding: 14px 18px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+
+      font-size: 16px;
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>
+  Existing DOM Enhancement
+</h1>
+
+<p class="description">
+
+DOM++ can enhance existing server-rendered
+or static HTML without recreating the tree.
+
+Unlike setChildren(), setEnhancement()
+does not replace child nodes.
+
+Instead, it adopts the existing DOM structure
+and attaches behavior directly onto it.
+
+</p>
+
+<div class="important">
+
+  <strong>
+    Important:
+  </strong>
+
+  <br /><br />
+
+  setEnhancement() does not rerender
+  or replace the existing DOM tree.
+
+  <br /><br />
+
+  When state changes, the enhancement
+  callback reruns and directly executes
+  native DOM setters again.
+
+  <br /><br />
+
+  This means mutation granularity depends
+  entirely on which setters are called.
+
+  <br /><br />
+
+  Examples:
+
+  <ul>
+
+    <li>
+      <code>setText()</code>
+      only updates text nodes
+    </li>
+
+    <li>
+      <code>setStyles()</code>
+      only mutates inline styles
+    </li>
+
+    <li>
+      <code>setAttributes()</code>
+      only mutates attributes
+    </li>
+
+    <li>
+      <code>setEvents()</code>
+      only reattaches listeners
+    </li>
+
+    <li>
+      <code>setChildren()</code>
+      performs full structural replacement
+    </li>
+
+  </ul>
+
+  DOM++ does not use virtual DOM diffing
+  or hidden reconciliation systems.
+
+</div>
+
+<!-- ===================================
+     SERVER-RENDERED HTML
+=================================== -->
+
+<section
+  id="counter-app"
+  class="card"
+>
+
+  <h2 class="count">
+    0
+  </h2>
+
+  <div class="row">
+
+    <button>
+      +
+    </button>
+
+    <button>
+      -
+    </button>
+
+  </div>
+
+</section>
+
+<script src="../../src/1.0.1/index.js"></script>
+
+<script>
+
+// =====================================
+// EXISTING DOM ENHANCEMENT
+// =====================================
+
+document
+
+  .getElementById(
+    "counter-app"
+  )
+
+  // ===================================
+  // LOCAL STATE
+  // ===================================
+
+  .setState({
+    count: 0
+  })
+
+  // ===================================
+  // ENHANCE EXISTING DOM
+  // ===================================
+
+  .setEnhancement(({
+
+    childNodes,
+    state,
+    setState
+
+  }) => {
+
+    // =================================
+    // EXISTING NODES
+    // =================================
+
+    const count =
+      childNodes[1];
+
+    const controls =
+      childNodes[3];
+
+    const increment =
+      controls.childNodes[1];
+
+    const decrement =
+      controls.childNodes[3];
+
+    // =================================
+    // REACTIVE COUNT
+    // =================================
+
+    count.setText(
+      state.count
+    );
+
+    count.setStyles({
+
+      color:
+
+        state.count > 0
+          ? "limegreen"
+
+          : state.count < 0
+            ? "tomato"
+            : "#222"
+
+    });
+
+    // =================================
+    // INCREMENT
+    // =================================
+
+    increment.setEvents({
+      click() {
+
+        setState({
+          count:
+            state.count + 1
+        });
+
+      }
+    });
+
+    // =================================
+    // DECREMENT
+    // =================================
+
+    decrement.setEvents({
+      click() {
+
+        setState({
+          count:
+            state.count - 1
+        });
+
+      }
+    });
+
+  });
+
+</script>
+
+</body>
+</html>
