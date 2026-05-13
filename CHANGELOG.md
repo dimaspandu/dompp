@@ -6,6 +6,191 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.1.1] - 2026-05-13
+
+### Added
+
+- Native ESM modular architecture:
+  - `context/`
+  - `core/`
+  - `install/`
+  - `runtime/`
+  - `setters/`
+  - `utils/`
+
+- Fine-grained signal runtime:
+  - `document.createSignal(...)`
+  - `createSignalEffect(...)`
+  - `setFineGrained()`
+
+- Existing DOM enhancement APIs:
+  - `setEnhancement(...)`
+  - hydration-like DOM assimilation patterns
+
+- Native Node.js test infrastructure:
+  - `node:test`
+  - zero external test framework dependencies
+
+- New examples:
+  - `13-existing-dom-enhancement/`
+  - `14-fine-grained-signals/`
+  - `15-existing-dom-enhancement-signals/`
+
+- New runtime examples for:
+  - stateful mutation consistency
+  - children vs childNodes
+  - reusable stateful elements
+  - cross-element state mutation
+
+### Changed
+
+- Refactored DOMPP into ESM-first architecture without breaking public APIs.
+- `src/index.js` now re-exports the latest stable runtime.
+- Internal setters are now isolated into independently testable modules.
+- Runtime responsibilities separated into:
+  - signals
+  - state scheduling
+  - wrappers
+  - prototype installers
+
+- README.md completely rewritten to reflect:
+  - native DOM-first philosophy
+  - fine-grained signals
+  - enhancement-based hydration
+  - ESM architecture
+  - testing strategy
+
+- CONTRIBUTING.md rewritten with:
+  - architectural contribution guidelines
+  - runtime philosophy
+  - prototype safety rules
+  - fine-grained runtime boundaries
+
+### Notes
+
+- Fine-grained signals remain fully optional.
+- Existing `setState(...)` runtime behavior remains supported.
+- DOMPP continues avoiding:
+  - virtual DOM
+  - template compilers
+  - hidden reconciliation
+  - framework-style abstractions
+
+- Examples now function as browser integration demonstrations in addition to documentation.
+
+## [1.1.0] - 2026-05-12
+
+### Added
+
+- Optional fine-grained signal runtime:
+  - `document.createSignal(...)`
+  - `createSignalEffect(...)`
+  - `setFineGrained()`
+
+- Signal-aware reactive setters:
+  - `setText(...)`
+  - `setStyles(...)`
+  - `setChildren(...)`
+  - `setAttributes(...)`
+  - `setEvents(...)`
+
+- Fine-grained signal example:
+  - `14-fine-grained-signals/`
+
+### Changed
+
+- Reactive wrappers now support:
+  - stateful runtime
+  - fine-grained signal runtime
+
+- Signals integrated incrementally into existing DOMPP architecture instead of replacing the stateful runtime.
+
+### Notes
+
+- Signals are completely optional.
+- Existing `setState(...)` APIs remain fully supported.
+- DOMPP still uses direct native DOM mutation without virtual DOM diffing.
+
+## [1.0.1] - 2026-05-11
+
+### Added
+
+- Existing DOM enhancement support:
+  - `setEnhancement(...)`
+
+- Existing DOM enhancement example:
+  - `13-existing-dom-enhancement/`
+
+- New architecture-focused examples:
+  - mutation consistency
+  - children vs childNodes
+  - reusable stateful elements
+  - cross-element state
+
+### Changed
+
+- `setState(...)` rewritten into pure mutation runtime:
+  - removed equality guards
+  - removed automatic mutation skipping
+  - direct mutation philosophy restored
+
+- Setter callbacks now expose richer DOM contexts:
+  - `children`
+  - `childNodes`
+  - `firstChild`
+  - `lastChild`
+
+- Examples redesigned into progressive educational structure:
+  - basic setters
+  - reactive state
+  - enhancement
+  - signals
+
+### Notes
+
+- Existing DOM nodes can now be enhanced without subtree recreation.
+- DOMPP hydration direction shifted toward assimilation instead of virtual DOM hydration.
+
+## [1.0.0] - 2026-05-10
+
+Initial stable DOM++ browser runtime.
+
+### Added
+
+- Core chainable DOM setters:
+  - `setText(...)`
+  - `setChildren(...)`
+  - `setStyles(...)`
+  - `setAttributes(...)`
+  - `setEvents(...)`
+
+- Stateful local runtime:
+  - `setState(...)`
+  - reactive setter callbacks
+  - microtask scheduling
+
+- Fragment support:
+  - `DocumentFragment.setText(...)`
+  - `DocumentFragment.setChildren(...)`
+
+- Vanilla browser examples:
+  - basic text
+  - styles
+  - attributes
+  - children
+  - events
+  - reactive counter
+  - reactive children
+
+### Design Principles
+
+- Native DOM first
+- No virtual DOM
+- Direct deterministic mutation
+- Chainable mutation ergonomics
+- Minimal runtime overhead
+- Explicit over magical behavior
+
 ## [0.1.16] - 2026-03-31
 
 ### Changed

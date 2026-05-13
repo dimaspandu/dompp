@@ -1,57 +1,50 @@
 # DOMPP (DOM++)
 
-DOMPP (read as DOM plus plus) is an experiment in ergonomic APIs on top of the native DOM.
-The name "DOM++" is inspired by C++ naming style: DOM extended with small, explicit, chainable methods and no wrapper objects.
+DOMPP (read as DOM plus plus) is a lightweight native DOM enhancement library focused on deterministic mutation, chainable APIs, optional reactivity, and minimal runtime overhead.
 
-This project focuses on deterministic mutation primitives, fine-grained updates, and low abstraction overhead.
-It is intentionally small and modular so that mutation, reactivity, reconciliation, and hydration can be studied independently.
+The name "DOM++" is inspired by C++ naming style:
 
----
+> DOM extended with small, explicit, chainable methods.
 
-## Documentation Index
+DOMPP does not use a virtual DOM.
+DOMPP does not wrap elements in custom objects.
+DOMPP does not require compilation.
 
-* [Root Overview](./README.md)
-* [DOM Module](./src/dom/README.md)
-* [Reactive Module](./src/reactive/README.md)
-* [Addons](./src/addons/README.md)
-
-Note: Long-form proposal/paper docs are planned but not included in this repo yet.
-
-Examples:
-
-* [Minimal Counter](./examples/minimal-counter/README.md)
-* [Mini Post](./examples/mini-post/README.md)
-* [Reactive Counter](./examples/reactive-counter/README.md)
-* [Stateful Counter](./examples/stateful-counter/README.md)
-* [VQuery Counter](./examples/vquery-counter/README.md)
-* [Reconcile Counter](./examples/reconcile-counter/README.md)
-* [Reconcile Match By Id Ordered List](./examples/reconcile-match-by-id-ordered-list/README.md)
-* [Reconcile Match By Id](./examples/reconcile-match-by-id/README.md)
-* [Reconcile Stateful Counter](./examples/reconcile-stateful-counter/README.md)
-* [Hydration Assimilation Counter](./examples/hydration-assimilation-counter/README.md)
-* [Hydration Assimilation List](./examples/hydration-assimilation-list/README.md)
-* [Hydration + Stateful Counter](./examples/hydration-stateful-counter/README.md)
-* [Setter Callback Core](./examples/setter-callback-core/README.md)
-* [Setter Callback Stateful](./examples/setter-callback-stateful/README.md)
-* [DOMPP State Reconcile Demo](./examples/dompp-state-reconcile-demo/README.md)
-* [DOMPP Step-by-Step Case Study](./examples/dompp-step-by-step-case-study/README.md)
-* [DOMPP Step-by-Step Case Study JSX](./examples/dompp-step-by-step-case-study-jsx/README.md)
+Instead, DOMPP extends native DOM prototypes with ergonomic setters while preserving direct access to the browser platform.
 
 ---
 
-## Goals
+# Philosophy
 
-* Explore UI engine architecture from first principles
-* Keep rendering behavior explicit and predictable
-* Reduce unnecessary DOM work and allocations
-* Provide a minimal base for experiments in reactivity and scheduling
+DOMPP is intentionally designed around:
 
-DOMPP is not intended to replace production frameworks.
-It exists to understand and validate design tradeoffs.
+* native DOM first
+* explicit mutation
+* deterministic updates
+* low abstraction overhead
+* minimal tooling
+* progressive capability
+
+DOMPP should feel like:
+
+```js
+const card =
+  document
+    .createElement("div")
+    .setChildren(
+      document
+        .createElement("h2")
+        .setText("Hello DOM++")
+    );
+```
+
+not like a framework runtime.
 
 ---
 
-## Core API
+# Features
+
+## Chainable DOM Setters
 
 DOMPP adds a small set of chainable mutation helpers:
 
@@ -61,268 +54,427 @@ DOMPP adds a small set of chainable mutation helpers:
 * `setAttributes(...)`
 * `setEvents(...)`
 * `setState(...)`
-
-Basic usage:
-
-```js
-import { installDompp } from "./src/dom/dompp.js";
-
-installDompp();
-
-document.body.setChildren(
-  document.createElement("div")
-    .setText("Hello DOMPP")
-    .setStyles({ color: "tomato" })
-    .setAttributes({ id: "greeting" })
-);
-```
+* `setEnhancement(...)`
+* `setFineGrained(...)`
 
 ---
 
-## Setter Callback Mode (Core)
+## Stateful Reactive Runtime
 
-Core DOMPP supports callback updaters for each setter. The callback receives the previous value and DOM context:
+DOMPP includes an optional element-local reactive runtime using `setState()`.
 
 ```js
-const title = document.createElement("h2").setText("Count: 0");
-
-// Later...
-
-title.setText(({ text }) => text.replace("0", "1"));
+const counter =
+  document
+    .createElement("button")
+    .setState({
+      count: 0
+    })
+    .setText(({ state }) => {
+      return `Count: ${state.count}`;
+    })
+    .setEvents(({ state, setState }) => ({
+      click() {
+        setState({
+          count: state.count + 1
+        });
+      }
+    }));
 ```
 
-Supported callbacks:
-
-* `setText(({ text, state }) => ...)`
-* `setStyles(({ styles, state }) => ...)`
-* `setAttributes(({ attributes, state }) => ...)`
-* `setEvents(({ events, state }) => ...)`
-* `setChildren(({ children, childNodes, state }) => ...)`
-* `setState(({ state }) => ...)`
-
-  The `setChildren` callback provides two properties for accessing child nodes:
-  - `children` — Element-only children (excludes whitespace Text nodes)
-  - `childNodes` — Raw node list (includes Text nodes, comments, etc.)
-
-  Use `children` when you only need Element references (e.g., hydration/assimilation).
-  Use `childNodes` when you need to preserve or inspect all node types.
-
-This enables hydration/assimilation patterns without adding a reactive system.
+Reactive setter callbacks rerun automatically after state updates.
 
 ---
 
-## Addons Overview
+## Fine-Grained Signals
 
-DOMPP keeps the core small. Optional addons extend behavior without changing mutation semantics.
-
-### `stateful` (Now Core)
-
-Element-local state and reactive setter bindings are now part of the core API:
+DOMPP also supports optional fine-grained signals.
 
 ```js
-import "./src/index.js";
+const [count, setCount] =
+  document.createSignal(0);
 
-// setState is now available by default
-const app = document.getElementById("app").setState({ count: 0 });
-
-app.setChildren(({ state, setState }) => [
-  document.createElement("h2").setText(`Count: ${state.count}`),
-  document.createElement("button")
-    .setText("Increment")
-    .setEvents({ click: () => setState(({ state }) => { state.count += 1; }) })
-]);
+const title =
+  document
+    .createElement("h1")
+    .setFineGrained()
+    .setText(() => {
+      return count();
+    });
 ```
 
-The `installDomppStateful` function is kept for backward compatibility but is no longer required.
+Signals are completely optional.
 
-### `reconcile`
+DOMPP still supports the original stateful runtime model.
 
-Adds patch-style updates and optional id-based matching:
+---
 
-```js
-import "./src/index.js";
-import { installDomppReconcile } from "./src/addons/reconcile.addon.js";
+## Existing DOM Enhancement
 
-installDomppReconcile({ overrideSetters: true });
+DOMPP can enhance existing server-rendered or static HTML without recreating the subtree.
 
-list.setChildren(...nodes, { matchById: true });
+```html
+<section id="counter-app">
+  <h2>0</h2>
+  <button>+</button>
+</section>
 ```
 
-### `hydration`
+```js
+document
+  .getElementById("counter-app")
+  .setEnhancement(({ childNodes }) => {
 
-Adds `hydrateChildren(recipe)` to assimilate existing DOM trees (SSR/static HTML) without recreating the subtree:
+    childNodes[1].setEvents({
+      click() {
+        childNodes[0].setText("1");
+      }
+    });
+  });
+```
+
+This allows DOM assimilation without hydration frameworks or virtual DOM diffing.
+
+---
+
+# Core Concepts
+
+## Consistent Mutation APIs
+
+DOMPP setters are intentionally designed to be consistent.
+
+Example:
 
 ```js
-import "./src/index.js";
-import { installDomppHydration } from "./src/addons/hydration.addon.js";
+element.setText("Hello");
+```
 
-installDomppHydration();
+can later become:
 
-document.getElementById("counter").hydrateChildren(({ children }) => {
-  const [countEl, decBtn, incBtn] = children;
-  let count = Number(countEl.textContent || 0);
+```js
+element.setText(({ text }) => {
+  return text + "!";
+});
+```
 
+The same pattern applies to:
+
+* `setStyles()`
+* `setAttributes()`
+* `setChildren()`
+* `setEvents()`
+
+This removes the need to mentally switch between:
+
+* `appendChild()`
+* `replaceChildren()`
+* `innerHTML`
+* `replaceWith()`
+* `textContent`
+* `setAttribute()`
+
+DOMPP keeps mutation ergonomics predictable.
+
+---
+
+## children vs childNodes
+
+Setter callbacks expose both:
+
+* `children`
+* `childNodes`
+
+### `children`
+
+Element-only children.
+
+Whitespace text nodes are excluded.
+
+```js
+setChildren(({ children }) => {
   return [
-    countEl,
-    decBtn.setEvents({ click: () => countEl.setText(--count) }),
-    incBtn.setEvents({ click: () => countEl.setText(++count) })
+    children[0]
   ];
 });
 ```
 
-### `vquery`
+Useful for:
 
-Small DOM helpers:
-
-* `$(selectorOrElement)` for safe single-element selection
-* `v(tag)` for concise element creation
+* hydration
+* enhancement
+* reusable element references
 
 ---
 
-## Project Structure
+### `childNodes`
 
-```text
-src/
-  dom/
-    dompp.js
-  reactive/
-    signal.js
-    stateful.js
-    scheduler.js
-  addons/
-    vquery.addon.js
-    reconcile.addon.js
-    hydration.addon.js
-  index.js
+Raw node list.
 
-examples/
-  serve.js
-  minimal-counter/
-  mini-post/
-  reactive-counter/
-  stateful-counter/
-  vquery-counter/
-  reconcile-counter/
-  reconcile-match-by-id-ordered-list/
-  reconcile-match-by-id/
-  reconcile-stateful-counter/
-  hydration-assimilation-counter/
-  hydration-assimilation-list/
-  hydration-stateful-counter/
-  setter-callback-core/
-  setter-callback-stateful/
+Includes:
+
+* text nodes
+* whitespace
+* comments
+* elements
+
+```js
+setChildren(({ childNodes }) => {
+  return [
+    childNodes[0],
+    childNodes[1]
+  ];
+});
+```
+
+Useful when preserving exact DOM structure.
+
+---
+
+# Fine-Grained vs Stateful Runtime
+
+DOMPP supports two reactive models.
+
+## Stateful Runtime
+
+Uses:
+
+```js
+setState(...)
+```
+
+Reactive setters rerun after state updates.
+
+Simple and ergonomic.
+
+---
+
+## Fine-Grained Signals
+
+Uses:
+
+```js
+document.createSignal(...)
+```
+
+Only setters directly consuming signals rerun.
+
+Useful for:
+
+* granular updates
+* explicit subscriptions
+* minimal reruns
+
+Signals are opt-in via:
+
+```js
+.setFineGrained()
 ```
 
 ---
 
-## Quick Start (Examples)
+# ESM Architecture
 
-Run the example server:
+As of `1.1.1`, DOMPP is internally modularized using ESM.
+
+This improves:
+
+* maintainability
+* scalability
+* unit testing
+* runtime separation
+
+Structure:
+
+```txt
+src/
+  1.1.1/
+
+    context/
+    core/
+    install/
+    runtime/
+    setters/
+    utils/
+```
+
+---
+
+# Project Structure
+
+```txt
+src/
+  1.0.0/
+  1.0.1/
+  1.1.0/
+  1.1.1/
+
+examples/
+
+tests/
+```
+
+---
+
+# Quick Start
+
+## Install
+
+Clone the repository:
 
 ```bash
-node examples/serve.js
+git clone <repository-url>
+```
+
+---
+
+## Run Examples
+
+```bash
+node examples/server.js
 ```
 
 Open:
 
-`http://localhost:3000`
+```txt
+http://localhost:5173
+```
 
-This auto-generates a list of examples.
+The examples page includes:
+
+* basic setters
+* mutation consistency
+* children vs childNodes
+* reactive state
+* signals
+* enhancement
+* existing DOM assimilation
 
 ---
 
-## Example Snippets
+# Basic Example
 
-Each snippet is intentionally short and highlights the core idea of that example.
+```html
+<div id="app"></div>
 
-### `setter-callback-core`
+<script type="module">
 
-```js
-import "../../src/index.js";
+import "./src/index.js";
 
-const title = document.createElement("h2").setText("Count: 0");
+const card =
+  document
+    .createElement("div")
 
-// Update using previous value without stateful addon
-setInterval(() => {
-  title.setText(({ text }) => `Count: ${Number(text.split(":")[1]) + 1}`);
-}, 1000);
-```
+    .setStyles({
+      padding: "20px",
+      background: "black",
+      color: "white"
+    })
 
-### `setter-callback-stateful`
+    .setChildren(
 
-```js
-import "../../src/index.js";
-import { installDomppStateful } from "../../src/reactive/stateful.js";
+      document
+        .createElement("h1")
+        .setText("Hello DOM++"),
 
-installDomppStateful();
+      document
+        .createElement("button")
+        .setText("Click Me")
+        .setEvents({
+          click() {
+            alert("DOM++");
+          }
+        })
+    );
 
-const app = document.getElementById("app").setState({ n: 0 });
+app.append(card);
 
-app.setChildren(({ state, setState }) => [
-  document.createElement("h2").setText(`Count: ${state.n}`),
-  document.createElement("button")
-    .setText("+")
-    .setEvents({ click: () => setState(({ state }) => { state.n += 1; }) })
-]);
-```
-
-### `hydration-assimilation-counter`
-
-```js
-import "../../src/index.js";
-import { installDomppHydration } from "../../src/addons/hydration.addon.js";
-
-installDomppHydration();
-
-document.getElementById("counter").hydrateChildren(({ children }) => {
-  const [countEl, decBtn, incBtn] = children;
-  let count = Number(countEl.textContent || 0);
-
-  return [
-    countEl,
-    decBtn.setEvents({ click: () => countEl.setText(--count) }),
-    incBtn.setEvents({ click: () => countEl.setText(++count) })
-  ];
-});
+</script>
 ```
 
 ---
 
-## Design Principles
+# Testing
+
+DOMPP uses:
+
+* native Node.js test runner
+* native ESM
+* zero test dependencies
+
+Run tests:
+
+```bash
+npm test
+```
+
+Or directly:
+
+```bash
+node --test
+```
+
+Tests focus primarily on:
+
+* runtime behavior
+* signals
+* utilities
+* state scheduling
+* deterministic mutation logic
+
+Browser integration testing is demonstrated through the examples.
+
+---
+
+# Design Principles
 
 * Explicit over magical behavior
+* Native platform first
+* No virtual DOM
+* No hidden reconciliation
+* No compiler required
 * Minimal runtime surface area
-* Fine-grained mutation
-* Deterministic update flow
-* Framework-independent architecture
+* Predictable mutation flow
+* Optional reactivity
 
 ---
 
-## Status
+# Status
 
 DOMPP is experimental and under active iteration.
-Breaking changes are expected while architecture decisions are validated.
+
+Breaking changes may occur while APIs and runtime architecture continue evolving.
+
+The project exists primarily to explore:
+
+* DOM mutation ergonomics
+* reactive runtime design
+* enhancement-based hydration
+* fine-grained subscriptions
+* native-first UI architecture
 
 ---
 
-## Contributing
+# Contributing
 
-Contributions are welcome, especially around:
+Contributions are welcome.
 
-* reactive architecture
-* scheduling strategies
-* memory behavior
-* rendering performance
-* documentation quality
+Please read:
 
-Before large changes, open a discussion to align direction.
+* CONTRIBUTING.md
 
-For practical setup, conventions, and expectations, see:
+before submitting large architectural changes.
 
-* [CONTRIBUTING](./CONTRIBUTING.md)
+DOMPP prioritizes:
+
+* clarity
+* minimalism
+* deterministic behavior
+* native DOM mental models
 
 ---
 
-## License
+# License
 
-[MIT](LICENSE.md) Copyright (c) Dimas Pandu Pratama
+MIT License
+
+Copyright (c) Dimas Pandu Pratama

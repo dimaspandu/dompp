@@ -5,6 +5,3 @@ dist
 .env
 coverage
 *.log
-docs/Proposed_DOMPP_Paper.docx
-docs/__preprints
-docs/__preprints/
