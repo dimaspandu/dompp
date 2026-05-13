@@ -428,25 +428,83 @@
         Enhancement Pattern
       </h2>
 
-<pre><code><span class="code-variable">element</span>
+<pre><code><span class="code-comment">// =====================================</span>
+<span class="code-comment">// EXISTING DOM ENHANCEMENT</span>
+<span class="code-comment">// =====================================</span>
+document
+  .<span class="code-method">getElementById</span>(
+    <span class="code-string">"counter-app"</span>
+  )
 
-  .<span class="code-method">setEnhancement</span>(
-    ({ childNodes }) => {
+  <span class="code-comment">// ===================================</span>
+  <span class="code-comment">// LOCAL STATE</span>
+  <span class="code-comment">// ===================================</span>
+  .<span class="code-method">setState</span>({
+    <span class="code-property">count</span>: 0
+  })
 
-      <span class="code-keyword">const</span> <span class="code-variable">button</span> =
-        childNodes[0];
+  <span class="code-comment">// ===================================</span>
+  <span class="code-comment">// ENHANCE EXISTING DOM</span>
+  <span class="code-comment">// ===================================</span>
+  .<span class="code-method">setEnhancement</span>(({ 
+    childNodes,
+    state,
+    setState
+  }) => {
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// EXISTING NODES</span>
+    <span class="code-comment">// =================================</span>
+    <span class="code-keyword">const</span> <span class="code-variable">count</span> =
+      childNodes[1];
+    <span class="code-keyword">const</span> <span class="code-variable">controls</span> =
+      childNodes[3];
+    <span class="code-keyword">const</span> <span class="code-variable">increment</span> =
+      controls.childNodes[1];
+    <span class="code-keyword">const</span> <span class="code-variable">decrement</span> =
+      controls.childNodes[3];
 
-      button
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// REACTIVE COUNT</span>
+    <span class="code-comment">// =================================</span>
+    count
+      .<span class="code-method">setText</span>(
+        state.count
+      )
+      .<span class="code-method">setStyles</span>({
+        <span class="code-property">color</span>:
+          state.count > 0
+            ? <span class="code-string">"limegreen"</span>
+            : state.count &lt; 0
+              ? <span class="code-string">"tomato"</span>
+              : <span class="code-string">"#222"</span>
+      });
 
-        .<span class="code-method">setEvents</span>({
-          click() {
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// INCREMENT</span>
+    <span class="code-comment">// =================================</span>
+    increment
+      .<span class="code-method">setEvents</span>({
+        <span class="code-property">click</span>() {
+          setState({
+            <span class="code-property">count</span>:
+              state.count + 1
+          });
+        }
+      });
 
-            ...
-          }
-        });
-
-    }
-  );</code></pre>
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// DECREMENT</span>
+    <span class="code-comment">// =================================</span>
+    decrement
+      .<span class="code-method">setEvents</span>({
+        <span class="code-property">click</span>() {
+          setState({
+            <span class="code-property">count</span>:
+              state.count - 1
+          });
+        }
+      });
+  });</code></pre>
 
       <div class="notes">
 

@@ -340,28 +340,64 @@
         Reactive Pattern
       </h2>
 
-<pre><code><span class="code-variable">element</span>
+<pre><code><span class="code-keyword">const</span> <span class="code-variable">counter</span> =
+  document
+    .<span class="code-method">createElement</span>(<span class="code-string">"button"</span>)
 
-  .<span class="code-method">setState</span>({
-    <span class="code-property">count</span>: 0
-  })
+    <span class="code-comment">// ===============================</span>
+    <span class="code-comment">// LOCAL STATE</span>
+    <span class="code-comment">// ===============================</span>
+    .<span class="code-method">setState</span>({
+      <span class="code-property">count</span>: 0
+    })
 
-  .<span class="code-method">setText</span>(
-    ({ state }) => (
-      <span class="code-string">`Count: ${state.count}`</span>
-    )
-  )
+    <span class="code-comment">// ===============================</span>
+    <span class="code-comment">// REACTIVE TEXT</span>
+    <span class="code-comment">// ===============================</span>
+    .<span class="code-method">setText</span>(({ state }) => {
+      <span class="code-keyword">return</span> (
+        <span class="code-string">`Count: ${state.count}`</span>
+      );
+    })
 
-  .<span class="code-method">setEvents</span>({
-    <span class="code-property">click</span>() {
+    <span class="code-comment">// ===============================</span>
+    <span class="code-comment">// REACTIVE STYLES</span>
+    <span class="code-comment">// ===============================</span>
+    .<span class="code-method">setStyles</span>(({ state }) => ({
+      <span class="code-property">background</span>:
+        state.count % 2 === 0
+          ? <span class="code-string">"black"</span>
+          : <span class="code-string">"tomato"</span>,
+      <span class="code-property">transform</span>:
+        <span class="code-string">`scale(${1 + state.count * 0.02})`</span>
+    }))
 
-      <span class="code-variable">setState</span>({
-        <span class="code-property">count</span>:
-          state.count + 1
-      });
+    <span class="code-comment">// ===============================</span>
+    <span class="code-comment">// REACTIVE ATTRIBUTES</span>
+    <span class="code-comment">// ===============================</span>
+    .<span class="code-method">setAttributes</span>(({ state }) => ({
+      <span class="code-property">class</span>:
+        <span class="code-string">"counter"</span>,
+      <span class="code-property">title</span>:
+        <span class="code-string">`Current count: ${state.count}`</span>
+    }))
 
-    }
-  });</code></pre>
+    <span class="code-comment">// ===============================</span>
+    <span class="code-comment">// EVENTS</span>
+    <span class="code-comment">// ===============================</span>
+    .<span class="code-method">setEvents</span>(({ state, setState }) => ({
+      <span class="code-property">click</span>() {
+        setState({
+          <span class="code-property">count</span>:
+            state.count + 1
+        });
+      }
+    }));
+
+app
+  .<span class="code-method">setChildren</span>(
+    counter
+  );</code></pre>
 
       <div class="notes">
 
