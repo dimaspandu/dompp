@@ -6,6 +6,23 @@ This project follows semantic versioning principles.
 
 ---
 
+## v1.2.1
+
+### Improved
+- Modernized remaining examples with:
+  - interactive documentation layouts
+  - syntax-highlighted code previews
+  - live preview panels
+  - runtime explanation sections
+- Improved educational structure for examples
+- Improved onboarding experience for new developers
+
+### Documentation
+- Added architecture documentation landing page
+- Added browser-accessible architecture gallery
+- Improved GitHub Pages compatibility
+- Improved static documentation navigation
+
 ## v1.2.0
 
 ### Added

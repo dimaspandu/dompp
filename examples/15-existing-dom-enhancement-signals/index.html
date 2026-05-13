@@ -425,29 +425,99 @@
         Enhancement + Signals Pattern
       </h2>
 
-<pre><code><span class="code-variable">element</span>
+<pre><code><span class="code-comment">// =====================================</span>
+<span class="code-comment">// SIGNAL</span>
+<span class="code-comment">// =====================================</span>
+<span class="code-keyword">const</span> [
+  <span class="code-variable">count</span>,
+  <span class="code-variable">setCount</span>
+] = document
+  .<span class="code-method">createSignal</span>(0);
 
+<span class="code-comment">// =====================================</span>
+<span class="code-comment">// ENHANCE EXISTING DOM</span>
+<span class="code-comment">// =====================================</span>
+document
+  .<span class="code-method">getElementById</span>(
+    <span class="code-string">"counter-app"</span>
+  )
   .<span class="code-method">setFineGrained</span>()
+  .<span class="code-method">setEnhancement</span>(({
+    childNodes
+  }) => {
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// EXISTING NODES</span>
+    <span class="code-comment">// =================================</span>
+    <span class="code-keyword">const</span> <span class="code-variable">countNode</span> =
+      childNodes[1];
+    <span class="code-keyword">const</span> <span class="code-variable">descriptionNode</span> =
+      childNodes[3];
+    <span class="code-keyword">const</span> <span class="code-variable">controls</span> =
+      childNodes[5];
+    <span class="code-keyword">const</span> <span class="code-variable">incrementButton</span> =
+      controls.childNodes[1];
+    <span class="code-keyword">const</span> <span class="code-variable">decrementButton</span> =
+      controls.childNodes[3];
 
-  .<span class="code-method">setEnhancement</span>(
-    ({ childNodes }) => {
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// COUNT TEXT</span>
+    <span class="code-comment">// =================================</span>
+    countNode
+      .<span class="code-method">setFineGrained</span>()
+      .<span class="code-method">setText</span>(() => {
+        <span class="code-keyword">return</span>
+          count();
+      })
+      .<span class="code-method">setStyles</span>(() => ({
+        <span class="code-property">color</span>:
+          count() > 0
+            ? <span class="code-string">"limegreen"</span>
+            : count() &lt; 0
+              ? <span class="code-string">"tomato"</span>
+              : <span class="code-string">"#222"</span>
+      }));
 
-      <span class="code-keyword">const</span> <span class="code-variable">countNode</span> =
-        childNodes[0];
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// DESCRIPTION</span>
+    <span class="code-comment">// =================================</span>
+    descriptionNode
+      .<span class="code-method">setFineGrained</span>()
+      .<span class="code-method">setText</span>(() => (
+        <span class="code-string">`Current count: ${count()}`</span>
+      ))
+      .<span class="code-method">setStyles</span>(() => ({
+        <span class="code-property">backgroundColor</span>:
+          count() % 2 === 0
+            ? <span class="code-string">"lightblue"</span>
+            : <span class="code-string">"lightcoral"</span>,
+        <span class="code-property">color</span>:
+          <span class="code-string">"#333"</span>,
+        <span class="code-property">padding</span>:
+          <span class="code-string">"1em"</span>,
+        <span class="code-property">borderRadius</span>:
+          <span class="code-string">"0.5em"</span>
+      }));
 
-      countNode
-
-        .<span class="code-method">setFineGrained</span>()
-
-        .<span class="code-method">setText</span>(() => {
-
-          <span class="code-keyword">return</span>
-            count();
-
-        });
-
-    }
-  );</code></pre>
+    <span class="code-comment">// =================================</span>
+    <span class="code-comment">// BUTTONS</span>
+    <span class="code-comment">// =================================</span>
+    incrementButton
+      .<span class="code-method">setEvents</span>({
+        <span class="code-property">click</span>() {
+          setCount(
+            count() + 1
+          );
+        }
+      });
+    decrementButton
+      .<span class="code-method">setEvents</span>({
+        <span class="code-property">click</span>() {
+          setCount(
+            count() - 1
+          );
+        }
+      });
+  });</code></pre>
 
       <div class="notes">
 

@@ -335,37 +335,24 @@
       </h2>
 
 <pre><code><span class="code-keyword">const</span> <span class="code-variable">card</span> =
-
   document
-
     .<span class="code-method">createElement</span>(<span class="code-string">"div"</span>)
-
     .<span class="code-method">setAttributes</span>({
       <span class="code-property">class</span>: <span class="code-string">"card"</span>
     })
-
     .<span class="code-method">setChildren</span>(
-
       document
-
         .<span class="code-method">createElement</span>(<span class="code-string">"h2"</span>)
-
         .<span class="code-method">setText</span>(
           <span class="code-string">"DOM++"</span>
         ),
-
       document
-
         .<span class="code-method">createElement</span>(<span class="code-string">"p"</span>)
-
         .<span class="code-method">setText</span>(
           <span class="code-string">"Children are declarative."</span>
         ),
-
       document
-
         .<span class="code-method">createElement</span>(<span class="code-string">"button"</span>)
-
         .<span class="code-method">setText</span>(
           <span class="code-string">"Learn More"</span>
         )
