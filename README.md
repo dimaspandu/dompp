@@ -44,6 +44,19 @@ not like a framework runtime.
 
 # Features
 
+## Runtime Architecture
+
+DOMPP extends native DOM APIs with small,
+chainable mutation setters and optional
+reactive runtimes.
+
+Unlike virtual DOM frameworks, DOMPP performs
+direct deterministic DOM mutation.
+
+![DOMPP Runtime Architecture](./docs/architecture/runtime-flow.png)
+
+---
+
 ## Chainable DOM Setters
 
 DOMPP adds a small set of chainable mutation helpers:
@@ -107,6 +120,8 @@ Signals are completely optional.
 
 DOMPP still supports the original stateful runtime model.
 
+![DOMPP Fine-Grained Signals](./docs/architecture/fine-grained-signals.png)
+
 ---
 
 ## Existing DOM Enhancement
@@ -134,6 +149,8 @@ document
 ```
 
 This allows DOM assimilation without hydration frameworks or virtual DOM diffing.
+
+![DOMPP Existing DOM Enhancement](./docs/architecture/enhancement-flow.png)
 
 ---
 

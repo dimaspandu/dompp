@@ -6,6 +6,29 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.1.2] - 2026-05-13
+
+### Added
+
+- Architecture documentation:
+  - runtime architecture
+  - stateful runtime flow
+  - fine-grained signals flow
+  - enhancement assimilation flow
+  - children vs childNodes visualization
+  - runtime positioning
+  - DOMPP vision diagrams
+
+- `docs/architecture/README.md`
+
+- README runtime architecture sections with embedded diagrams
+
+### Changed
+
+- Improved contributor onboarding documentation
+- Improved runtime and reactive flow explanations
+- Expanded architectural documentation coverage
+
 ## [1.1.1] - 2026-05-13
 
 ### Added
