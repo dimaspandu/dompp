@@ -6,6 +6,11 @@ This project follows semantic versioning principles.
 
 ---
 
+## v1.2.2
+
+### Improved
+- Added SEO-friendly meta tags and Open Graph support to index.html for better social media sharing and search engine optimization
+
 ## v1.2.1
 
 ### Improved
