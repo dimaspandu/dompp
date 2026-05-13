@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="./favicon.svg"
+  />
+
+  <title>
+    DOMPP (DOM++)
+  </title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+
+      margin: 0;
+
+      font-family:
+        Inter,
+        system-ui,
+        sans-serif;
+
+      background:
+        #f5f5f5;
+
+      color:
+        #111;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .hero {
+
+      padding:
+        96px 32px;
+
+      background:
+        linear-gradient(
+          135deg,
+          #111,
+          #222
+        );
+
+      color:
+        white;
+    }
+
+    .hero-inner {
+
+      max-width:
+        1100px;
+
+      margin:
+        0 auto;
+    }
+
+    .badge {
+
+      display:
+        inline-block;
+
+      background:
+        rgba(255,255,255,0.12);
+
+      border:
+        1px solid rgba(255,255,255,0.18);
+
+      padding:
+        8px 14px;
+
+      border-radius:
+        999px;
+
+      font-size:
+        14px;
+
+      margin-bottom:
+        24px;
+    }
+
+    h1 {
+
+      font-size:
+        clamp(48px, 8vw, 96px);
+
+      margin:
+        0 0 24px 0;
+
+      line-height:
+        0.95;
+    }
+
+    .hero p {
+
+      max-width:
+        760px;
+
+      font-size:
+        20px;
+
+      line-height:
+        1.8;
+
+      color:
+        rgba(255,255,255,0.82);
+    }
+
+    .buttons {
+
+      display:
+        flex;
+
+      gap:
+        16px;
+
+      flex-wrap:
+        wrap;
+
+      margin-top:
+        40px;
+    }
+
+    .button {
+
+      padding:
+        14px 20px;
+
+      border-radius:
+        12px;
+
+      font-weight:
+        600;
+
+      transition:
+        transform 0.15s ease;
+    }
+
+    .button:hover {
+      transform: translateY(-2px);
+    }
+
+    .button-primary {
+
+      background:
+        white;
+
+      color:
+        black;
+    }
+
+    .button-secondary {
+
+      border:
+        1px solid rgba(255,255,255,0.18);
+
+      color:
+        white;
+    }
+
+    .section {
+
+      max-width:
+        1100px;
+
+      margin:
+        0 auto;
+
+      padding:
+        96px 32px;
+    }
+
+    .section-title {
+
+      font-size:
+        42px;
+
+      margin-bottom:
+        16px;
+    }
+
+    .section-description {
+
+      color:
+        #666;
+
+      line-height:
+        1.8;
+
+      margin-bottom:
+        48px;
+
+      max-width:
+        800px;
+    }
+
+    .grid {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(auto-fit, minmax(260px, 1fr));
+
+      gap:
+        24px;
+    }
+
+    .card {
+
+      background:
+        white;
+
+      border-radius:
+        20px;
+
+      padding:
+        28px;
+
+      box-shadow:
+        0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .card h3 {
+
+      margin-top:
+        0;
+
+      font-size:
+        22px;
+    }
+
+    .card p {
+
+      color:
+        #666;
+
+      line-height:
+        1.7;
+    }
+
+    .architecture-preview {
+
+      width:
+        100%;
+
+      border-radius:
+        20px;
+
+      box-shadow:
+        0 10px 32px rgba(0,0,0,0.08);
+    }
+
+    .examples {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        repeat(auto-fit, minmax(320px, 1fr));
+
+      gap:
+        20px;
+    }
+
+    .example-link {
+
+      background:
+        white;
+
+      padding:
+        20px;
+
+      border-radius:
+        16px;
+
+      box-shadow:
+        0 6px 18px rgba(0,0,0,0.05);
+
+      transition:
+        transform 0.15s ease;
+    }
+
+    .example-link:hover {
+      transform: translateY(-2px);
+    }
+
+    .example-link strong {
+
+      display:
+        block;
+
+      margin-bottom:
+        8px;
+    }
+
+    footer {
+
+      padding:
+        64px 32px;
+
+      text-align:
+        center;
+
+      color:
+        #777;
+    }
+
+    code {
+
+      background:
+        #eee;
+
+      padding:
+        2px 8px;
+
+      border-radius:
+        8px;
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <!-- ================================= -->
+  <!-- HERO -->
+  <!-- ================================= -->
+
+  <section class="hero">
+
+    <div class="hero-inner">
+
+      <div class="badge">
+        DOMPP v1.1.2
+      </div>
+
+      <h1>
+        DOM++
+      </h1>
+
+      <p>
+
+        A lightweight native DOM enhancement
+        runtime focused on deterministic mutation,
+        optional reactivity, and direct browser APIs.
+
+      </p>
+
+      <div class="buttons">
+
+        <a
+          href="./examples/"
+          class="
+            button
+            button-primary
+          "
+        >
+          Explore Examples
+        </a>
+
+        <a
+          href="./docs/architecture/"
+          class="
+            button
+            button-secondary
+          "
+        >
+          Architecture Docs
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================================= -->
+  <!-- FEATURES -->
+  <!-- ================================= -->
+
+  <section class="section">
+
+    <h2 class="section-title">
+      Philosophy
+    </h2>
+
+    <p class="section-description">
+
+      DOMPP extends native DOM prototypes
+      with small chainable setters while
+      preserving direct access to browser APIs.
+
+      <br /><br />
+
+      No virtual DOM.
+      No hidden reconciliation.
+      No compiler required.
+
+    </p>
+
+    <div class="grid">
+
+      <div class="card">
+
+        <h3>
+          Direct DOM Mutation
+        </h3>
+
+        <p>
+
+          DOMPP mutates native DOM nodes
+          directly without virtual DOM
+          diffing or reconciliation layers.
+
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <h3>
+          Optional Reactivity
+        </h3>
+
+        <p>
+
+          Choose between local stateful
+          runtime or optional fine-grained
+          signals.
+
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <h3>
+          Existing DOM Enhancement
+        </h3>
+
+        <p>
+
+          Enhance existing server-rendered
+          HTML without subtree recreation
+          or hydration engines.
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================================= -->
+  <!-- ARCHITECTURE -->
+  <!-- ================================= -->
+
+  <section class="section">
+
+    <h2 class="section-title">
+      Runtime Architecture
+    </h2>
+
+    <p class="section-description">
+
+      DOMPP is designed around explicit
+      mutation flow and native DOM
+      mental models.
+
+    </p>
+
+    <img
+      src="./docs/architecture/runtime-flow.png"
+      alt="Runtime Architecture"
+      class="architecture-preview"
+    />
+
+  </section>
+
+  <!-- ================================= -->
+  <!-- EXAMPLES -->
+  <!-- ================================= -->
+
+  <section class="section">
+
+    <h2 class="section-title">
+      Examples
+    </h2>
+
+    <p class="section-description">
+
+      Explore progressively structured
+      examples demonstrating mutation,
+      reactivity, enhancement, and
+      fine-grained signals.
+
+    </p>
+
+    <div class="examples">
+
+      <a
+        href="./examples/01-basic-text/"
+        class="example-link"
+      >
+
+        <strong>
+          01 — Basic Text
+        </strong>
+
+        Minimal text mutation example.
+
+      </a>
+
+      <a
+        href="./examples/06-mutation-consistency/"
+        class="example-link"
+      >
+
+        <strong>
+          06 — Mutation Consistency
+        </strong>
+
+        Demonstrates unified setter APIs.
+
+      </a>
+
+      <a
+        href="./examples/09-reactive-counter/"
+        class="example-link"
+      >
+
+        <strong>
+          09 — Reactive Counter
+        </strong>
+
+        Local stateful reactive runtime.
+
+      </a>
+
+      <a
+        href="./examples/13-existing-dom-enhancement/"
+        class="example-link"
+      >
+
+        <strong>
+          13 — Existing DOM Enhancement
+        </strong>
+
+        Enhancement without hydration.
+
+      </a>
+
+      <a
+        href="./examples/14-fine-grained-signals/"
+        class="example-link"
+      >
+
+        <strong>
+          14 — Fine-Grained Signals
+        </strong>
+
+        Optional signal-based reactivity.
+
+      </a>
+
+      <a
+        href="./examples/15-existing-dom-enhancement-signals/"
+        class="example-link"
+      >
+
+        <strong>
+          15 — Enhancement + Signals
+        </strong>
+
+        Existing DOM combined with
+        fine-grained signals.
+
+      </a>
+
+    </div>
+
+  </section>
+
+  <!-- ================================= -->
+  <!-- FOOTER -->
+  <!-- ================================= -->
+
+  <footer>
+
+    Built with native DOM APIs and
+    progressive runtime enhancement.
+
+    <br /><br />
+
+    <code>
+      No virtual DOM.
+    </code>
+
+  </footer>
+
+</body>
+</html>

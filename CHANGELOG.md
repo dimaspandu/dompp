@@ -6,6 +6,30 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.1.3] - 2026-05-13
+
+### Added
+
+- Root landing page (`index.html`)
+- Repository homepage for:
+  - examples
+  - architecture docs
+  - runtime overview
+
+- Static-hosting-friendly repository structure
+
+### Changed
+
+- Moved `server.js` to repository root
+- Simplified local development server structure
+- Updated README.md local development instructions
+- Updated CONTRIBUTING.md local development instructions
+
+### Notes
+
+- Repository can now function as a live documentation and examples site
+- Structure is now compatible with static hosting platforms
+
 ## [1.1.2] - 2026-05-13
 
 ### Added
@@ -217,13 +241,12 @@ Initial stable DOM++ browser runtime.
 ## [0.1.16] - 2026-03-31
 
 ### Changed
-- Moved index.html to root directory for direct Netlify deployment:
+- Moved index.html to root directory for direct deployment:
   - Updated all example links to use ./examples/ prefix
 - Removed duplicate src/ folder from examples/ directory
 - Cleaned up repository structure:
   - Removed articles/ directory
   - Removed docs/ directory
-  - Removed netlify.toml, package.json, package-lock.json
 
 ### Added
 - CONTRIBUTING.md with contribution guidelines

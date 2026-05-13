@@ -1,37 +1,39 @@
-import { createServer } from "http";
+import { createServer }
+from "http";
 
 import {
   existsSync,
   createReadStream,
   statSync
-} from "fs";
+}
+from "fs";
 
 import {
   extname,
   join,
   dirname
-} from "path";
+}
+from "path";
 
-import { fileURLToPath } from "url";
+import {
+  fileURLToPath
+}
+from "url";
 
 // =====================================
 // PATHS
 // =====================================
 
 const __filename =
-  fileURLToPath(import.meta.url);
+  fileURLToPath(
+    import.meta.url
+  );
 
 const __dirname =
   dirname(__filename);
 
-// examples/
-// ├── server.js
-// ├── index.html
-// ├── 01-basic-text/
-// │   └── index.html
-// └── etc...
-
-const ROOT_DIR = __dirname;
+const ROOT_DIR =
+  __dirname;
 
 const PORT =
   process.env.PORT || 5173;
@@ -41,25 +43,62 @@ const PORT =
 // =====================================
 
 const mimeTypes = {
-  ".html": "text/html",
-  ".js": "text/javascript",
-  ".mjs": "text/javascript",
-  ".css": "text/css",
-  ".json": "application/json",
-  ".svg": "image/svg+xml",
+
+  ".html":
+    "text/html",
+
+  ".js":
+    "text/javascript",
+
+  ".mjs":
+    "text/javascript",
+
+  ".css":
+    "text/css",
+
+  ".json":
+    "application/json",
+
+  ".svg":
+    "image/svg+xml",
+
+  ".png":
+    "image/png",
+
+  ".jpg":
+    "image/jpeg",
+
+  ".jpeg":
+    "image/jpeg",
+
+  ".webp":
+    "image/webp",
+
+  ".md":
+    "text/markdown",
+
+  ".txt":
+    "text/plain"
 };
 
 // =====================================
 // SERVE FILE
 // =====================================
 
-function serveFile(res, filePath) {
+function serveFile(
+  res,
+  filePath
+) {
 
-  if (!existsSync(filePath)) {
+  if (
+    !existsSync(filePath)
+  ) {
 
     res.writeHead(404);
 
-    res.end("Not found");
+    res.end(
+      "Not found"
+    );
 
     return;
   }
@@ -68,10 +107,12 @@ function serveFile(res, filePath) {
     extname(filePath);
 
   const contentType =
-    mimeTypes[ext] || "text/plain";
+    mimeTypes[ext] ||
+    "application/octet-stream";
 
   res.writeHead(200, {
-    "Content-Type": contentType
+    "Content-Type":
+      contentType
   });
 
   createReadStream(filePath)
@@ -87,58 +128,25 @@ createServer((req, res) => {
   let urlPath =
     req.url.split("?")[0];
 
-  console.log("REQ:", urlPath);
-
-  // =================================
-  // OPTIONAL PREFIX SUPPORT
-  // /examples/01-basic-text/
-  // =================================
-
-  if (
-    urlPath.startsWith("/examples/")
-  ) {
-
-    urlPath =
-      urlPath.slice(
-        "/examples".length
-      );
-
-    if (urlPath === "") {
-      urlPath = "/";
-    }
-  }
+  console.log(
+    "REQ:",
+    urlPath
+  );
 
   // =================================
   // ROOT
   // =================================
 
-  if (urlPath === "/") {
-
-    return serveFile(
-      res,
-      join(ROOT_DIR, "index.html")
-    );
-  }
-
-  // =================================
-  // SPECIAL:
-  // /src/*
-  // -> ../src/*
-  // =================================
-
   if (
-    urlPath.startsWith("/src/")
+    urlPath === "/"
   ) {
 
-    const srcPath = join(
-      ROOT_DIR,
-      "..",
-      urlPath.slice(1)
-    );
-
     return serveFile(
       res,
-      srcPath
+      join(
+        ROOT_DIR,
+        "index.html"
+      )
     );
   }
 
@@ -147,7 +155,10 @@ createServer((req, res) => {
   // =================================
 
   const filePath =
-    join(ROOT_DIR, urlPath);
+    join(
+      ROOT_DIR,
+      urlPath
+    );
 
   // =================================
   // DIRECT FILE
@@ -155,7 +166,8 @@ createServer((req, res) => {
 
   if (
     existsSync(filePath) &&
-    !statSync(filePath).isDirectory()
+    !statSync(filePath)
+      .isDirectory()
   ) {
 
     return serveFile(
@@ -170,13 +182,25 @@ createServer((req, res) => {
 
   if (
     existsSync(filePath) &&
-    statSync(filePath).isDirectory()
+    statSync(filePath)
+      .isDirectory()
   ) {
 
-    return serveFile(
-      res,
-      join(filePath, "index.html")
-    );
+    const indexFile =
+      join(
+        filePath,
+        "index.html"
+      );
+
+    if (
+      existsSync(indexFile)
+    ) {
+
+      return serveFile(
+        res,
+        indexFile
+      );
+    }
   }
 
   // =================================
@@ -190,7 +214,9 @@ createServer((req, res) => {
       urlPath + ".html"
     );
 
-  if (existsSync(htmlFile)) {
+  if (
+    existsSync(htmlFile)
+  ) {
 
     return serveFile(
       res,
@@ -204,19 +230,24 @@ createServer((req, res) => {
 
   res.writeHead(404);
 
-  res.end("Not found");
+  res.end(
+    "Not found"
+  );
 
 }).listen(PORT, () => {
 
   console.log("");
-  console.log(
-    `Server running at:`
-  );
 
   console.log(
-    `http://localhost:${PORT}`
+    "DOMPP Dev Server"
   );
 
   console.log("");
 
+  console.log(
+    `Local:` +
+    ` http://localhost:${PORT}`
+  );
+
+  console.log("");
 });

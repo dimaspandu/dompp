@@ -294,12 +294,12 @@ Please preserve this convention.
 
 ---
 
-# Running Examples
+# Running Local Dev Server
 
-Run the example server:
+Run the local development server:
 
 ```bash
-node examples/server.js
+node server.js
 ```
 
 Open:

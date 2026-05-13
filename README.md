@@ -319,15 +319,16 @@ src/
 # Project Structure
 
 ```txt
-src/
-  1.0.0/
-  1.0.1/
-  1.1.0/
-  1.1.1/
-
-examples/
-
-tests/
+/
+├── docs/
+├── examples/
+├── src/
+├── tests/
+├── index.html
+├── server.js
+├── README.md
+├── package.json
+└── ...
 ```
 
 ---
@@ -344,10 +345,10 @@ git clone <repository-url>
 
 ---
 
-## Run Examples
+## Run Local Dev Server
 
 ```bash
-node examples/server.js
+node server.js
 ```
 
 Open:
