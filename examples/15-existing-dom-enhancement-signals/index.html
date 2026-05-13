@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    Existing DOM Enhancement + Signals
+  </title>
+
+  <style>
+
+    body {
+      font-family: sans-serif;
+      padding: 24px;
+      background: #f5f5f5;
+      color: #222;
+    }
+
+    h1 {
+      margin-bottom: 12px;
+    }
+
+    .description {
+
+      max-width: 800px;
+
+      line-height: 1.7;
+
+      color: #666;
+
+      margin-bottom: 32px;
+    }
+
+    .important {
+
+      background:
+        linear-gradient(
+          135deg,
+          #fff8db,
+          #fff1a8
+        );
+
+      border:
+        1px solid #f0d000;
+
+      border-radius: 16px;
+
+      padding: 20px;
+
+      margin-bottom: 32px;
+
+      line-height: 1.7;
+
+      color: #5c4b00;
+    }
+
+    .important ul {
+      margin-top: 12px;
+    }
+
+    .card {
+
+      background: white;
+
+      border-radius: 16px;
+
+      padding: 24px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.08);
+
+      max-width: 520px;
+    }
+
+    .count {
+
+      font-size: 56px;
+
+      font-weight: bold;
+
+      margin-bottom: 24px;
+
+      transition:
+        color 0.2s ease;
+    }
+
+    .description-box {
+
+      margin-bottom: 24px;
+
+      transition:
+        background-color 0.2s ease;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+
+      border: none;
+
+      background: black;
+
+      color: white;
+
+      padding: 12px 16px;
+
+      border-radius: 10px;
+
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+
+<h1>
+  Existing DOM Enhancement + Signals
+</h1>
+
+<p class="description">
+
+DOM++ can enhance existing server-rendered
+HTML while still using optional fine-grained
+signals.
+
+This combines:
+- existing DOM adoption
+- zero structural replacement
+- signal-based granular updates
+
+</p>
+
+<div class="important">
+
+  <strong>
+    Important:
+  </strong>
+
+  <br /><br />
+
+  Unlike setChildren(), setEnhancement()
+  does not recreate or replace the DOM tree.
+
+  <br /><br />
+
+  Existing HTML becomes the reactive UI.
+
+  <br /><br />
+
+  Only setters consuming signals rerun.
+
+  <ul>
+    <li>
+      setText() updates only text nodes
+    </li>
+
+    <li>
+      setStyles() updates only inline styles
+    </li>
+
+    <li>
+      No virtual DOM is used
+    </li>
+
+    <li>
+      No structural reconciliation occurs
+    </li>
+
+  </ul>
+
+</div>
+
+<!-- ===================================
+     SERVER-RENDERED HTML
+=================================== -->
+
+<section
+  id="counter-app"
+  class="card"
+>
+
+  <h2 class="count">
+    0
+  </h2>
+
+  <div class="description-box">
+    Current count: 0
+  </div>
+
+  <div class="row">
+
+    <button>
+      Increment
+    </button>
+
+    <button>
+      Decrement
+    </button>
+
+  </div>
+
+</section>
+
+<script
+  type="module"
+  src="../../src/index.js"
+></script>
+
+<script type="module">
+
+// =====================================
+// SIGNAL
+// =====================================
+
+const [count, setCount] =
+  document.createSignal(0);
+
+// =====================================
+// ENHANCE EXISTING DOM
+// =====================================
+
+document
+
+  .getElementById(
+    "counter-app"
+  )
+
+  .setFineGrained()
+
+  .setEnhancement(({
+    childNodes
+  }) => {
+
+    // =================================
+    // EXISTING NODES
+    // =================================
+
+    const countNode =
+      childNodes[1];
+
+    const descriptionNode =
+      childNodes[3];
+
+    const controls =
+      childNodes[5];
+
+    const incrementButton =
+      controls.childNodes[1];
+
+    const decrementButton =
+      controls.childNodes[3];
+
+    // =================================
+    // COUNT TEXT
+    // =================================
+
+    countNode
+
+      .setFineGrained()
+
+      .setText(() => {
+
+        return count();
+
+      })
+
+      .setStyles(() => ({
+
+        color:
+
+          count() > 0
+            ? "limegreen"
+
+            : count() < 0
+              ? "tomato"
+              : "#222"
+
+      }));
+
+    // =================================
+    // DESCRIPTION
+    // =================================
+
+    descriptionNode
+
+      .setFineGrained()
+
+      .setText(() => (
+
+        `Current count: ${count()}`
+
+      ))
+
+      .setStyles(() => ({
+
+        backgroundColor:
+
+          count() % 2 === 0
+            ? "lightblue"
+            : "lightcoral",
+
+        color:
+          "#333",
+
+        padding:
+          "1em",
+
+        borderRadius:
+          "0.5em"
+
+      }));
+
+    // =================================
+    // BUTTONS
+    // =================================
+
+    incrementButton.setEvents({
+      click() {
+
+        setCount(
+          count() + 1
+        );
+
+      }
+    });
+
+    decrementButton.setEvents({
+      click() {
+
+        setCount(
+          count() - 1
+        );
+
+      }
+    });
+
+  });
+
+</script>
+
+</body>
+</html>
