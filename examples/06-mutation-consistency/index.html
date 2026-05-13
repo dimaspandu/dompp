@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <meta charset="UTF-8" />
 
   <meta
@@ -8,48 +9,138 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>Mutation Consistency</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="../favicon.svg"
+  />
+
+  <title>
+    Mutation Consistency
+  </title>
 
   <style>
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
-      padding: 24px;
-      background: #f5f5f5;
-      color: #222;
+
+      margin: 0;
+
+      font-family:
+        Inter,
+        system-ui,
+        sans-serif;
+
+      background:
+        #f5f5f5;
+
+      color:
+        #222;
+
+      line-height:
+        1.7;
+    }
+
+    .container {
+
+      max-width:
+        1100px;
+
+      margin:
+        0 auto;
+
+      padding:
+        48px 24px 96px;
     }
 
     h1 {
-      margin-bottom: 12px;
+
+      font-size:
+        48px;
+
+      margin-bottom:
+        16px;
+    }
+
+    h2 {
+      margin-top: 0;
     }
 
     .page-description {
-      max-width: 800px;
-      line-height: 1.7;
-      color: #666;
-      margin-bottom: 40px;
+
+      max-width:
+        800px;
+
+      line-height:
+        1.7;
+
+      color:
+        #666;
+
+      margin-bottom:
+        40px;
+    }
+
+    .important {
+
+      background:
+        linear-gradient(
+          135deg,
+          #fff8db,
+          #fff1a8
+        );
+
+      border:
+        1px solid #f0d000;
+
+      border-radius:
+        16px;
+
+      padding:
+        20px;
+
+      margin-bottom:
+        40px;
+
+      color:
+        #5c4b00;
     }
 
     .section {
-      margin-bottom: 48px;
+      margin-bottom: 56px;
     }
 
     .section-description {
-      color: #666;
-      margin-bottom: 16px;
-      line-height: 1.6;
-      max-width: 700px;
+
+      color:
+        #666;
+
+      margin-bottom:
+        20px;
+
+      max-width:
+        760px;
     }
 
     .card {
-      border-radius: 16px;
-      padding: 24px;
-      background: white;
+
+      border-radius:
+        16px;
+
+      padding:
+        24px;
+
+      background:
+        white;
 
       box-shadow:
-        0 4px 12px rgba(0,0,0,0.08);
+        0 8px 24px rgba(0,0,0,0.06);
 
-      margin-bottom: 16px;
+      margin-bottom:
+        16px;
 
       transition:
         all 0.25s ease;
@@ -57,66 +148,243 @@
 
     button {
 
-      padding: 12px 16px;
+      padding:
+        12px 16px;
 
-      border: none;
-      border-radius: 10px;
+      border:
+        none;
 
-      cursor: pointer;
+      border-radius:
+        10px;
 
-      background: black;
-      color: white;
+      cursor:
+        pointer;
+
+      background:
+        black;
+
+      color:
+        white;
     }
 
     .row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
+
+      display:
+        flex;
+
+      flex-wrap:
+        wrap;
+
+      gap:
+        12px;
     }
 
-    ul.summary {
+    .summary {
 
-      background: white;
+      background:
+        white;
 
-      padding: 24px;
+      padding:
+        24px;
 
-      border-radius: 16px;
+      border-radius:
+        16px;
 
       box-shadow:
-        0 4px 12px rgba(0,0,0,0.08);
+        0 8px 24px rgba(0,0,0,0.06);
 
-      line-height: 1.8;
+      line-height:
+        1.8;
+
+      position:
+        relative;
+
+      overflow:
+        hidden;
+    }
+
+    .summary::before {
+
+      content:
+        "";
+
+      position:
+        absolute;
+
+      inset:
+        0;
+
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.02),
+          rgba(0,0,0,0.02)
+        );
+
+      pointer-events:
+        none;
+    }
+
+    pre {
+
+      margin:
+        0;
+
+      overflow:
+        auto;
+
+      background:
+        #111;
+
+      color:
+        #f5f5f5;
+
+      padding:
+        20px;
+
+      border-radius:
+        16px;
+
+      font-size:
+        14px;
+
+      line-height:
+        1.7;
     }
 
     code {
-      background: #eee;
-      padding: 2px 6px;
-      border-radius: 6px;
+
+      font-family:
+        Consolas,
+        monospace;
+
+      padding:
+        2px 6px;
+
+      border-radius:
+        6px;
+    }
+
+    .code-keyword {
+      color: #ff7b72;
+    }
+
+    .code-method {
+      color: #79c0ff;
+    }
+
+    .code-string {
+      color: #a5d6ff;
+    }
+
+    .code-property {
+      color: #d2a8ff;
+    }
+
+    .code-variable {
+      color: #ffa657;
     }
 
   </style>
+
 </head>
 <body>
 
-<h1>Mutation Consistency</h1>
+<div class="container">
 
-<p class="page-description">
+  <h1>
+    Mutation Consistency
+  </h1>
 
-DOM++ uses a consistent mutation pattern
-across text, styles, attributes, children,
-events, and state.
+  <p class="page-description">
 
-Every setter can be used both for:
-initialization and updates.
+    DOM++ uses a consistent mutation pattern
+    across text, styles, attributes, children,
+    events, and state.
 
-Most setters also support derived mutation
-through callback syntax.
+    <br /><br />
 
-</p>
+    Every setter can be used both for:
+    initialization and updates.
 
-<div id="app"></div>
+    <br /><br />
 
-<script type="module" src="../../src/index.js"></script>
+    Most setters also support derived mutation
+    through callback syntax.
+
+  </p>
+
+  <!-- ================================= -->
+  <!-- IMPORTANT -->
+  <!-- ================================= -->
+
+  <div class="important">
+
+    <strong>
+      Important
+    </strong>
+
+    <br /><br />
+
+    Mutation consistency is one of the
+    core DOMPP design principles.
+
+    <br /><br />
+
+    All setters share the same mental model:
+
+    <br /><br />
+
+    <code>
+      setSomething(next)
+    </code>
+
+    <br /><br />
+
+    or
+
+    <br /><br />
+
+    <code>
+      setSomething(current => next)
+    </code>
+
+    <br /><br />
+
+    This keeps text, styles, attributes,
+    children, events, and state mutations
+    structurally consistent.
+
+  </div>
+
+  <!-- ================================= -->
+  <!-- SHARED PATTERN -->
+  <!-- ================================= -->
+
+  <section class="section">
+
+    <h2>
+      Shared Mutation Pattern
+    </h2>
+
+<pre><code><span class="code-method">setSomething</span>(
+  next
+);
+
+<span class="code-method">setSomething</span>(
+  current => next
+);</code></pre>
+
+  </section>
+
+  <div id="app"></div>
+
+</div>
+
+<script
+  type="module"
+  src="../../src/index.js"
+></script>
 
 <script type="module">
 
@@ -180,10 +448,6 @@ app.setChildren(
 
               .setChildren(
 
-                // =========================
-                // REPLACE
-                // =========================
-
                 document.createElement("button")
 
                   .setText(
@@ -199,10 +463,6 @@ app.setChildren(
 
                     }
                   }),
-
-                // =========================
-                // DERIVED
-                // =========================
 
                 document.createElement("button")
 
@@ -293,10 +553,6 @@ app.setChildren(
 
               .setChildren(
 
-                // =========================
-                // PARTIAL UPDATE
-                // =========================
-
                 document.createElement("button")
 
                   .setText(
@@ -313,10 +569,6 @@ app.setChildren(
 
                     }
                   }),
-
-                // =========================
-                // DERIVED UPDATE
-                // =========================
 
                 document.createElement("button")
 
@@ -345,10 +597,6 @@ app.setChildren(
 
                     }
                   }),
-
-                // =========================
-                // TRANSFORM UPDATE
-                // =========================
 
                 document.createElement("button")
 
@@ -436,10 +684,6 @@ app.setChildren(
 
               .setChildren(
 
-                // =========================
-                // DIRECT MUTATION
-                // =========================
-
                 document.createElement("button")
 
                   .setText(
@@ -455,10 +699,6 @@ app.setChildren(
 
                     }
                   }),
-
-                // =========================
-                // DERIVED MUTATION
-                // =========================
 
                 document.createElement("button")
 
@@ -480,10 +720,6 @@ app.setChildren(
 
                     }
                   }),
-
-                // =========================
-                // PARTIAL UPDATE
-                // =========================
 
                 document.createElement("button")
 
@@ -575,10 +811,6 @@ app.setChildren(
 
               .setChildren(
 
-                // =========================
-                // FULL REPLACEMENT
-                // =========================
-
                 document.createElement("button")
 
                   .setText(
@@ -604,10 +836,6 @@ app.setChildren(
                     }
                   }),
 
-                // =========================
-                // SINGLE CHILD
-                // =========================
-
                 document.createElement("button")
 
                   .setText(
@@ -627,10 +855,6 @@ app.setChildren(
 
                     }
                   }),
-
-                // =========================
-                // APPEND-LIKE
-                // =========================
 
                 document.createElement("button")
 
@@ -655,10 +879,6 @@ app.setChildren(
 
                     }
                   }),
-
-                // =========================
-                // TRANSFORM
-                // =========================
 
                 document.createElement("button")
 
@@ -783,6 +1003,81 @@ app.setChildren(
                 )
             )
         )
+    ),
+
+  // =====================================
+  // ARCHITECTURE INSIGHT
+  // =====================================
+
+  document.createElement("div")
+
+    .setAttributes({
+      class: "important"
+    })
+
+    .setChildren(
+
+      document.createElement("strong")
+        .setText(
+          "Architecture Insight"
+        ),
+
+      document.createElement("br"),
+      document.createElement("br"),
+
+      "DOMPP intentionally keeps mutation APIs structurally uniform.",
+
+      document.createElement("br"),
+      document.createElement("br"),
+
+      "This avoids fragmented native DOM mutation patterns such as:",
+
+      document.createElement("ul")
+
+        .setChildren(
+
+          document.createElement("li")
+            .setChildren(
+              document.createElement("code")
+                .setText(
+                  "textContent = ..."
+                )
+            ),
+
+          document.createElement("li")
+            .setChildren(
+              document.createElement("code")
+                .setText(
+                  "appendChild(...)"
+                )
+            ),
+
+          document.createElement("li")
+            .setChildren(
+              document.createElement("code")
+                .setText(
+                  "replaceChildren(...)"
+                )
+            ),
+
+          document.createElement("li")
+            .setChildren(
+              document.createElement("code")
+                .setText(
+                  "setAttribute(...)"
+                )
+            ),
+
+          document.createElement("li")
+            .setChildren(
+              document.createElement("code")
+                .setText(
+                  "element.style.x = ..."
+                )
+            )
+        ),
+
+      "DOMPP instead exposes a unified mutation vocabulary through setters."
     )
 
 );
