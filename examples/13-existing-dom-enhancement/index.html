@@ -1,11 +1,18 @@
 <!DOCTYPE html>
 <html>
 <head>
+
   <meta charset="UTF-8" />
 
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0"
+  />
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="../favicon.svg"
   />
 
   <title>
@@ -14,26 +21,60 @@
 
   <style>
 
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: sans-serif;
-      padding: 24px;
-      background: #f5f5f5;
-      color: #222;
+
+      margin: 0;
+
+      font-family:
+        Inter,
+        system-ui,
+        sans-serif;
+
+      background:
+        #f5f5f5;
+
+      color:
+        #222;
+
+      line-height:
+        1.7;
+    }
+
+    .container {
+
+      max-width:
+        1100px;
+
+      margin:
+        0 auto;
+
+      padding:
+        48px 24px 96px;
     }
 
     h1 {
-      margin-bottom: 12px;
+
+      font-size:
+        48px;
+
+      margin-bottom:
+        16px;
     }
 
     .description {
 
-      max-width: 800px;
+      max-width:
+        820px;
 
-      line-height: 1.7;
+      color:
+        #666;
 
-      color: #666;
-
-      margin-bottom: 32px;
+      margin-bottom:
+        40px;
     }
 
     .important {
@@ -48,15 +89,20 @@
       border:
         1px solid #f0d000;
 
-      border-radius: 16px;
+      border-radius:
+        16px;
 
-      padding: 20px;
+      padding:
+        20px;
 
-      margin-bottom: 32px;
+      margin-bottom:
+        40px;
 
-      line-height: 1.7;
+      line-height:
+        1.7;
 
-      color: #5c4b00;
+      color:
+        #5c4b00;
 
       box-shadow:
         0 4px 12px rgba(0,0,0,0.06);
@@ -67,181 +113,423 @@
     }
 
     .important ul {
-      margin-top: 12px;
-      padding-left: 20px;
+
+      margin-top:
+        12px;
+
+      padding-left:
+        20px;
     }
 
     .important li {
       margin-bottom: 8px;
     }
 
-    .important code {
+    .layout {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap:
+        32px;
+
+      align-items:
+        start;
+    }
+
+    .panel {
 
       background:
-        rgba(0,0,0,0.08);
+        white;
+
+      border-radius:
+        20px;
+
+      padding:
+        28px;
+
+      box-shadow:
+        0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .panel h2 {
+
+      margin-top:
+        0;
+
+      font-size:
+        22px;
+
+      margin-bottom:
+        20px;
+    }
+
+    pre {
+
+      margin:
+        0;
+
+      overflow:
+        auto;
+
+      background:
+        #111;
+
+      color:
+        #f5f5f5;
+
+      padding:
+        20px;
+
+      border-radius:
+        16px;
+
+      font-size:
+        14px;
+
+      line-height:
+        1.7;
+    }
+
+    code {
+
+      font-family:
+        Consolas,
+        monospace;
 
       padding:
         2px 6px;
 
-      border-radius: 6px;
+      border-radius:
+        6px;
+    }
 
-      font-family: monospace;
+    .code-keyword {
+      color: #ff7b72;
+    }
+
+    .code-method {
+      color: #79c0ff;
+    }
+
+    .code-string {
+      color: #a5d6ff;
+    }
+
+    .code-property {
+      color: #d2a8ff;
+    }
+
+    .code-variable {
+      color: #ffa657;
+    }
+
+    .code-comment {
+      color: #8b949e;
+      font-style: italic;
+    }
+
+    .notes {
+
+      margin-top:
+        24px;
+
+      color:
+        #666;
+
+      font-size:
+        14px;
     }
 
     .card {
 
-      background: white;
+      background:
+        white;
 
-      border-radius: 16px;
+      border-radius:
+        16px;
 
-      padding: 24px;
+      padding:
+        24px;
 
       box-shadow:
-        0 4px 12px rgba(0,0,0,0.08);
+        0 10px 32px rgba(0,0,0,0.08);
 
-      max-width: 420px;
+      max-width:
+        420px;
     }
 
     .count {
 
-      font-size: 56px;
+      font-size:
+        56px;
 
-      font-weight: bold;
+      font-weight:
+        bold;
 
-      margin-bottom: 24px;
+      margin-bottom:
+        24px;
     }
 
     .row {
-      display: flex;
-      gap: 12px;
+
+      display:
+        flex;
+
+      gap:
+        12px;
     }
 
     button {
 
-      border: none;
+      border:
+        none;
 
-      background: black;
+      background:
+        black;
 
-      color: white;
+      color:
+        white;
 
-      padding: 14px 18px;
+      padding:
+        14px 18px;
 
-      border-radius: 10px;
+      border-radius:
+        10px;
 
-      cursor: pointer;
+      cursor:
+        pointer;
 
-      font-size: 16px;
+      font-size:
+        16px;
+    }
+
+    @media (max-width: 900px) {
+
+      .layout {
+
+        grid-template-columns:
+          1fr;
+      }
     }
 
   </style>
+
 </head>
 <body>
 
-<h1>
-  Existing DOM Enhancement
-</h1>
+<div class="container">
 
-<p class="description">
+  <!-- ================================= -->
+  <!-- HEADER -->
+  <!-- ================================= -->
 
-DOM++ can enhance existing server-rendered
-or static HTML without recreating the tree.
+  <h1>
+    Existing DOM Enhancement
+  </h1>
 
-Unlike setChildren(), setEnhancement()
-does not replace child nodes.
+  <p class="description">
 
-Instead, it adopts the existing DOM structure
-and attaches behavior directly onto it.
+    DOMPP can enhance existing
+    server-rendered or static HTML
+    without recreating the DOM tree.
 
-</p>
+    <br /><br />
 
-<div class="important">
+    Unlike
+    <code>setChildren()</code>,
+    <code>setEnhancement()</code>
+    adopts the existing DOM structure
+    and attaches behavior directly onto it.
 
-  <strong>
-    Important:
-  </strong>
+  </p>
 
-  <br /><br />
+  <!-- ================================= -->
+  <!-- IMPORTANT -->
+  <!-- ================================= -->
 
-  setEnhancement() does not rerender
-  or replace the existing DOM tree.
+  <div class="important">
 
-  <br /><br />
+    <strong>
+      Important
+    </strong>
 
-  When state changes, the enhancement
-  callback reruns and directly executes
-  native DOM setters again.
+    <br /><br />
 
-  <br /><br />
+    <code>setEnhancement()</code>
+    does not rerender or replace the
+    existing DOM tree.
 
-  This means mutation granularity depends
-  entirely on which setters are called.
+    <br /><br />
 
-  <br /><br />
+    When state changes,
+    the enhancement callback reruns and
+    directly executes native DOM setters again.
 
-  Examples:
+    <br /><br />
 
-  <ul>
+    Mutation granularity depends entirely
+    on which setters are called.
 
-    <li>
-      <code>setText()</code>
-      only updates text nodes
-    </li>
+    <br /><br />
 
-    <li>
-      <code>setStyles()</code>
-      only mutates inline styles
-    </li>
+    Examples:
 
-    <li>
-      <code>setAttributes()</code>
-      only mutates attributes
-    </li>
+    <ul>
 
-    <li>
-      <code>setEvents()</code>
-      only reattaches listeners
-    </li>
+      <li>
+        <code>setText()</code>
+        only updates text nodes
+      </li>
 
-    <li>
-      <code>setChildren()</code>
-      performs full structural replacement
-    </li>
+      <li>
+        <code>setStyles()</code>
+        only mutates inline styles
+      </li>
 
-  </ul>
+      <li>
+        <code>setAttributes()</code>
+        only mutates attributes
+      </li>
 
-  DOM++ does not use virtual DOM diffing
-  or hidden reconciliation systems.
+      <li>
+        <code>setEvents()</code>
+        only reattaches listeners
+      </li>
 
-</div>
+      <li>
+        <code>setChildren()</code>
+        performs full structural replacement
+      </li>
 
-<!-- ===================================
-     SERVER-RENDERED HTML
-=================================== -->
+    </ul>
 
-<section
-  id="counter-app"
-  class="card"
->
-
-  <h2 class="count">
-    0
-  </h2>
-
-  <div class="row">
-
-    <button>
-      +
-    </button>
-
-    <button>
-      -
-    </button>
+    DOMPP does not use virtual DOM diffing
+    or hidden reconciliation systems.
 
   </div>
 
-</section>
+  <!-- ================================= -->
+  <!-- LAYOUT -->
+  <!-- ================================= -->
 
-<script type="module" src="../../src/index.js"></script>
+  <div class="layout">
+
+    <!-- ================================= -->
+    <!-- CODE -->
+    <!-- ================================= -->
+
+    <section class="panel">
+
+      <h2>
+        Enhancement Pattern
+      </h2>
+
+<pre><code><span class="code-variable">element</span>
+
+  .<span class="code-method">setEnhancement</span>(
+    ({ childNodes }) => {
+
+      <span class="code-keyword">const</span> <span class="code-variable">button</span> =
+        childNodes[0];
+
+      button
+
+        .<span class="code-method">setEvents</span>({
+          click() {
+
+            ...
+          }
+        });
+
+    }
+  );</code></pre>
+
+      <div class="notes">
+
+        <strong>
+          Notes
+        </strong>
+
+        <ul>
+
+          <li>
+            existing DOM nodes are reused
+            directly
+          </li>
+
+          <li>
+            enhancement attaches behavior
+            without replacing the tree
+          </li>
+
+          <li>
+            ideal for SSR,
+            static HTML,
+            and progressive enhancement
+          </li>
+
+          <li>
+            DOMPP enhancement behaves like
+            DOM assimilation rather than rerendering
+          </li>
+
+        </ul>
+
+      </div>
+
+    </section>
+
+    <!-- ================================= -->
+    <!-- LIVE PREVIEW -->
+    <!-- ================================= -->
+
+    <section class="panel">
+
+      <h2>
+        Live Preview
+      </h2>
+
+      <!-- ===================================
+           SERVER-RENDERED HTML
+      =================================== -->
+
+      <section
+        id="counter-app"
+        class="card"
+      >
+
+        <h2 class="count">
+          0
+        </h2>
+
+        <div class="row">
+
+          <button>
+            +
+          </button>
+
+          <button>
+            -
+          </button>
+
+        </div>
+
+      </section>
+
+    </section>
+
+  </div>
+
+</div>
+
+<script
+  type="module"
+  src="../../src/index.js"
+></script>
 
 <script type="module">
 

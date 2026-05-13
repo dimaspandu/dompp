@@ -6,6 +6,38 @@ This project follows semantic versioning principles.
 
 ---
 
+## v1.2.0
+
+### Added
+- Root landing page for DOMPP
+- Architecture documentation website
+- Visual runtime architecture diagrams
+- Interactive documentation-style examples
+- GitHub Pages compatible static structure
+- Dedicated architecture navigation
+- Progressive example showcase layout
+
+### Improved
+- Modernized all examples with:
+  - explanations
+  - highlighted code snippets
+  - live preview panels
+  - important runtime notes
+- Refined documentation structure
+- Improved project discoverability
+- Improved OSS presentation and onboarding
+
+### Documentation
+- Added architecture overview pages
+- Added runtime flow diagrams
+- Added DOMPP positioning and vision docs
+- Updated README and CONTRIBUTING guides
+
+### Infrastructure
+- Moved local server to repository root
+- Simplified static serving structure
+- Improved static deployment compatibility
+
 ## [1.1.3] - 2026-05-13
 
 ### Added
