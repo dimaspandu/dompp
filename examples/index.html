@@ -292,14 +292,10 @@
         -webkit-overflow-scrolling: touch;
       }
 
-      /* dark background behind menu */
-      .overlay-backdrop { display:none }
+      /* dark background behind menu implemented with label.overlay-backdrop */
+      label.overlay-backdrop { display:none }
 
-      /* use label as backdrop so clicking backdrop toggles checkbox to close */
-      label.overlay-backdrop {
-        display:none;
-      }
-
+      /* show backdrop when menu open; clicking it toggles checkbox off */
       #menu-toggle:checked ~ label.overlay-backdrop {
         display: block;
         position: fixed;
@@ -307,6 +303,11 @@
         background: rgba(0,0,0,0.35);
         z-index: 50;
       }
+
+      /* ensure backdrop sits behind the hamburger but above content */
+      label.overlay-backdrop { z-index: 55 }
+
+
 
       /* Make label clickable to close menu when link focused: wrap links in label pointing to checkbox */
       .nav-link-wrap {
@@ -338,11 +339,8 @@
 
 
 
-      /* Auto-close visual behavior: if a link inside sidebar is focused (user clicked), hide overlay visually */
-      /* We still keep the checkbox checked state but move the sidebar away for UX */
-      #menu-toggle:checked ~ .sidebar:focus-within {
-        transform: translateY(-100%);
-      }
+      /* Remove focus-within trick (can leave checkbox checked) — rely on label.nav-link-wrap to toggle checkbox and close menu */
+      /* (previous focus-within rule removed) */
 
       /* make links larger for touch */
       .nav a {
@@ -362,7 +360,6 @@
   <span class="bar"></span>
   <span class="bar"></span>
 </label>
-<label class="overlay-backdrop" for="menu-toggle" aria-hidden="true"></label>
 
 <!-- ===================================
      SIDEBAR
