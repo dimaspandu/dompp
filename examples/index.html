@@ -558,11 +558,23 @@
     id="viewer"
     name="viewer"
     src="/examples/01-basic-text/"
-  ></iframe>
+  >  </iframe>
 
 </main>
 
-
+<script>
+  // Close mobile menu when a nav link is clicked (small progressive-enhancement JS)
+  (function(){
+    const mq = window.matchMedia && window.matchMedia('(max-width:900px)');
+    const menuToggle = document.getElementById('menu-toggle');
+    if (!menuToggle || !mq) return;
+    document.querySelectorAll('.nav a').forEach((a) => {
+      a.addEventListener('click', () => {
+        if (mq.matches) menuToggle.checked = false;
+      });
+    });
+  })();
+</script>
 
 </body>
 </html>
