@@ -832,11 +832,17 @@
 
     <p class="section-description">
 
-      Explore progressively structured
-      examples demonstrating mutation,
-      reactivity,
-      enhancement,
-      and runtime semantics.
+      DOMPP examples are designed as
+      runtime learning blocks.
+
+      <br /><br />
+
+      Each example progressively explores:
+      deterministic mutation,
+      reactive ownership,
+      DOM identity preservation,
+      fine-grained updates,
+      and browser-native runtime semantics.
 
     </p>
 
@@ -853,19 +859,72 @@
       <div class="examples">
 
         <a
-          href="./examples/"
+          href="./examples/01-basic-text/"
           class="example-link"
         >
 
           <strong>
-            01–05 — Fundamentals
+            01 — Basic Text
           </strong>
 
-          Basic text,
-          styles,
-          attributes,
-          children,
-          and events.
+          Simplest chainable text mutation
+          using native DOM nodes.
+
+        </a>
+
+        <a
+          href="./examples/02-basic-styles/"
+          class="example-link"
+        >
+
+          <strong>
+            02 — Basic Styles
+          </strong>
+
+          Inline style mutation
+          using partial style updates.
+
+        </a>
+
+        <a
+          href="./examples/03-basic-attributes/"
+          class="example-link"
+        >
+
+          <strong>
+            03 — Basic Attributes
+          </strong>
+
+          Unified attribute mutation
+          including boolean attributes.
+
+        </a>
+
+        <a
+          href="./examples/04-basic-children/"
+          class="example-link"
+        >
+
+          <strong>
+            04 — Basic Children
+          </strong>
+
+          Declarative child tree composition
+          without virtual DOM diffing.
+
+        </a>
+
+        <a
+          href="./examples/05-basic-events/"
+          class="example-link"
+        >
+
+          <strong>
+            05 — Basic Events
+          </strong>
+
+          Chainable event listeners
+          with deterministic replacement.
 
         </a>
 
@@ -874,7 +933,7 @@
     </div>
 
     <!-- ================================= -->
-    <!-- MUTATION -->
+    <!-- MUTATION SEMANTICS -->
     <!-- ================================= -->
 
     <div class="examples-group">
@@ -886,17 +945,44 @@
       <div class="examples">
 
         <a
-          href="./examples/"
+          href="./examples/06-mutation-consistency/"
           class="example-link"
         >
 
           <strong>
-            06–08 — Mutation Model
+            06 — Mutation Consistency
           </strong>
 
-          Consistency,
-          fragments,
-          and children vs childNodes.
+          Deterministic setter behavior
+          and predictable mutation flow.
+
+        </a>
+
+        <a
+          href="./examples/07-children-vs-childnodes/"
+          class="example-link"
+        >
+
+          <strong>
+            07 — children vs childNodes
+          </strong>
+
+          Structural differences between
+          element-only and full node traversal.
+
+        </a>
+
+        <a
+          href="./examples/08-fragment-support/"
+          class="example-link"
+        >
+
+          <strong>
+            08 — Fragment Support
+          </strong>
+
+          Native DocumentFragment support
+          without unnecessary wrappers.
 
         </a>
 
@@ -905,7 +991,7 @@
     </div>
 
     <!-- ================================= -->
-    <!-- REACTIVITY -->
+    <!-- REACTIVE RUNTIME -->
     <!-- ================================= -->
 
     <div class="examples-group">
@@ -917,18 +1003,100 @@
       <div class="examples">
 
         <a
-          href="./examples/"
+          href="./examples/09-reactive-counter/"
           class="example-link"
         >
 
           <strong>
-            09–15 — Reactivity
+            09 — Reactive Counter
           </strong>
 
-          Local state,
-          enhancement,
-          signals,
-          and reactive DOM composition.
+          Reactive setters driven by
+          local element state.
+
+        </a>
+
+        <a
+          href="./examples/10-reactive-children/"
+          class="example-link"
+        >
+
+          <strong>
+            10 — Reactive Children
+          </strong>
+
+          Declarative reactive child trees
+          rebuilt from state.
+
+        </a>
+
+        <a
+          href="./examples/11-reusable-stateful-elements/"
+          class="example-link"
+        >
+
+          <strong>
+            11 — Reusable Stateful Elements
+          </strong>
+
+          Component-like reusable factories
+          using native DOM nodes.
+
+        </a>
+
+        <a
+          href="./examples/12-cross-element-state/"
+          class="example-link"
+        >
+
+          <strong>
+            12 — Cross Element State
+          </strong>
+
+          External mutation of element state
+          through DOM references.
+
+        </a>
+
+        <a
+          href="./examples/13-existing-dom-enhancement/"
+          class="example-link"
+        >
+
+          <strong>
+            13 — Existing DOM Enhancement
+          </strong>
+
+          Enhance server-rendered DOM
+          without subtree recreation.
+
+        </a>
+
+        <a
+          href="./examples/14-fine-grained-signals/"
+          class="example-link"
+        >
+
+          <strong>
+            14 — Fine-Grained Signals
+          </strong>
+
+          Optional signal-based reactivity
+          with isolated setter reruns.
+
+        </a>
+
+        <a
+          href="./examples/15-existing-dom-enhancement-signals/"
+          class="example-link"
+        >
+
+          <strong>
+            15 — Enhancement + Signals
+          </strong>
+
+          Combine existing DOM enhancement
+          with fine-grained subscriptions.
 
         </a>
 
@@ -937,7 +1105,7 @@
     </div>
 
     <!-- ================================= -->
-    <!-- SEMANTICS -->
+    <!-- RUNTIME SEMANTICS -->
     <!-- ================================= -->
 
     <div class="examples-group">
@@ -948,18 +1116,108 @@
 
       <div class="examples">
 
-        <div class="example-link">
+        <a
+          href="./examples/16-state-equality-behavior/"
+          class="example-link"
+        >
 
           <strong>
-            16–19 — Coming Soon
+            16 — State Equality Behavior
           </strong>
 
-          State equality,
-          nested ownership,
-          keyed lists,
-          and DOM identity preservation.
+          Explore rerender behavior when
+          mutating identical state values.
 
-        </div>
+        </a>
+
+        <a
+          href="./examples/17-nested-stateful-elements/"
+          class="example-link"
+        >
+
+          <strong>
+            17 — Nested Stateful Elements
+          </strong>
+
+          Parent-child runtime ownership
+          and nested state behavior.
+
+        </a>
+
+        <a
+          href="./examples/18-keyed-list-behavior/"
+          class="example-link"
+        >
+
+          <strong>
+            18 — Keyed List Behavior
+          </strong>
+
+          DOM identity preservation
+          through reused node references.
+
+        </a>
+
+        <a
+          href="./examples/19-dom-identity-preservation/"
+          class="example-link"
+        >
+
+          <strong>
+            19 — DOM Identity Preservation
+          </strong>
+
+          Runtime ownership attached
+          directly to DOM node identity.
+
+        </a>
+
+        <a
+          href="./examples/20-reactive-feed/"
+          class="example-link"
+        >
+
+          <strong>
+            20 — Reactive Feed
+          </strong>
+
+          Prepend and append feed mutation
+          with editable stateful posts.
+
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- ================================= -->
+    <!-- ARCHITECTURE -->
+    <!-- ================================= -->
+
+    <div class="examples-group">
+
+      <h3>
+        Native Runtime Exploration
+      </h3>
+
+      <div class="examples">
+
+        <a
+          href="./docs/architecture/"
+          class="example-link"
+        >
+
+          <strong>
+            Architecture & Runtime Docs
+          </strong>
+
+          Explore runtime flow,
+          mutation architecture,
+          signals,
+          enhancement semantics,
+          and browser-native runtime proposals.
+
+        </a>
 
       </div>
 

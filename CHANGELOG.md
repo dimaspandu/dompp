@@ -6,6 +6,54 @@ This project follows semantic versioning principles.
 
 ---
 
+## v1.3.0
+
+### Added
+
+- New runtime semantics examples:
+  - `16-state-equality-behavior/`
+  - `17-nested-stateful-elements/`
+  - `18-keyed-list-behavior/`
+  - `19-dom-identity-preservation/`
+  - `20-reactive-feed/`
+
+- New runtime-focused educational examples for:
+  - nested state ownership
+  - DOM identity preservation
+  - prepend vs append list mutation
+  - reusable node identity
+  - stateful feed mutations
+  - keyed runtime behavior
+  - state equality semantics
+
+- New reactive feed demo with:
+  - prepend post
+  - append post
+  - editable posts
+  - removable posts
+  - stateful reusable nodes
+
+### Improved
+
+- Expanded examples landing page structure
+- Added direct navigation to all example pages
+- Improved runtime-oriented documentation flow
+- Improved educational progression across examples
+- Improved syntax-highlighted runtime code previews
+- Improved onboarding for runtime semantics concepts
+
+### Documentation
+
+- Repositioned DOMPP examples as runtime learning blocks
+- Expanded runtime semantics explanations
+- Improved browser-native runtime positioning
+- Improved architecture exploration entry points
+
+### Fixed
+
+- Fixed reactive feed delete behavior
+- Fixed missing DOM node reference during feed removal
+
 ## v1.2.2
 
 ### Improved
