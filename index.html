@@ -9,34 +9,149 @@
     content="width=device-width, initial-scale=1.0"
   />
 
+  <!-- ================================= -->
+  <!-- TITLE -->
+  <!-- ================================= -->
+
+  <title>
+    DOMPP (DOM++)
+  </title>
+
+  <!-- ================================= -->
+  <!-- FAVICON -->
+  <!-- ================================= -->
+
   <link
     rel="icon"
     type="image/svg+xml"
     href="./assets/favicon.svg"
   />
 
-  <title>
-    DOMPP (DOM++)
-  </title>
+  <!-- ================================= -->
+  <!-- PRIMARY META -->
+  <!-- ================================= -->
 
-  <meta name="description" content="A lightweight native DOM enhancement runtime focused on deterministic mutation, optional reactivity, and direct browser APIs." />
-  <meta name="keywords" content="DOM, JavaScript, runtime, enhancement, reactivity, signals" />
-  <meta name="author" content="DOMPP Team" />
+  <meta
+    name="title"
+    content="DOMPP (DOM++)"
+  />
 
-  <!-- Open Graph / Facebook -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="http://dompp.digital/" />
-  <meta property="og:title" content="DOMPP (DOM++)" />
-  <meta property="og:description" content="A lightweight native DOM enhancement runtime focused on deterministic mutation, optional reactivity, and direct browser APIs." />
-  <meta property="og:image" content="http://dompp.digital/assets/featured-image.png" />
-  <meta property="og:site_name" content="DOMPP" />
+  <meta
+    name="description"
+    content="A browser-native mutation runtime exploring deterministic DOM updates, optional reactivity, fine-grained signals, and progressive enhancement without virtual DOM reconciliation."
+  />
 
-  <!-- Twitter -->
-  <meta property="twitter:card" content="summary_large_image" />
-  <meta property="twitter:url" content="http://dompp.digital/" />
-  <meta property="twitter:title" content="DOMPP (DOM++)" />
-  <meta property="twitter:description" content="A lightweight native DOM enhancement runtime focused on deterministic mutation, optional reactivity, and direct browser APIs." />
-  <meta property="twitter:image" content="http://dompp.digital/assets/featured-image.png" />
+  <meta
+    name="keywords"
+    content="
+      DOM,
+      JavaScript,
+      runtime,
+      reactivity,
+      signals,
+      enhancement,
+      progressive enhancement,
+      browser runtime,
+      mutation runtime,
+      fine-grained reactivity
+    "
+  />
+
+  <meta
+    name="author"
+    content="DOMPP Team"
+  />
+
+  <meta
+    name="theme-color"
+    content="#111111"
+  />
+
+  <!-- ================================= -->
+  <!-- CANONICAL -->
+  <!-- ================================= -->
+
+  <link
+    rel="canonical"
+    href="https://dimaspandu.github.io/dompp/"
+  />
+
+  <!-- ================================= -->
+  <!-- OPEN GRAPH -->
+  <!-- ================================= -->
+
+  <meta
+    property="og:type"
+    content="website"
+  />
+
+  <meta
+    property="og:url"
+    content="https://dimaspandu.github.io/dompp/"
+  />
+
+  <meta
+    property="og:title"
+    content="DOMPP (DOM++)"
+  />
+
+  <meta
+    property="og:description"
+    content="A browser-native mutation runtime exploring deterministic DOM updates, optional reactivity, fine-grained signals, and progressive enhancement without virtual DOM reconciliation."
+  />
+
+  <meta
+    property="og:image"
+    content="https://dimaspandu.github.io/dompp/assets/featured-image.png"
+  />
+
+  <meta
+    property="og:site_name"
+    content="DOMPP"
+  />
+
+  <!-- ================================= -->
+  <!-- TWITTER -->
+  <!-- ================================= -->
+
+  <meta
+    property="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    property="twitter:url"
+    content="https://dimaspandu.github.io/dompp/"
+  />
+
+  <meta
+    property="twitter:title"
+    content="DOMPP (DOM++)"
+  />
+
+  <meta
+    property="twitter:description"
+    content="A browser-native mutation runtime exploring deterministic DOM updates, optional reactivity, fine-grained signals, and progressive enhancement without virtual DOM reconciliation."
+  />
+
+  <meta
+    property="twitter:image"
+    content="https://dimaspandu.github.io/dompp/assets/featured-image.png"
+  />
+
+  <!-- ================================= -->
+  <!-- OPTIONAL -->
+  <!-- ================================= -->
+
+  <meta
+    name="robots"
+    content="index, follow"
+  />
+
+  <meta
+    http-equiv="X-UA-Compatible"
+    content="IE=edge"
+  />
 
   <style>
 
@@ -64,6 +179,10 @@
       color: inherit;
       text-decoration: none;
     }
+
+    /* ===================================
+       HERO
+    =================================== */
 
     .hero {
 
@@ -129,7 +248,7 @@
     .hero p {
 
       max-width:
-        760px;
+        820px;
 
       font-size:
         20px;
@@ -193,6 +312,10 @@
         white;
     }
 
+    /* ===================================
+       SECTIONS
+    =================================== */
+
     .section {
 
       max-width:
@@ -226,7 +349,7 @@
         48px;
 
       max-width:
-        800px;
+        820px;
     }
 
     .grid {
@@ -274,6 +397,10 @@
         1.7;
     }
 
+    /* ===================================
+       ARCHITECTURE
+    =================================== */
+
     .architecture-preview {
 
       width:
@@ -284,6 +411,25 @@
 
       box-shadow:
         0 10px 32px rgba(0,0,0,0.08);
+    }
+
+    /* ===================================
+       EXAMPLES
+    =================================== */
+
+    .examples-group {
+
+      margin-bottom:
+        56px;
+    }
+
+    .examples-group h3 {
+
+      font-size:
+        28px;
+
+      margin-bottom:
+        20px;
     }
 
     .examples {
@@ -329,6 +475,10 @@
         8px;
     }
 
+    /* ===================================
+       FOOTER
+    =================================== */
+
     footer {
 
       padding:
@@ -367,7 +517,7 @@
     <div class="hero-inner">
 
       <div class="badge">
-        PROPOSAL
+        EXPERIMENTAL RUNTIME PROPOSAL
       </div>
 
       <h1>
@@ -376,9 +526,12 @@
 
       <p>
 
-        A lightweight native DOM enhancement
-        runtime focused on deterministic mutation,
-        optional reactivity, and direct browser APIs.
+        A browser-native mutation runtime
+        exploring deterministic DOM updates,
+        optional reactivity,
+        fine-grained signals,
+        and progressive enhancement
+        without virtual DOM reconciliation.
 
       </p>
 
@@ -411,7 +564,7 @@
             button-secondary
           "
         >
-          Github
+          GitHub
         </a>
 
       </div>
@@ -421,7 +574,7 @@
   </section>
 
   <!-- ================================= -->
-  <!-- FEATURES -->
+  <!-- PHILOSOPHY -->
   <!-- ================================= -->
 
   <section class="section">
@@ -499,6 +652,77 @@
   </section>
 
   <!-- ================================= -->
+  <!-- WHAT DOMPP IS NOT -->
+  <!-- ================================= -->
+
+  <section class="section">
+
+    <h2 class="section-title">
+      What DOMPP Is Not
+    </h2>
+
+    <p class="section-description">
+
+      DOMPP intentionally avoids several
+      common framework abstractions.
+
+    </p>
+
+    <div class="grid">
+
+      <div class="card">
+
+        <h3>
+          No Virtual DOM
+        </h3>
+
+        <p>
+
+          DOMPP mutates native DOM nodes
+          directly without tree diffing
+          or reconciliation passes.
+
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <h3>
+          No Compiler
+        </h3>
+
+        <p>
+
+          DOMPP does not require JSX,
+          template compilation,
+          or build-time transforms.
+
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <h3>
+          No Hidden Runtime Ownership
+        </h3>
+
+        <p>
+
+          State remains attached directly
+          to DOM elements and follows
+          explicit mutation flow.
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================================= -->
   <!-- ARCHITECTURE -->
   <!-- ================================= -->
 
@@ -525,6 +749,78 @@
   </section>
 
   <!-- ================================= -->
+  <!-- RUNTIME SEMANTICS -->
+  <!-- ================================= -->
+
+  <section class="section">
+
+    <h2 class="section-title">
+      Runtime Semantics
+    </h2>
+
+    <p class="section-description">
+
+      DOMPP examples also document
+      runtime behavior and mutation semantics.
+
+    </p>
+
+    <div class="grid">
+
+      <div class="card">
+
+        <h3>
+          Stateful Mutation
+        </h3>
+
+        <p>
+
+          Explore how local state reruns
+          reactive setters and propagates
+          mutation through the DOM.
+
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <h3>
+          Fine-Grained Signals
+        </h3>
+
+        <p>
+
+          Understand direct signal
+          subscriptions and isolated
+          setter-level reactivity.
+
+        </p>
+
+      </div>
+
+      <div class="card">
+
+        <h3>
+          Identity Preservation
+        </h3>
+
+        <p>
+
+          Learn how DOMPP handles
+          node reuse,
+          child replacement,
+          and runtime ownership.
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================================= -->
   <!-- EXAMPLES -->
   <!-- ================================= -->
 
@@ -538,93 +834,164 @@
 
       Explore progressively structured
       examples demonstrating mutation,
-      reactivity, enhancement, and
-      fine-grained signals.
+      reactivity,
+      enhancement,
+      and runtime semantics.
 
     </p>
 
-    <div class="examples">
+    <!-- ================================= -->
+    <!-- FOUNDATIONS -->
+    <!-- ================================= -->
 
-      <a
-        href="./examples/01-basic-text/"
-        class="example-link"
-      >
+    <div class="examples-group">
 
-        <strong>
-          01 — Basic Text
-        </strong>
+      <h3>
+        Foundations
+      </h3>
 
-        Minimal text mutation example.
+      <div class="examples">
 
-      </a>
+        <a
+          href="./examples/"
+          class="example-link"
+        >
 
-      <a
-        href="./examples/06-mutation-consistency/"
-        class="example-link"
-      >
+          <strong>
+            01–05 — Fundamentals
+          </strong>
 
-        <strong>
-          06 — Mutation Consistency
-        </strong>
+          Basic text,
+          styles,
+          attributes,
+          children,
+          and events.
 
-        Demonstrates unified setter APIs.
+        </a>
 
-      </a>
-
-      <a
-        href="./examples/09-reactive-counter/"
-        class="example-link"
-      >
-
-        <strong>
-          09 — Reactive Counter
-        </strong>
-
-        Local stateful reactive runtime.
-
-      </a>
-
-      <a
-        href="./examples/13-existing-dom-enhancement/"
-        class="example-link"
-      >
-
-        <strong>
-          13 — Existing DOM Enhancement
-        </strong>
-
-        Enhancement without hydration.
-
-      </a>
-
-      <a
-        href="./examples/14-fine-grained-signals/"
-        class="example-link"
-      >
-
-        <strong>
-          14 — Fine-Grained Signals
-        </strong>
-
-        Optional signal-based reactivity.
-
-      </a>
-
-      <a
-        href="./examples/15-existing-dom-enhancement-signals/"
-        class="example-link"
-      >
-
-        <strong>
-          15 — Enhancement + Signals
-        </strong>
-
-        Existing DOM combined with
-        fine-grained signals.
-
-      </a>
+      </div>
 
     </div>
+
+    <!-- ================================= -->
+    <!-- MUTATION -->
+    <!-- ================================= -->
+
+    <div class="examples-group">
+
+      <h3>
+        Mutation Semantics
+      </h3>
+
+      <div class="examples">
+
+        <a
+          href="./examples/"
+          class="example-link"
+        >
+
+          <strong>
+            06–08 — Mutation Model
+          </strong>
+
+          Consistency,
+          fragments,
+          and children vs childNodes.
+
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- ================================= -->
+    <!-- REACTIVITY -->
+    <!-- ================================= -->
+
+    <div class="examples-group">
+
+      <h3>
+        Reactive Runtime
+      </h3>
+
+      <div class="examples">
+
+        <a
+          href="./examples/"
+          class="example-link"
+        >
+
+          <strong>
+            09–15 — Reactivity
+          </strong>
+
+          Local state,
+          enhancement,
+          signals,
+          and reactive DOM composition.
+
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- ================================= -->
+    <!-- SEMANTICS -->
+    <!-- ================================= -->
+
+    <div class="examples-group">
+
+      <h3>
+        Runtime Semantics
+      </h3>
+
+      <div class="examples">
+
+        <div class="example-link">
+
+          <strong>
+            16–19 — Coming Soon
+          </strong>
+
+          State equality,
+          nested ownership,
+          keyed lists,
+          and DOM identity preservation.
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ================================= -->
+  <!-- EXPERIMENTAL -->
+  <!-- ================================= -->
+
+  <section class="section">
+
+    <h2 class="section-title">
+      Experimental Runtime Proposal
+    </h2>
+
+    <p class="section-description">
+
+      DOMPP explores the idea that
+      browser-native mutation APIs
+      could evolve into a richer runtime layer
+      capable of supporting higher-level
+      frameworks and compilers.
+
+      <br /><br />
+
+      Rather than replacing the DOM,
+      DOMPP investigates how the DOM itself
+      might become the runtime infrastructure.
+
+    </p>
 
   </section>
 
@@ -634,13 +1001,15 @@
 
   <footer>
 
-    Built with native DOM APIs and
-    progressive runtime enhancement.
+    Built on top of native browser APIs
+    and deterministic mutation flow.
 
     <br /><br />
 
     <code>
       No virtual DOM.
+      No compiler.
+      No reconciliation.
     </code>
 
   </footer>
