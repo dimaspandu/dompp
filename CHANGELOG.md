@@ -6,6 +6,15 @@ This project follows semantic versioning principles.
 
 ---
 
+## v1.3.1
+
+### Fixed
+
+- Fixed typo and wording inconsistencies across examples
+- Fixed incorrect examples count on landing page
+  - updated from 19 examples to 20 examples
+- Improved examples landing page consistency
+
 ## v1.3.0
 
 ### Added
