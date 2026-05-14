@@ -38,6 +38,13 @@
       overflow: hidden;
     }
 
+    /* hidden checkbox for mobile menu toggle */
+    #menu-toggle {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
     /* ===================================
        SIDEBAR
     =================================== */
@@ -56,6 +63,10 @@
 
       border-right:
         1px solid rgba(255,255,255,0.08);
+
+      /* default desktop positioning */
+      position: relative;
+      height: 100vh;
     }
 
     .sidebar-header {
@@ -133,6 +144,41 @@
       font-weight: bold;
     }
 
+    /* hamburger label (uses spans inside) */
+    .hamburger {
+      display: none; /* shown on mobile via media query */
+      width: 44px;
+      height: 44px;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      padding: 8px;
+      position: relative;
+      z-index: 70; /* above backdrop */
+      -webkit-tap-highlight-color: transparent;
+      background: transparent;
+    }
+
+      .hamburger .bar {
+      width: 22px;
+      height: 2px;
+      background: #111;
+      display: inline-block;
+      margin: 3px 0;
+      border-radius: 1px;
+      transition: transform 0.2s ease, opacity 0.2s ease, background 0.2s ease;
+      transform-origin: center;
+    }
+
+    /* ensure hamburger bars contrast on topbar */
+    @media (max-width:900px) {
+      .topbar { background: white }
+      .hamburger .bar { background: #111 }
+      #menu-toggle:checked + .hamburger .bar { background: white }
+    }
+
+
     /* ===================================
        CONTENT
     =================================== */
@@ -187,28 +233,143 @@
         flex-direction: column;
       }
 
-      .sidebar {
-
-        width: 100%;
-
-        height: 260px;
-
-        border-right: none;
-
-        border-bottom:
-          1px solid rgba(255,255,255,0.08);
+      /* show hamburger in topbar */
+      .hamburger {
+        display: inline-flex;
+        position: fixed;
+        top: 12px;
+        right: 12px;
+        left: auto;
+        width: 44px;
+        height: 44px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.0);
+        border-radius: 8px;
+        z-index: 70;
       }
+
+      .hamburger .bar {
+        width: 20px;
+        height: 2px;
+        background: #111;
+        display: block;
+        margin: 3px 0;
+        border-radius: 1px;
+        transition: transform 0.25s ease, opacity 0.2s ease, background 0.2s ease;
+        transform-origin: center;
+      }
+
+      .topbar {
+        padding-left: 16px;
+        padding-right: 56px; /* leave space for hamburger on right */
+        gap: 12px;
+      }
+
+      /* keep original sidebar out of flow; we'll use it as overlay */
+      .sidebar {
+        width: 100%;
+        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        transform: translateY(-100%);
+        transition: transform 0.25s ease;
+        z-index: 60;
+        border-right: none;
+        border-bottom: none;
+      }
+
+      /* When menu toggle checked, show full-screen overlay (sticky) */
+      #menu-toggle:checked ~ .sidebar {
+        transform: translateY(0);
+      }
+
+      /* make overlay scrollable if content long */
+      .sidebar {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* dark background behind menu */
+      .overlay-backdrop { display:none }
+
+      /* use label as backdrop so clicking backdrop toggles checkbox to close */
+      label.overlay-backdrop {
+        display:none;
+      }
+
+      #menu-toggle:checked ~ label.overlay-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.35);
+        z-index: 50;
+      }
+
+      /* Make label clickable to close menu when link focused: wrap links in label pointing to checkbox */
+      .nav-link-wrap {
+        display: block;
+      }
+
+      /* ensure clicks on links still navigate target iframe; label is used only to toggle checkbox */
+      .nav-link-wrap a { display:block }
+
+      /* hide checkbox on desktop (already hidden) but ensure label doesn't appear on desktop */
+      .nav-link-wrap { cursor: pointer }
+
+
+      /* transform hamburger to X when checked */
+      #menu-toggle:checked + .hamburger .bar:nth-child(1) {
+        transform: translateY(6px) rotate(45deg);
+        background: #fff;
+      }
+
+      #menu-toggle:checked + .hamburger .bar:nth-child(2) {
+        transform: scaleX(0);
+        opacity: 0;
+      }
+
+      #menu-toggle:checked + .hamburger .bar:nth-child(3) {
+        transform: translateY(-6px) rotate(-45deg);
+        background: #fff;
+      }
+
+
+
+      /* Auto-close visual behavior: if a link inside sidebar is focused (user clicked), hide overlay visually */
+      /* We still keep the checkbox checked state but move the sidebar away for UX */
+      #menu-toggle:checked ~ .sidebar:focus-within {
+        transform: translateY(-100%);
+      }
+
+      /* make links larger for touch */
+      .nav a {
+        padding: 16px 18px;
+        font-size: 16px;
+      }
+
     }
 
   </style>
 </head>
 <body>
 
+<input id="menu-toggle" type="checkbox" />
+<label class="hamburger" for="menu-toggle" aria-hidden="true">
+  <span class="bar"></span>
+  <span class="bar"></span>
+  <span class="bar"></span>
+</label>
+<label class="overlay-backdrop" for="menu-toggle" aria-hidden="true"></label>
+
 <!-- ===================================
      SIDEBAR
 =================================== -->
 
-<aside class="sidebar">
+<aside class="sidebar" tabindex="-1">
+
 
   <div class="sidebar-header">
 
@@ -241,40 +402,45 @@
       Basics
     </div>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/01-basic-text/"
       data-title="Basic Text"
+      target="viewer"
     >
       01 — Basic Text
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/02-basic-styles/"
       data-title="Basic Styles"
+      target="viewer"
     >
       02 — Basic Styles
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/03-basic-attributes/"
       data-title="Basic Attributes"
+      target="viewer"
     >
       03 — Basic Attributes
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/04-basic-children/"
       data-title="Basic Children"
+      target="viewer"
     >
       04 — Basic Children
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/05-basic-events/"
       data-title="Basic Events"
+      target="viewer"
     >
       05 — Basic Events
-    </a>
+    </a></label>
 
     <!-- =============================
          MUTATION
@@ -284,26 +450,29 @@
       Mutation
     </div>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/06-mutation-consistency/"
       data-title="Mutation Consistency"
+      target="viewer"
     >
       06 — Mutation Consistency
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/07-children-vs-childnodes/"
       data-title="Children vs ChildNodes"
+      target="viewer"
     >
       07 — Children vs ChildNodes
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/08-fragment-support/"
       data-title="Fragment Support"
+      target="viewer"
     >
       08 — Fragment Support
-    </a>
+    </a></label>
 
     <!-- =============================
          REACTIVITY
@@ -313,54 +482,61 @@
       Reactivity
     </div>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/09-reactive-counter/"
       data-title="Reactive Counter"
+      target="viewer"
     >
       09 — Reactive Counter
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/10-reactive-children/"
       data-title="Reactive Children"
+      target="viewer"
     >
       10 — Reactive Children
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/11-reusable-stateful-elements/"
       data-title="Reusable Stateful Elements"
+      target="viewer"
     >
       11 — Reusable Stateful Elements
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/12-cross-element-state/"
       data-title="Cross-Element State"
+      target="viewer"
     >
       12 — Cross-Element State
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/13-existing-dom-enhancement/"
       data-title="Existing DOM Enhancement"
+      target="viewer"
     >
       13 — Existing DOM Enhancement
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/14-fine-grained-signals/"
       data-title="Fine-Grained Signals"
+      target="viewer"
     >
       14 — Fine-Grained Signals
-    </a>
+    </a></label>
 
-    <a
+    <label class="nav-link-wrap" for="menu-toggle"><a
       href="/examples/15-existing-dom-enhancement-signals/"
       data-title="Existing DOM Enhancement + Signals"
+      target="viewer"
     >
       15 — Existing DOM Enhancement + Signals
-    </a>
+    </a></label>
 
   </nav>
 
@@ -377,7 +553,7 @@
     id="title"
   >
 
-    DOM++ Examples
+    <span style="display:inline-block;margin-right:8px;">DOM++ Examples</span>
 
   </div>
 
@@ -388,79 +564,7 @@
 
 </main>
 
-<script>
 
-// =====================================
-// ELEMENTS
-// =====================================
-
-const iframe =
-  document.getElementById(
-    "viewer"
-  );
-
-const title =
-  document.getElementById(
-    "title"
-  );
-
-const links =
-  document.querySelectorAll(
-    ".nav a"
-  );
-
-// =====================================
-// NAVIGATION
-// =====================================
-
-for (const link of links) {
-
-  link.addEventListener(
-    "click",
-    (event) => {
-
-      event.preventDefault();
-
-      // ===============================
-      // UPDATE ACTIVE LINK
-      // ===============================
-
-      links.forEach((l) => {
-        l.classList.remove(
-          "active"
-        );
-      });
-
-      link.classList.add(
-        "active"
-      );
-
-      // ===============================
-      // UPDATE TITLE
-      // ===============================
-
-      title.textContent =
-        link.dataset.title;
-
-      // ===============================
-      // LOAD EXAMPLE
-      // ===============================
-
-      iframe.src =
-        link.href;
-    }
-  );
-}
-
-// =====================================
-// INITIAL ACTIVE LINK
-// =====================================
-
-links[0].classList.add(
-  "active"
-);
-
-</script>
 
 </body>
 </html>
