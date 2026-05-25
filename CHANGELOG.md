@@ -6,6 +6,26 @@ This project follows semantic versioning principles.
 
 ---
 
+## Unreleased
+
+## [1.4.0] - 2026-05-25
+
+### Added
+
+- New JSX Integration example (example #21):
+  - `examples/21-jsx-integration/`
+  - Tiny custom JSX factory `d(tag, props, ...children)` using Babel Standalone (CDN) + `/** @jsx d */` pragma
+  - Demonstrates full patterns with JSX:
+    - Basic usage
+    - Stateful panels with `setState` + reactive `setChildren`
+    - Cross-element updates
+    - **Fine-grained signals** (`document.createSignal` + `.setFineGrained()` on JSX-created nodes)
+  - Production note: configure your bundler (Vite/esbuild/etc) to use the custom factory instead of `React.createElement`
+
+### Fixed
+
+- Signal updater in JSX example: signals do not accept functional updaters (`setCount(c => c + 1)`). Must compute new value explicitly using `count()` (e.g. `setCount(count() + 1)`), matching the rest of the signal examples.
+
 ## v1.3.1
 
 ### Fixed
