@@ -6,6 +6,15 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.5.0] - 2026-09-30
+
+### Added
+
+- JSX factory (`d(tag, props, ...children)`) now supports:
+  - **Fragment**: `<fragment>` / `<Fragment>` creates `document.createDocumentFragment()`
+  - **SVG elements**: `<svg>`, `<circle>`, `<path>`, `<rect>`, `<line>`, `<polyline>`, `<polygon>`, `<ellipse>`, `<g>`, `<defs>`, `<use>`, `<symbol>`, `<text>`, `<tspan>`, `<textPath>`, `<image>`, `<foreignObject>`, `<mask>`, `<clipPath>`, `<pattern>`, `<linearGradient>`, `<radialGradient>`, `<stop>`, `<filter>`, `<feGaussianBlur>`, `<feColorMatrix>`, `<animate>`, `<animateTransform>`, `<animateMotion>`, `<marker>`, `<view>`, `<switch>`, `<a>`, `<script>`, `<style>`, `<title>`, `<desc>`, `<metadata>` create elements via `document.createElementNS("http://www.w3.org/2000/svg", tag)`
+  - Updated `examples/21-jsx-integration/index.html` with enhanced factory
+
 ## Unreleased
 
 ## [1.4.0] - 2026-05-25

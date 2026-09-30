@@ -411,6 +411,85 @@ app.append(card);
 
 ---
 
+# JSX Integration
+
+DOMPP works with JSX via a custom factory function. Configure your bundler (Vite, esbuild, Parcel, etc.) or use Babel Standalone with the `/** @jsx d */` pragma.
+
+```js
+/** @jsx d */
+function d(tag, props, ...children) {
+  // SVG elements
+  const svgTags = new Set([
+    "svg", "circle", "path", "rect", "line", "polyline", "polygon", "ellipse",
+    "g", "defs", "use", "symbol", "text", "tspan", "textPath",
+    "image", "foreignObject", "mask", "clipPath", "pattern",
+    "linearGradient", "radialGradient", "stop",
+    "filter", "feGaussianBlur", "feColorMatrix",
+    "animate", "animateTransform", "animateMotion",
+    "marker", "view", "switch", "a", "script", "style", "title", "desc", "metadata"
+  ]);
+
+  let node;
+  if (tag === "fragment" || tag === "Fragment") {
+    node = document.createDocumentFragment();
+  } else if (svgTags.has(tag)) {
+    node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  } else {
+    node = document.createElement(tag);
+  }
+
+  if (props) {
+    const { style, className, class: classAttr, on, ...attrs } = props;
+    if (className || classAttr) node.setAttributes({ class: className || classAttr });
+    if (style) node.setStyles(style);
+    if (on) node.setEvents(on);
+    if (Object.keys(attrs).length) node.setAttributes(attrs);
+  }
+  if (children.length) node.setChildren(...children.flat());
+  return node;
+}
+```
+
+Usage:
+
+```jsx
+/** @jsx d */
+import "./src/index.js";
+
+const app = document.getElementById("app");
+
+// Fragment support
+const items = (
+  <fragment>
+    <div className="item">A</div>
+    <div className="item">B</div>
+    <div className="item">C</div>
+  </fragment>
+);
+
+// SVG support
+const icon = (
+  <svg viewBox="0 0 24 24" width="24" height="24">
+    <circle cx="12" cy="12" r="10" fill="currentColor" />
+  </svg>
+);
+
+app.setChildren(
+  <section className="card">
+    {items}
+    {icon}
+  </section>
+);
+```
+
+See `examples/21-jsx-integration/` for a live demo with:
+- Basic usage
+- Stateful panels with `setState` + reactive `setChildren`
+- Cross-element updates
+- Fine-grained signals (`document.createSignal` + `.setFineGrained()`)
+
+---
+
 # Testing
 
 DOMPP uses:

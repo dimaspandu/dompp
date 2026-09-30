@@ -419,7 +419,28 @@
 
 <span class="code-comment">// JSX factory: d(tag, props, ...children)</span>
 <span class="code-keyword">function</span> <span class="code-variable">d</span>(<span class="code-variable">tag</span>, <span class="code-variable">props</span>, ...<span class="code-variable">children</span>) {
-  <span class="code-keyword">const</span> <span class="code-variable">node</span> = document.createElement(<span class="code-variable">tag</span>);
+  <span class="code-keyword">const</span> <span class="code-variable">svgTags</span> = <span class="code-keyword">new</span> <span class="code-variable">Set</span>([
+    <span class="code-string">"svg"</span>, <span class="code-string">"circle"</span>, <span class="code-string">"path"</span>, <span class="code-string">"rect"</span>,
+    <span class="code-string">"line"</span>, <span class="code-string">"polyline"</span>, <span class="code-string">"polygon"</span>, <span class="code-string">"ellipse"</span>,
+    <span class="code-string">"g"</span>, <span class="code-string">"defs"</span>, <span class="code-string">"use"</span>, <span class="code-string">"symbol"</span>,
+    <span class="code-string">"text"</span>, <span class="code-string">"tspan"</span>, <span class="code-string">"textPath"</span>,
+    <span class="code-string">"image"</span>, <span class="code-string">"foreignObject"</span>,
+    <span class="code-string">"mask"</span>, <span class="code-string">"clipPath"</span>, <span class="code-string">"pattern"</span>,
+    <span class="code-string">"linearGradient"</span>, <span class="code-string">"radialGradient"</span>, <span class="code-string">"stop"</span>,
+    <span class="code-string">"filter"</span>, <span class="code-string">"feGaussianBlur"</span>, <span class="code-string">"feColorMatrix"</span>,
+    <span class="code-string">"animate"</span>, <span class="code-string">"animateTransform"</span>, <span class="code-string">"animateMotion"</span>,
+    <span class="code-string">"marker"</span>, <span class="code-string">"view"</span>, <span class="code-string">"switch"</span>,
+    <span class="code-string">"a"</span>, <span class="code-string">"script"</span>, <span class="code-string">"style"</span>, <span class="code-string">"title"</span>, <span class="code-string">"desc"</span>, <span class="code-string">"metadata"</span>
+  ]);
+
+  <span class="code-keyword">let</span> <span class="code-variable">node</span>;
+  <span class="code-keyword">if</span> (<span class="code-variable">tag</span> === <span class="code-string">"fragment"</span> || <span class="code-variable">tag</span> === <span class="code-string">"Fragment"</span>) {
+    <span class="code-variable">node</span> = document.createDocumentFragment();
+  } <span class="code-keyword">else if</span> (<span class="code-variable">svgTags</span>.has(<span class="code-variable">tag</span>)) {
+    <span class="code-variable">node</span> = document.createElementNS(<span class="code-string">"http://www.w3.org/2000/svg"</span>, <span class="code-variable">tag</span>);
+  } <span class="code-keyword">else</span> {
+    <span class="code-variable">node</span> = document.createElement(<span class="code-variable">tag</span>);
+  }
 
   <span class="code-keyword">if</span> (<span class="code-variable">props</span>) {
     <span class="code-keyword">const</span> { <span class="code-property">style</span>, <span class="code-property">className</span>, <span class="code-property">class</span>: <span class="code-variable">classAttr</span>, <span class="code-property">on</span>, ...<span class="code-variable">attrs</span> } = <span class="code-variable">props</span>;
@@ -446,8 +467,9 @@
   }
 
   <span class="code-keyword">return</span> <span class="code-variable">node</span>;
-}
 
+
+}
 <span class="code-keyword">function</span> <span class="code-variable">card</span>(<span class="code-variable">title</span>, <span class="code-variable">description</span>, <span class="code-variable">content</span>) {
   <span class="code-keyword">return</span> (
     &lt;<span class="code-tag">section</span> <span class="code-property">className</span>=<span class="code-string">"card"</span>&gt;
@@ -574,7 +596,28 @@ const app = document.getElementById("app");
 
 // JSX factory: d(tag, props, ...children)
 function d(tag, props, ...children) {
-  const node = document.createElement(tag);
+  const svgTags = new Set([
+    "svg", "circle", "path", "rect",
+    "line", "polyline", "polygon", "ellipse",
+    "g", "defs", "use", "symbol",
+    "text", "tspan", "textPath",
+    "image", "foreignObject",
+    "mask", "clipPath", "pattern",
+    "linearGradient", "radialGradient", "stop",
+    "filter", "feGaussianBlur", "feColorMatrix",
+    "animate", "animateTransform", "animateMotion",
+    "marker", "view", "switch",
+    "a", "script", "style", "title", "desc", "metadata"
+  ]);
+
+  let node;
+  if (tag === "fragment" || tag === "Fragment") {
+    node = document.createDocumentFragment();
+  } else if (svgTags.has(tag)) {
+    node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  } else {
+    node = document.createElement(tag);
+  }
 
   if (props) {
     const { style, className, class: classAttr, on, ...attrs } = props;
