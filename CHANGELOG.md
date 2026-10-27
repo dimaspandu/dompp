@@ -6,6 +6,18 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.5.1] - 2026-10-27
+
+### Added
+
+- Added function component and JSX spread props examples to `examples/21-jsx-integration/`.
+- Added JSX fragment syntax using the custom `d.fragment` factory.
+
+### Fixed
+
+- Configured Babel Standalone to use the classic JSX transform with the custom `d` factory.
+- Kept the displayed JSX source synchronized with the runnable Babel script and restored syntax highlighting.
+
 ## [1.5.0] - 2026-09-30
 
 ### Added

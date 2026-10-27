@@ -436,6 +436,7 @@
   <script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
 /** @jsxRuntime classic */
 /** @jsx d */
+/** @jsxFrag d.fragment */
 
 const app = document.getElementById("app");
 
@@ -584,6 +585,39 @@ function card(title, description, content) {
   );
 }
 
+function Something(props) {
+  return (
+    <div className="panel">
+      <h3>{props.title}</h3>
+      <p>{props.message}</p>
+    </div>
+  );
+}
+
+function demoComponent() {
+  const props = {
+    title: "Custom Component",
+    message: "Props are passed to Something with JSX spread syntax."
+  };
+
+  return card(
+    "Components",
+    "A function component receives props and returns JSX.",
+    <Something {...props} />
+  );
+}
+
+function demoFragment() {
+  return card(
+    "Fragments",
+    "A fragment groups multiple children without adding a wrapper element.",
+    <>
+      <p>This paragraph is inside a JSX fragment.</p>
+      <p>The fragment factory returns a DocumentFragment.</p>
+    </>
+  );
+}
+
 function demoBasicUsage() {
   return card(
     "Basic Usage",
@@ -674,6 +708,8 @@ function demoFineGrained() {
 
 app.setChildren(
   demoBasicUsage(),
+  demoComponent(),
+  demoFragment(),
   demoStatefulPanel(),
   demoCrossElement(),
   demoFineGrained()
