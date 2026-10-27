@@ -19,6 +19,8 @@
     JSX Integration
   </title>
 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
+
   <style>
 
     * {
@@ -412,165 +414,7 @@
       The pragma, factory, and all four demo patterns are shown below.
     </p>
 
-<pre><code><span class="code-comment">/** @jsx d */</span>
-
-<span class="code-keyword">const</span> <span class="code-variable">app</span> =
-  document.getElementById(<span class="code-string">"app"</span>);
-
-<span class="code-comment">// JSX factory: d(tag, props, ...children)</span>
-<span class="code-keyword">function</span> <span class="code-variable">d</span>(<span class="code-variable">tag</span>, <span class="code-variable">props</span>, ...<span class="code-variable">children</span>) {
-  <span class="code-keyword">const</span> <span class="code-variable">svgTags</span> = <span class="code-keyword">new</span> <span class="code-variable">Set</span>([
-    <span class="code-string">"svg"</span>, <span class="code-string">"circle"</span>, <span class="code-string">"path"</span>, <span class="code-string">"rect"</span>,
-    <span class="code-string">"line"</span>, <span class="code-string">"polyline"</span>, <span class="code-string">"polygon"</span>, <span class="code-string">"ellipse"</span>,
-    <span class="code-string">"g"</span>, <span class="code-string">"defs"</span>, <span class="code-string">"use"</span>, <span class="code-string">"symbol"</span>,
-    <span class="code-string">"text"</span>, <span class="code-string">"tspan"</span>, <span class="code-string">"textPath"</span>,
-    <span class="code-string">"image"</span>, <span class="code-string">"foreignObject"</span>,
-    <span class="code-string">"mask"</span>, <span class="code-string">"clipPath"</span>, <span class="code-string">"pattern"</span>,
-    <span class="code-string">"linearGradient"</span>, <span class="code-string">"radialGradient"</span>, <span class="code-string">"stop"</span>,
-    <span class="code-string">"filter"</span>, <span class="code-string">"feGaussianBlur"</span>, <span class="code-string">"feColorMatrix"</span>,
-    <span class="code-string">"animate"</span>, <span class="code-string">"animateTransform"</span>, <span class="code-string">"animateMotion"</span>,
-    <span class="code-string">"marker"</span>, <span class="code-string">"view"</span>, <span class="code-string">"switch"</span>,
-    <span class="code-string">"a"</span>, <span class="code-string">"script"</span>, <span class="code-string">"style"</span>, <span class="code-string">"title"</span>, <span class="code-string">"desc"</span>, <span class="code-string">"metadata"</span>
-  ]);
-
-  <span class="code-keyword">let</span> <span class="code-variable">node</span>;
-  <span class="code-keyword">if</span> (<span class="code-variable">tag</span> === <span class="code-string">"fragment"</span> || <span class="code-variable">tag</span> === <span class="code-string">"Fragment"</span>) {
-    <span class="code-variable">node</span> = document.createDocumentFragment();
-  } <span class="code-keyword">else if</span> (<span class="code-variable">svgTags</span>.has(<span class="code-variable">tag</span>)) {
-    <span class="code-variable">node</span> = document.createElementNS(<span class="code-string">"http://www.w3.org/2000/svg"</span>, <span class="code-variable">tag</span>);
-  } <span class="code-keyword">else</span> {
-    <span class="code-variable">node</span> = document.createElement(<span class="code-variable">tag</span>);
-  }
-
-  <span class="code-keyword">if</span> (<span class="code-variable">props</span>) {
-    <span class="code-keyword">const</span> { <span class="code-property">style</span>, <span class="code-property">className</span>, <span class="code-property">class</span>: <span class="code-variable">classAttr</span>, <span class="code-property">on</span>, ...<span class="code-variable">attrs</span> } = <span class="code-variable">props</span>;
-
-    <span class="code-keyword">if</span> (<span class="code-variable">className</span> || <span class="code-variable">classAttr</span>) {
-      node.<span class="code-method">setAttributes</span>({ <span class="code-property">class</span>: <span class="code-variable">className</span> || <span class="code-variable">classAttr</span> });
-    }
-
-    <span class="code-keyword">if</span> (<span class="code-variable">style</span>) {
-      node.<span class="code-method">setStyles</span>(<span class="code-variable">style</span>);
-    }
-
-    <span class="code-keyword">if</span> (<span class="code-variable">on</span>) {
-      node.<span class="code-method">setEvents</span>(<span class="code-variable">on</span>);
-    }
-
-    <span class="code-keyword">if</span> (Object.keys(<span class="code-variable">attrs</span>).length) {
-      node.<span class="code-method">setAttributes</span>(<span class="code-variable">attrs</span>);
-    }
-  }
-
-  <span class="code-keyword">if</span> (<span class="code-variable">children</span>.length) {
-    node.<span class="code-method">setChildren</span>(...<span class="code-variable">children</span>.flat());
-  }
-
-  <span class="code-keyword">return</span> <span class="code-variable">node</span>;
-
-
-}
-<span class="code-keyword">function</span> <span class="code-variable">card</span>(<span class="code-variable">title</span>, <span class="code-variable">description</span>, <span class="code-variable">content</span>) {
-  <span class="code-keyword">return</span> (
-    &lt;<span class="code-tag">section</span> <span class="code-property">className</span>=<span class="code-string">"card"</span>&gt;
-      &lt;<span class="code-tag">h2</span>&gt;{<span class="code-variable">title</span>}&lt;/<span class="code-tag">h2</span>&gt;
-      &lt;<span class="code-tag">small</span>&gt;{<span class="code-variable">description</span>}&lt;/<span class="code-tag">small</span>&gt;
-      {<span class="code-variable">content</span>}
-    &lt;/<span class="code-tag">section</span>&gt;
-  );
-}
-
-<span class="code-keyword">function</span> <span class="code-variable">demoBasicUsage</span>() {
-  <span class="code-keyword">return</span> card(
-    <span class="code-string">"Basic Usage"</span>,
-    <span class="code-string">"DOM++ extends real DOM nodes with chainable helpers."</span>,
-    (
-      &lt;<span class="code-tag">div</span>&gt;
-        &lt;<span class="code-tag">h3</span>&gt;Hello DOM++&lt;/<span class="code-tag">h3</span>&gt;
-        &lt;<span class="code-tag">p</span>&gt;This is a DOM++ element created via JSX.&lt;/<span class="code-tag">p</span>&gt;
-      &lt;/<span class="code-tag">div</span>&gt;
-    )
-  );
-}
-
-<span class="code-keyword">function</span> <span class="code-variable">demoStatefulPanel</span>() {
-  <span class="code-keyword">const</span> <span class="code-variable">panel</span> = &lt;<span class="code-tag">section</span> <span class="code-property">className</span>=<span class="code-string">"panel"</span> /&gt;;
-  <span class="code-variable">panel</span>
-    .<span class="code-method">setState</span>({ <span class="code-property">total</span>: 0 })
-    .<span class="code-method">setChildren</span>(({ <span class="code-property">state</span>, <span class="code-property">setState</span> }) =&gt; [
-      &lt;<span class="code-tag">h3</span>&gt;{`Total: ${<span class="code-variable">state</span>.total}`}&lt;/<span class="code-tag">h3</span>&gt;,
-      &lt;<span class="code-tag">button</span> <span class="code-property">on</span>={{ <span class="code-property">click</span>: () =&gt; <span class="code-variable">setState</span>(({ <span class="code-property">state</span> }) =&gt; { <span class="code-variable">state</span>.total += 10000; }) }}&gt;
-        Donate 10k
-      &lt;/<span class="code-tag">button</span>&gt;
-    ]);
-
-  <span class="code-keyword">return</span> card(
-    <span class="code-string">"Stateful Panel"</span>,
-    <span class="code-string">"State lives on the element; setChildren re-runs when state changes."</span>,
-    <span class="code-variable">panel</span>
-  );
-}
-
-<span class="code-keyword">function</span> <span class="code-variable">demoCrossElement</span>() {
-  <span class="code-keyword">const</span> <span class="code-variable">summary</span> = &lt;<span class="code-tag">div</span> /&gt;;
-  <span class="code-variable">summary</span>
-    .<span class="code-method">setState</span>({ <span class="code-property">total</span>: 0 })
-    .<span class="code-method">setChildren</span>(({ <span class="code-property">state</span> }) =&gt; [
-      &lt;<span class="code-tag">strong</span>&gt;{`Total: ${<span class="code-variable">state</span>.total}`}&lt;/<span class="code-tag">strong</span>&gt;
-    ]);
-
-  <span class="code-keyword">return</span> card(
-    <span class="code-string">"Cross-Element Updates"</span>,
-    <span class="code-string">"Buttons update another element's state via its setState method."</span>,
-    (
-      &lt;<span class="code-tag">div</span>&gt;
-        {<span class="code-variable">summary</span>}
-        &lt;<span class="code-tag">div</span> <span class="code-property">className</span>=<span class="code-string">"actions"</span>&gt;
-          &lt;<span class="code-tag">button</span> <span class="code-property">on</span>={{ <span class="code-property">click</span>: () =&gt; {
-            <span class="code-variable">summary</span>.<span class="code-method">setState</span>(({ <span class="code-property">state</span> }) =&gt; { <span class="code-variable">state</span>.total += 10000; });
-          } }}&gt;Donate 10k&lt;/<span class="code-tag">button</span>&gt;
-          &lt;<span class="code-tag">button</span> <span class="code-property">className</span>=<span class="code-string">"secondary"</span> <span class="code-property">on</span>={{ <span class="code-property">click</span>: () =&gt; {
-            <span class="code-variable">summary</span>.<span class="code-method">setState</span>(({ <span class="code-property">state</span> }) =&gt; { <span class="code-variable">state</span>.total += 25000; });
-          } }}&gt;Donate 25k&lt;/<span class="code-tag">button</span>&gt;
-        &lt;/<span class="code-tag">div</span>&gt;
-      &lt;/<span class="code-tag">div</span>&gt;
-    )
-  );
-}
-
-<span class="code-keyword">function</span> <span class="code-variable">demoFineGrained</span>() {
-  <span class="code-keyword">const</span> [<span class="code-variable">count</span>, <span class="code-variable">setCount</span>] =
-    document.<span class="code-method">createSignal</span>(0);
-
-  <span class="code-keyword">const</span> <span class="code-variable">display</span> =
-    &lt;<span class="code-tag">strong</span> <span class="code-property">className</span>=<span class="code-string">"signal-count"</span> /&gt;;
-
-  <span class="code-variable">display</span>
-    .<span class="code-method">setFineGrained</span>()
-    .<span class="code-method">setText</span>(() =&gt; `Signal: ${<span class="code-variable">count</span>()}`);
-
-  <span class="code-keyword">return</span> card(
-    <span class="code-string">"Fine-Grained Signals"</span>,
-    <span class="code-string">"JSX node + setFineGrained + signal-driven setText (no setState)."</span>,
-    (
-      &lt;<span class="code-tag">div</span>&gt;
-        {<span class="code-variable">display</span>}
-        &lt;<span class="code-tag">div</span> <span class="code-property">className</span>=<span class="code-string">"actions"</span>&gt;
-          &lt;<span class="code-tag">button</span> <span class="code-property">on</span>={{ <span class="code-property">click</span>: () =&gt; <span class="code-variable">setCount</span>( <span class="code-variable">count</span>() + 1 ) }}&gt;+1&lt;/<span class="code-tag">button</span>&gt;
-          &lt;<span class="code-tag">button</span> <span class="code-property">className</span>=<span class="code-string">"secondary"</span> <span class="code-property">on</span>={{ <span class="code-property">click</span>: () =&gt; <span class="code-variable">setCount</span>(0) }}&gt;Reset&lt;/<span class="code-tag">button</span>&gt;
-        &lt;/<span class="code-tag">div</span>&gt;
-      &lt;/<span class="code-tag">div</span>&gt;
-    )
-  );
-}
-
-<span class="code-variable">app</span>.<span class="code-method">setChildren</span>(
-  <span class="code-variable">demoBasicUsage</span>(),
-  <span class="code-variable">demoStatefulPanel</span>(),
-  <span class="code-variable">demoCrossElement</span>(),
-  <span class="code-variable">demoFineGrained</span>()
-);
- </code></pre>
+<pre><code id="jsx-source" class="language-jsx"></code></pre>
 
     <div class="notes">
       The runtime cost of Babel Standalone is only for this demo.
@@ -589,49 +433,118 @@
   ></script>
   <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <script type="text/babel" data-presets="env,react">
+  <script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
+/** @jsxRuntime classic */
 /** @jsx d */
 
 const app = document.getElementById("app");
 
+
+/**
+ * d.js — Custom JSX factory. *
+ * The transpiler calls the factory in two ways:
+ *   d(tag, props, ...children)
+ *   d.fragment(...children) // for <></>
+ */
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+/**
+ * Tags that belong to the SVG namespace.
+ * Ambiguous tags shared with HTML are intentionally excluded.
+ */
+const svgOnlyTags = new Set([
+  "svg",
+  "circle",
+  "path",
+  "rect",
+  "line",
+  "polyline",
+  "polygon",
+  "ellipse",
+  "g",
+  "defs",
+  "use",
+  "symbol",
+  "text",
+  "tspan",
+  "textPath",
+  "image",
+  "foreignObject",
+  "mask",
+  "clipPath",
+  "pattern",
+  "linearGradient",
+  "radialGradient",
+  "stop",
+  "filter",
+  "feGaussianBlur",
+  "feColorMatrix",
+  "animate",
+  "animateTransform",
+  "animateMotion",
+  "marker",
+  "view",
+  "switch",
+]);
+
 // JSX factory: d(tag, props, ...children)
 function d(tag, props, ...children) {
-  const svgTags = new Set([
-    "svg", "circle", "path", "rect",
-    "line", "polyline", "polygon", "ellipse",
-    "g", "defs", "use", "symbol",
-    "text", "tspan", "textPath",
-    "image", "foreignObject",
-    "mask", "clipPath", "pattern",
-    "linearGradient", "radialGradient", "stop",
-    "filter", "feGaussianBlur", "feColorMatrix",
-    "animate", "animateTransform", "animateMotion",
-    "marker", "view", "switch",
-    "a", "script", "style", "title", "desc", "metadata"
-  ]);
-
   let node;
+
+  // Custom components.
+  if (typeof tag === "function") {
+    return tag(props, ...children);
+  }
+
+  // Create the appropriate node.
   if (tag === "fragment" || tag === "Fragment") {
     node = document.createDocumentFragment();
-  } else if (svgTags.has(tag)) {
-    node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+  } else if (svgOnlyTags.has(tag)) {
+    node = document.createElementNS(SVG_NS, tag);
   } else {
     node = document.createElement(tag);
   }
 
   if (props) {
-    const { style, className, class: classAttr, on, ...attrs } = props;
+    const attrs = {};
+    const events = {};
 
-    if (className || classAttr) {
-      node.setAttributes({ class: className || classAttr });
+    let style;
+    let className;
+
+    for (const [key, value] of Object.entries(props)) {
+      const normalizedKey = key.toLowerCase();
+
+      // Event props: onClick, onclick, ONCLICK, OnClick, etc.
+      if (normalizedKey.startsWith("on")) {
+        const eventName = normalizedKey.slice(2);
+
+        if (eventName) {
+          events[eventName] = value;
+        }
+      } else if (normalizedKey === "style") {
+        style = value;
+      } else if (
+        normalizedKey === "classname" ||
+        normalizedKey === "class"
+      ) {
+        className ??= value;
+      } else {
+        attrs[key] = value;
+      }
     }
 
-    if (style) {
+    if (className != null) {
+      node.setAttributes({ class: className });
+    }
+
+    if (style != null) {
       node.setStyles(style);
     }
 
-    if (on) {
-      node.setEvents(on);
+    if (Object.keys(events).length) {
+      node.setEvents(events);
     }
 
     if (Object.keys(attrs).length) {
@@ -639,12 +552,27 @@ function d(tag, props, ...children) {
     }
   }
 
+  // Append children.
   if (children.length) {
     node.setChildren(...children.flat());
   }
 
   return node;
 }
+
+/**
+ * Fragment factory for JSX fragments:
+ *   <></> -> d.fragment(...children)
+ */
+d.fragment = function fragment(...children) {
+  const node = document.createDocumentFragment();
+
+  if (children.length) {
+    node.setChildren(...children.flat());
+  }
+
+  return node;
+};
 
 function card(title, description, content) {
   return (
@@ -675,11 +603,9 @@ function demoStatefulPanel() {
     .setState({ total: 0 })
     .setChildren(({ state, setState }) => [
       <h3>{`Total: ${state.total}`}</h3>,
-      <button on={{
-        click: () => setState(({ state }) => {
-          state.total += 10000;
-        })
-      }}>Donate 10k</button>
+      <button onClick={() => setState(({ state }) => {
+        state.total += 10000;
+      })}>Donate 10k</button>
     ]);
 
   return card(
@@ -704,19 +630,15 @@ function demoCrossElement() {
       <div>
         {summary}
         <div className="actions">
-          <button on={{
-            click: () => {
-              summary.setState(({ state }) => {
-                state.total += 10000;
-              });
-            }
+          <button onClick={() => {
+            summary.setState(({ state }) => {
+              state.total += 10000;
+            });
           }}>Donate 10k</button>
-          <button className="secondary" on={{
-            click: () => {
-              summary.setState(({ state }) => {
-                state.total += 25000;
-              });
-            }
+          <button className="secondary" onClick={() => {
+            summary.setState(({ state }) => {
+              state.total += 25000;
+            });
           }}>Donate 25k</button>
         </div>
       </div>
@@ -742,12 +664,8 @@ function demoFineGrained() {
       <div>
         {display}
         <div className="actions">
-          <button on={{
-            click: () => setCount( count() + 1 )
-          }}>+1</button>
-          <button className="secondary" on={{
-            click: () => setCount(0)
-          }}>Reset</button>
+          <button onClick={() => setCount( count() + 1 )}>+1</button>
+          <button className="secondary" onClick={() => setCount(0)}>Reset</button>
         </div>
       </div>
     )
@@ -762,5 +680,12 @@ app.setChildren(
 );
   </script>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>
+    const sourceBlock = document.getElementById("jsx-source");
+    sourceBlock.textContent =
+      document.querySelector('script[type="text/babel"]').textContent.trim();
+    hljs.highlightElement(sourceBlock);
+  </script>
 </body>
 </html>
