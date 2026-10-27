@@ -585,6 +585,19 @@ function card(title, description, content) {
   );
 }
 
+function demoBasicUsage() {
+  return card(
+    "Basic Usage",
+    "DOM++ extends real DOM nodes with chainable helpers.",
+    (
+      <div>
+        <h3>Hello DOM++</h3>
+        <p>This is a DOM++ element created via JSX.</p>
+      </div>
+    )
+  );
+}
+
 function Something(props) {
   return (
     <div className="panel">
@@ -615,19 +628,6 @@ function demoFragment() {
       <p>This paragraph is inside a JSX fragment.</p>
       <p>The fragment factory returns a DocumentFragment.</p>
     </>
-  );
-}
-
-function demoBasicUsage() {
-  return card(
-    "Basic Usage",
-    "DOM++ extends real DOM nodes with chainable helpers.",
-    (
-      <div>
-        <h3>Hello DOM++</h3>
-        <p>This is a DOM++ element created via JSX.</p>
-      </div>
-    )
   );
 }
 
