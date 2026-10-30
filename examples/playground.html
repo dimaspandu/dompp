@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="../../assets/favicon.svg"
+  />
+
+  <title>
+    JSX Integration
+  </title>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+
+      margin: 0;
+
+      font-family:
+        Inter,
+        system-ui,
+        sans-serif;
+
+      background:
+        #f5f5f5;
+
+      color:
+        #222;
+
+      line-height:
+        1.7;
+    }
+
+    .container {
+
+      max-width:
+        1100px;
+
+      margin:
+        0 auto;
+
+      padding:
+        48px 24px 96px;
+    }
+
+    h1 {
+
+      font-size:
+        48px;
+
+      margin-bottom:
+        16px;
+    }
+
+    .description {
+
+      max-width:
+        820px;
+
+      color:
+        #666;
+
+      margin-bottom:
+        40px;
+    }
+
+    .important {
+
+      background:
+        linear-gradient(
+          135deg,
+          #e8f4ff,
+          #d0e8ff
+        );
+
+      border:
+        1px solid #7cb8ff;
+
+      border-radius:
+        16px;
+
+      padding:
+        20px;
+
+      margin-bottom:
+        40px;
+
+      color:
+        #1a365d;
+    }
+
+    .layout {
+
+      display:
+        grid;
+
+      grid-template-columns:
+        1fr 1fr;
+
+      gap:
+        32px;
+
+      align-items:
+        start;
+    }
+
+    .panel {
+
+      background:
+        white;
+
+      border-radius:
+        20px;
+
+      padding:
+        28px;
+
+      box-shadow:
+        0 8px 24px rgba(0,0,0,0.06);
+    }
+
+    .panel h2 {
+
+      margin-top:
+        0;
+
+      font-size:
+        20px;
+
+      margin-bottom:
+        16px;
+    }
+
+    .card {
+
+      background:
+        white;
+
+      border-radius:
+        16px;
+
+      padding:
+        20px 24px;
+
+      box-shadow:
+        0 4px 12px rgba(0,0,0,0.06);
+
+      margin-bottom:
+        24px;
+
+      border:
+        1px solid #eee;
+    }
+
+    .card:last-child {
+      margin-bottom: 0;
+    }
+
+    .card h2 {
+
+      font-size:
+        18px;
+
+      margin:
+        0 0 4px;
+    }
+
+    .card small {
+
+      display:
+        block;
+
+      color:
+        #666;
+
+      margin-bottom:
+        12px;
+    }
+
+    .card h3 {
+
+      margin:
+        12px 0 8px;
+
+      font-size:
+        16px;
+    }
+
+    .card p {
+
+      margin:
+        0 0 12px;
+
+      color:
+        #444;
+    }
+
+    .signal-count {
+
+      font-size:
+        28px;
+
+      display:
+        block;
+
+      margin:
+        8px 0;
+
+      font-variant-numeric:
+        tabular-nums;
+    }
+
+    .panel .actions,
+    .card .actions {
+
+      display:
+        flex;
+
+      gap:
+        8px;
+
+      margin-top:
+        12px;
+    }
+
+    button {
+
+      padding:
+        8px 16px;
+
+      border:
+        1px solid #222;
+
+      background:
+        #222;
+
+      color:
+        white;
+
+      border-radius:
+        8px;
+
+      cursor:
+        pointer;
+
+      font-size:
+        14px;
+    }
+
+    button.secondary {
+
+      background:
+        white;
+
+      color:
+        #222;
+    }
+
+    .note {
+
+      font-size:
+        13px;
+
+      color:
+        #666;
+
+      margin-top:
+        12px;
+    }
+
+    /* Syntax highlight (reused + extended) */
+
+    pre {
+
+      margin:
+        0;
+
+      background:
+        #0d1117;
+
+      color:
+        #c9d1d9;
+
+      padding:
+        20px;
+
+      border-radius:
+        12px;
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
+      font-size:
+        13px;
+
+      line-height:
+        1.6;
+
+      overflow:
+        auto;
+    }
+
+    .code-keyword { color: #ff7b72; }
+    .code-method { color: #79c0ff; }
+    .code-string { color: #a5d6ff; }
+    .code-property { color: #d2a8ff; }
+    .code-variable { color: #ffa657; }
+    .code-comment { color: #8b949e; font-style: italic; }
+    .code-tag { color: #7ee787; }
+    .code-jsx-brace { color: #c9d1d9; }
+
+    .notes {
+
+      margin-top:
+        24px;
+
+      color:
+        #666;
+
+      font-size:
+        14px;
+    }
+
+    @media (max-width: 900px) {
+
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+    }
+
+  </style>
+
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>
+      Stateful UI
+    </h1>
+
+    <!-- ================================= -->
+    <!-- LIVE DEMO -->
+    <!-- ================================= -->
+
+    <h2>
+      Live Demo
+    </h2>
+
+    <div id="app"></div>
+
+  <!-- ================================= -->
+  <!-- SCRIPTS -->
+  <!-- ================================= -->
+
+  <script
+    type="module"
+    src="../../src/index.js"
+  ></script>
+  <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
+/** @jsxRuntime classic */
+/** @jsx elementBuilder */
+/** @jsxFrag elementBuilder.fragment */
+
+const app = document.getElementById("app");
+
+
+/**
+ * elementBuilder.js — Custom JSX factory. *
+ * The transpiler calls the factory in two ways:
+ *   elementBuilder(tag, props, ...children)
+ *   elementBuilder.fragment(...children) // for <></>
+ */
+
+const SVG_NS = "http://www.w3.org/2000/svg";
+
+/**
+ * Tags that belong to the SVG namespace.
+ * Ambiguous tags shared with HTML are intentionally excluded.
+ */
+const svgOnlyTags = new Set([
+  "svg",
+  "circle",
+  "path",
+  "rect",
+  "line",
+  "polyline",
+  "polygon",
+  "ellipse",
+  "g",
+  "defs",
+  "use",
+  "symbol",
+  "text",
+  "tspan",
+  "textPath",
+  "image",
+  "foreignObject",
+  "mask",
+  "clipPath",
+  "pattern",
+  "linearGradient",
+  "radialGradient",
+  "stop",
+  "filter",
+  "feGaussianBlur",
+  "feColorMatrix",
+  "animate",
+  "animateTransform",
+  "animateMotion",
+  "marker",
+  "view",
+  "switch",
+]);
+
+function ElementBuilder(tag) {
+  this.struct = {
+    tag: tag,
+    attributes: {},
+    styles: {},
+    events: {},
+    children: [],
+  };
+
+  this.node = null;
+
+  if (tag.nodeType === 1) {
+    this.struct.tag = tag.tagName.toLowerCase();
+    this.node = tag;
+  }
+
+  return this;
+}
+
+ElementBuilder.prototype.setAttributes = function(attrs) {
+  this.struct.attributes = { ...this.struct.attributes, ...attrs };
+
+  if (this.node !== null) {
+    this.node.setAttributes(attrs);
+  }
+};
+
+ElementBuilder.prototype.setStyles = function(styles) {
+  this.struct.styles = { ...this.struct.styles, ...styles };
+
+  if (this.node !== null) {
+    this.node.setStyles(styles);
+  }
+};
+
+ElementBuilder.prototype.setEvents = function(events) {
+  this.struct.events = { ...this.struct.events, ...events };
+
+  if (this.node !== null) {
+    this.node.setEvents(events);
+  }
+};
+
+ElementBuilder.prototype.setChildren = function(childrn) {
+  const children = Array.isArray(childrn) ? childrn : [childrn];
+
+  if (this.node) {
+    for (let i in children) {
+      const child = children[i];
+
+      if (typeof child === "string" || typeof child === "number") {
+        this.node.appendChild(document.createTextNode(child));
+      } else {
+        const tag = child.struct.tag;
+        if (tag === "fragment" || tag === "Fragment") {
+          child.node = document.createDocumentFragment();
+        } else if (svgOnlyTags.has(tag)) {
+          child.node = document.createElementNS(SVG_NS, tag);
+        } else {
+          child.node = document.createElement(tag);
+        }
+
+        // use dompp setter
+        child.node.setAttributes(child.struct.attributes);
+        child.node.setStyles(child.struct.styles);
+        child.node.setEvents(child.struct.events);
+
+        // recursively
+        child.setChildren(child.struct.children);
+
+        this.node.appendChild(child.node);
+      }
+
+      this.struct.children[i] = child;
+    }
+  } else {
+    this.struct.children = children;
+  }
+};
+
+ElementBuilder.prototype.fragment = function(...children) {
+  this.struct.children = children;
+};
+
+// JSX factory: elementBuilder(tag, props, ...children)
+function elementBuilder(tag, props, ...children) {
+  // Custom components.
+  if (typeof tag === "function") {
+    return tag(props, ...children);
+  }
+
+  const element = new ElementBuilder(tag);
+
+  if (props) {
+    const attrs = {};
+    const events = {};
+
+    let style;
+    let className;
+
+    for (const [key, value] of Object.entries(props)) {
+      const normalizedKey = key.toLowerCase();
+
+      // Event props: onClick, onclick, ONCLICK, OnClick, etc.
+      if (normalizedKey.startsWith("on")) {
+        const eventName = normalizedKey.slice(2);
+
+        if (eventName) {
+          events[eventName] = value;
+        }
+      } else if (
+        normalizedKey === "styles" ||
+        normalizedKey === "style"
+      ) {
+        style = value;
+      } else if (
+        normalizedKey === "classname" ||
+        normalizedKey === "class"
+      ) {
+        className ??= value;
+      } else {
+        attrs[key] = value;
+      }
+    }
+
+    if (className != null) {
+      element.setAttributes({ class: className });
+    }
+
+    if (style != null) {
+      element.setStyles(style);
+    }
+
+    if (Object.keys(events).length) {
+      element.setEvents(events);
+    }
+
+    if (Object.keys(attrs).length) {
+      element.setAttributes(attrs);
+    }
+  }
+
+  // Append children.
+  if (children.length) {
+    element.setChildren(children);
+  }
+
+  return element;
+}
+
+function CounterElement({ count }) {
+  return (
+    <div className="card">
+      <h3 style={{
+        backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
+        color: "white",
+      }}>{count}</h3>
+      <button
+        class="secondary"
+        onClick={() => console.log(count)}
+      >UPDATE</button>
+    </div>
+  );
+}
+
+let count = 0;
+
+const counterElement = <CounterElement count={count} />;
+console.log("counterElement", counterElement);
+
+elementBuilder(app).setChildren(<CounterElement count={count} />);
+  </script>
+</body>
+</html>
