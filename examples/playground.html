@@ -757,47 +757,41 @@ function CounterElement({ count }) {
 
 let count = 0;
 
-const counterElement = <CounterElement count={count} />;
-// console.log("counterElement", counterElement);
-
-const newCounterElement = <CounterElement count={count} />;
-// console.log("newCounterElement", newCounterElement);
-
 function ComponentBuilder(builder) {
-  this.builder = builder;
-  this.component = null;
+  let component = null;
+
+  const instance = {
+    render() {
+      if (!component) {
+        component = builder(() => instance.rerender());
+      }
+
+      return component.toNode();
+    },
+
+    rerender() {
+      if (!component) {
+        return instance;
+      }
+
+      const next = builder(() => instance.rerender());
+      if (component.struct.tag === next.struct.tag) {
+        component._patchFrom(next);
+      } else {
+        const nextNode = next.toNode();
+        if (component.node?.parentNode) {
+          component.node.parentNode.replaceChild(nextNode, component.node);
+        }
+        component.node = nextNode;
+        component.struct = next.struct;
+      }
+
+      return instance;
+    },
+  };
+
+  return Object.freeze(instance);
 }
-
-ComponentBuilder.prototype.render = function() {
-  const self = this;
-
-  this.component = this.builder(function() {
-    return self.rerender();
-  });
-
-  return this;
-};
-
-ComponentBuilder.prototype.rerender = function() {
-  const self = this;
-  const curr = this.component;
-  const next = this.builder(function() {
-    return self.rerender();
-  });
-
-  if (curr.struct.tag === next.struct.tag) {
-    curr._patchFrom(next);
-  } else {
-    const nextNode = next.toNode();
-    if (curr.node?.parentNode) {
-      curr.node.parentNode.replaceChild(nextNode, curr.node);
-    }
-    curr.node = nextNode;
-    curr.struct = next.struct;
-  }
-
-  return this;
-};
 
 const x = new ComponentBuilder((rerender) => {
   console.log("rerender!", count);
@@ -822,12 +816,14 @@ const x = new ComponentBuilder((rerender) => {
   );
 });
 
+console.log("x", x);
+
 elementBuilder(
   app,
   null,
-  counterElement,
+  <CounterElement count={count} />,
   <hr />,
-  x.render().component,
+  x.render(),
 );
   </script>
 </body>
