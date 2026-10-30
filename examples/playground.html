@@ -488,11 +488,11 @@ ElementBuilder.prototype.setEvents = function(events) {
 };
 
 ElementBuilder.prototype.setChildren = function(children) {
-  this.struct.children = children;
-
   if (this.node) {
     for (let i in children) {
       const child = children[i];
+
+      this.struct.children[i] = child;
 
       if (typeof child === "string" || typeof child === "number") {
         // use native append
@@ -517,6 +517,8 @@ ElementBuilder.prototype.setChildren = function(children) {
         this.node.appendChild(child.node);
       }
     }
+  } else {
+    this.struct.children = children;
   }
 
   return this;
@@ -635,32 +637,33 @@ function ViewBuilder(builder) {
 ViewBuilder.prototype.render = function() {
   const self = this;
 
-  if (this.component === null) {
-    console.log("SINI!");
-    this.component = this.builder(function() {
-      return self.render();
-    });
-  } else {
-    console.log("SANA!");
-    const curr = this.component;
-    const next = this.builder(function() {
-      return self.render();
-    });
+  this.component = this.builder(function() {
+    return self.rerender();
+  });
 
-    if (curr.struct.tag === next.struct.tag) {
-      console.log(JSON.stringify(curr.struct.attributes), "DAN", JSON.stringify(next.struct.attributes));
-      curr.setAttributes(next.struct.attributes);
-      curr.setStyles(next.struct.styles);
-      curr.setEvents(next.struct.events);
-    } else {
-      //
-    }
+  return this;
+};
+
+ViewBuilder.prototype.rerender = function() {
+  const self = this;
+  const curr = this.component;
+  const next = this.builder(function() {
+    return self.rerender();
+  });
+
+  if (curr.struct.tag === next.struct.tag) {
+    curr.setAttributes(next.struct.attributes);
+    curr.setStyles(next.struct.styles);
+    curr.setEvents(next.struct.events);
+    curr.setChildren(next.struct.children);
+  } else {
+    //
   }
 
   return this;
-}
+};
 
-const x = new ViewBuilder((render) => {
+const x = new ViewBuilder((rerender) => {
   console.log("rerender!");
   return (
     <div className="card" style={{
@@ -674,7 +677,7 @@ const x = new ViewBuilder((render) => {
           if (count < 10) {
             count += 1;
           }
-          render();
+          rerender();
         }}
       >UPDATE</button>
     </div>
