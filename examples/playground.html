@@ -489,32 +489,65 @@ ElementBuilder.prototype.setEvents = function(events) {
 
 ElementBuilder.prototype.setChildren = function(children) {
   if (this.node) {
-    for (let i in children) {
-      const child = children[i];
+    if (this.node.children.length === 0) {
+      for (let i in children) {
+        const child = children[i];
 
-      this.struct.children[i] = child;
+        this.struct.children[i] = child;
 
-      if (typeof child === "string" || typeof child === "number") {
-        // use native append
-        this.node.appendChild(document.createTextNode(child));
-      } else {
-        const tag = child.struct.tag;
-        if (svgOnlyTags.has(tag)) {
-          child.node = document.createElementNS(SVG_NS, tag);
+        if (typeof child === "string" || typeof child === "number") {
+          // use native append
+          this.node.appendChild(document.createTextNode(child));
         } else {
-          child.node = document.createElement(tag);
+          const tag = child.struct.tag;
+          if (svgOnlyTags.has(tag)) {
+            child.node = document.createElementNS(SVG_NS, tag);
+          } else {
+            child.node = document.createElement(tag);
+          }
+
+          // use dompp setter
+          child.node.setAttributes(child.struct.attributes);
+          child.node.setStyles(child.struct.styles);
+          child.node.setEvents(child.struct.events);
+
+          // recursively
+          child.setChildren(child.struct.children);
+
+          // use native append
+          this.node.appendChild(child.node);
         }
+      }
+    } else {
+      for (let i in children) {
+        const child = children[i];
 
-        // use dompp setter
-        child.node.setAttributes(child.struct.attributes);
-        child.node.setStyles(child.struct.styles);
-        child.node.setEvents(child.struct.events);
+        const curr = this.struct.children[i];
+        const next = child;
+        console.log(curr, "DAN", next);
 
-        // recursively
-        child.setChildren(child.struct.children);
+        // if (typeof child === "string" || typeof child === "number") {
+        //   // use native append
+        //   this.node.appendChild(document.createTextNode(child));
+        // } else {
+        //   const tag = child.struct.tag;
+        //   if (svgOnlyTags.has(tag)) {
+        //     child.node = document.createElementNS(SVG_NS, tag);
+        //   } else {
+        //     child.node = document.createElement(tag);
+        //   }
 
-        // use native append
-        this.node.appendChild(child.node);
+        //   // use dompp setter
+        //   child.node.setAttributes(child.struct.attributes);
+        //   child.node.setStyles(child.struct.styles);
+        //   child.node.setEvents(child.struct.events);
+
+        //   // recursively
+        //   child.setChildren(child.struct.children);
+
+        //   // use native append
+        //   this.node.appendChild(child.node);
+        // }
       }
     }
   } else {
@@ -664,19 +697,21 @@ ViewBuilder.prototype.rerender = function() {
 };
 
 const x = new ViewBuilder((rerender) => {
-  console.log("rerender!");
+  console.log("rerender!", count);
   return (
-    <div className="card" style={{
-      backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
-      color: "white",
-    }}>
+    <div
+      className="card"
+      style={{
+        backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
+        color: "white",
+      }}
+    >
       <h3>{count}</h3>
       <button
         class="secondary"
+        disabled={count === 10}
         onClick={() => {
-          if (count < 10) {
-            count += 1;
-          }
+          count += 1;
           rerender();
         }}
       >UPDATE</button>
