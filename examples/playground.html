@@ -437,19 +437,21 @@ const svgOnlyTags = new Set([
 ]);
 
 function ElementBuilder(tag) {
-  this.struct = {
-    tag: tag,
+  this.struct = Object.seal({
+    tag: null,
     attributes: {},
     styles: {},
     events: {},
     children: [],
-  };
+  });
 
   this.node = null;
 
   if (tag.nodeType === 1) {
     this.struct.tag = tag.tagName.toLowerCase();
     this.node = tag;
+  } else {
+    this.struct.tag = tag;
   }
 
   return this;
@@ -458,41 +460,46 @@ function ElementBuilder(tag) {
 ElementBuilder.prototype.setAttributes = function(attrs) {
   this.struct.attributes = { ...this.struct.attributes, ...attrs };
 
-  if (this.node !== null) {
+  if (this.node) {
     this.node.setAttributes(attrs);
   }
+
+  return this;
 };
 
 ElementBuilder.prototype.setStyles = function(styles) {
   this.struct.styles = { ...this.struct.styles, ...styles };
 
-  if (this.node !== null) {
+  if (this.node) {
     this.node.setStyles(styles);
   }
+
+  return this;
 };
 
 ElementBuilder.prototype.setEvents = function(events) {
   this.struct.events = { ...this.struct.events, ...events };
 
-  if (this.node !== null) {
+  if (this.node) {
     this.node.setEvents(events);
   }
+
+  return this;
 };
 
-ElementBuilder.prototype.setChildren = function(childrn) {
-  const children = Array.isArray(childrn) ? childrn : [childrn];
+ElementBuilder.prototype.setChildren = function(children) {
+  this.struct.children = children;
 
   if (this.node) {
     for (let i in children) {
       const child = children[i];
 
       if (typeof child === "string" || typeof child === "number") {
+        // use native append
         this.node.appendChild(document.createTextNode(child));
       } else {
         const tag = child.struct.tag;
-        if (tag === "fragment" || tag === "Fragment") {
-          child.node = document.createDocumentFragment();
-        } else if (svgOnlyTags.has(tag)) {
+        if (svgOnlyTags.has(tag)) {
           child.node = document.createElementNS(SVG_NS, tag);
         } else {
           child.node = document.createElement(tag);
@@ -506,22 +513,31 @@ ElementBuilder.prototype.setChildren = function(childrn) {
         // recursively
         child.setChildren(child.struct.children);
 
+        // use native append
         this.node.appendChild(child.node);
       }
-
-      this.struct.children[i] = child;
     }
-  } else {
-    this.struct.children = children;
   }
+
+  return this;
 };
 
-ElementBuilder.prototype.fragment = function(...children) {
-  this.struct.children = children;
-};
+// ignore it first!
+// ElementBuilder.prototype.fragment = function(...childrn) {
+//   this.struct.children = Array.isArray(childrn) ? childrn : [childrn];
+
+//   if (this.node !== null) {
+//     const node = document.createDocumentFragment();
+
+//     if (children.length) {
+//       node.setChildren(this.struct.children);
+//     }
+//   }
+// };
 
 // JSX factory: elementBuilder(tag, props, ...children)
 function elementBuilder(tag, props, ...children) {
+
   // Custom components.
   if (typeof tag === "function") {
     return tag(props, ...children);
@@ -597,6 +613,8 @@ function CounterElement({ count }) {
         class="secondary"
         onClick={() => console.log(count)}
       >UPDATE</button>
+      <hr />
+      <fragment>Hello, I'm just a Fragment!</fragment>
     </div>
   );
 }
@@ -604,9 +622,72 @@ function CounterElement({ count }) {
 let count = 0;
 
 const counterElement = <CounterElement count={count} />;
-console.log("counterElement", counterElement);
+// console.log("counterElement", counterElement);
 
-elementBuilder(app).setChildren(<CounterElement count={count} />);
+const newCounterElement = <CounterElement count={count} />;
+// console.log("newCounterElement", newCounterElement);
+
+function ViewBuilder(builder) {
+  this.builder = builder;
+  this.component = null;
+}
+
+ViewBuilder.prototype.render = function() {
+  const self = this;
+
+  if (this.component === null) {
+    console.log("SINI!");
+    this.component = this.builder(function() {
+      return self.render();
+    });
+  } else {
+    console.log("SANA!");
+    const curr = this.component;
+    const next = this.builder(function() {
+      return self.render();
+    });
+
+    if (curr.struct.tag === next.struct.tag) {
+      console.log(JSON.stringify(curr.struct.attributes), "DAN", JSON.stringify(next.struct.attributes));
+      curr.setAttributes(next.struct.attributes);
+      curr.setStyles(next.struct.styles);
+      curr.setEvents(next.struct.events);
+    } else {
+      //
+    }
+  }
+
+  return this;
+}
+
+const x = new ViewBuilder((render) => {
+  console.log("rerender!");
+  return (
+    <div className="card" style={{
+      backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
+      color: "white",
+    }}>
+      <h3>{count}</h3>
+      <button
+        class="secondary"
+        onClick={() => {
+          if (count < 10) {
+            count += 1;
+          }
+          render();
+        }}
+      >UPDATE</button>
+    </div>
+  );
+});
+
+elementBuilder(
+  app,
+  null,
+  counterElement,
+  <hr />,
+  x.render().component,
+);
   </script>
 </body>
 </html>
