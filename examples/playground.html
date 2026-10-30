@@ -437,24 +437,22 @@ const svgOnlyTags = new Set([
 ]);
 
 function ElementBuilder(tag) {
-  this.struct = Object.seal({
+  this.struct = {
     tag: null,
     attributes: {},
     styles: {},
     events: {},
     children: [],
-  });
+  };
 
   this.node = null;
 
-  if (tag.nodeType === 1) {
+  if (tag && tag.nodeType === 1) {
     this.struct.tag = tag.tagName.toLowerCase();
     this.node = tag;
   } else {
     this.struct.tag = tag;
   }
-
-  return this;
 }
 
 ElementBuilder.prototype.setAttributes = function(attrs) {
@@ -488,73 +486,176 @@ ElementBuilder.prototype.setEvents = function(events) {
 };
 
 ElementBuilder.prototype.setChildren = function(children) {
+  const nextChildren = (Array.isArray(children) ? children : [children]).flat(Infinity);
+
   if (this.node) {
-    if (this.node.children.length === 0) {
-      for (let i in children) {
-        const child = children[i];
-
-        this.struct.children[i] = child;
-
-        if (typeof child === "string" || typeof child === "number") {
-          // use native append
-          this.node.appendChild(document.createTextNode(child));
-        } else {
-          const tag = child.struct.tag;
-          if (svgOnlyTags.has(tag)) {
-            child.node = document.createElementNS(SVG_NS, tag);
-          } else {
-            child.node = document.createElement(tag);
-          }
-
-          // use dompp setter
-          child.node.setAttributes(child.struct.attributes);
-          child.node.setStyles(child.struct.styles);
-          child.node.setEvents(child.struct.events);
-
-          // recursively
-          child.setChildren(child.struct.children);
-
-          // use native append
-          this.node.appendChild(child.node);
-        }
-      }
-    } else {
-      for (let i in children) {
-        const child = children[i];
-
-        const curr = this.struct.children[i];
-        const next = child;
-        console.log(curr, "DAN", next);
-
-        // if (typeof child === "string" || typeof child === "number") {
-        //   // use native append
-        //   this.node.appendChild(document.createTextNode(child));
-        // } else {
-        //   const tag = child.struct.tag;
-        //   if (svgOnlyTags.has(tag)) {
-        //     child.node = document.createElementNS(SVG_NS, tag);
-        //   } else {
-        //     child.node = document.createElement(tag);
-        //   }
-
-        //   // use dompp setter
-        //   child.node.setAttributes(child.struct.attributes);
-        //   child.node.setStyles(child.struct.styles);
-        //   child.node.setEvents(child.struct.events);
-
-        //   // recursively
-        //   child.setChildren(child.struct.children);
-
-        //   // use native append
-        //   this.node.appendChild(child.node);
-        // }
-      }
-    }
+    this._reconcileChildren(nextChildren);
   } else {
-    this.struct.children = children;
+    this.struct.children = nextChildren;
   }
 
   return this;
+};
+
+ElementBuilder.prototype._createNode = function() {
+  if (this.node) {
+    return this.node;
+  }
+
+  this.node = svgOnlyTags.has(this.struct.tag)
+    ? document.createElementNS(SVG_NS, this.struct.tag)
+    : document.createElement(this.struct.tag);
+
+  if (Object.keys(this.struct.attributes).length) {
+    this.node.setAttributes(this.struct.attributes);
+  }
+  if (Object.keys(this.struct.styles).length) {
+    this.node.setStyles(this.struct.styles);
+  }
+  if (Object.keys(this.struct.events).length) {
+    this.node.setEvents(this.struct.events);
+  }
+
+  this._reconcileChildren(this.struct.children);
+  return this.node;
+};
+
+ElementBuilder.prototype._reconcileChildren = function(nextChildren) {
+  const previousChildren = this.struct.children;
+  const retainedChildren = [];
+
+  for (let index = 0; index < nextChildren.length; index += 1) {
+    const nextChild = nextChildren[index];
+    const currentChild = previousChildren[index];
+    const currentNode = this.node.childNodes[index] ?? null;
+
+    if (
+      currentChild instanceof ElementBuilder &&
+      nextChild instanceof ElementBuilder &&
+      currentChild.struct.tag === nextChild.struct.tag &&
+      currentNode &&
+      currentNode.nodeType === 1
+    ) {
+      currentChild.node = currentNode;
+      currentChild._patchFrom(nextChild);
+      retainedChildren.push(currentChild);
+      continue;
+    }
+
+    if (
+      (typeof currentChild === "string" || typeof currentChild === "number") &&
+      (typeof nextChild === "string" || typeof nextChild === "number") &&
+      currentNode?.nodeType === Node.TEXT_NODE
+    ) {
+      const nextText = String(nextChild);
+      if (currentNode.nodeValue !== nextText) {
+        if (
+          nextChildren.length === 1 &&
+          typeof this.node.setText === "function"
+        ) {
+          this.node.setText(nextText);
+        } else {
+          currentNode.nodeValue = nextText;
+        }
+      }
+      retainedChildren.push(nextChild);
+      continue;
+    }
+
+    const nextNode = nextChild instanceof ElementBuilder
+      ? nextChild._createNode()
+      : nextChild?.nodeType
+        ? nextChild
+        : document.createTextNode(
+            nextChild == null || typeof nextChild === "boolean"
+              ? ""
+              : String(nextChild)
+          );
+
+    if (currentNode) {
+      this.node.replaceChild(nextNode, currentNode);
+    } else {
+      this.node.appendChild(nextNode);
+    }
+    retainedChildren.push(nextChild);
+  }
+
+  while (this.node.childNodes.length > nextChildren.length) {
+    this.node.removeChild(this.node.lastChild);
+  }
+
+  this.struct.children = retainedChildren;
+};
+
+ElementBuilder.prototype._patchFrom = function(next) {
+  const previousAttributes = this.struct.attributes;
+  const nextAttributes = next.struct.attributes;
+  for (const name of Object.keys(previousAttributes)) {
+    if (!(name in nextAttributes)) {
+      this.node.removeAttribute(name);
+    }
+  }
+  const changedAttributes = {};
+  for (const [name, value] of Object.entries(nextAttributes)) {
+    if (!Object.is(previousAttributes[name], value)) {
+      changedAttributes[name] = value;
+    }
+  }
+  if (Object.keys(changedAttributes).length) {
+    this.node.setAttributes(changedAttributes);
+  }
+
+  const previousStyles = this.struct.styles;
+  const nextStyles = next.struct.styles;
+  for (const name of Object.keys(previousStyles)) {
+    if (!(name in nextStyles)) {
+      this.node.style[name] = "";
+    }
+  }
+  const changedStyles = {};
+  for (const [name, value] of Object.entries(nextStyles)) {
+    if (!Object.is(previousStyles[name], value)) {
+      changedStyles[name] = value;
+    }
+  }
+  if (Object.keys(changedStyles).length) {
+    this.node.setStyles(changedStyles);
+  }
+
+  if (!sameEventMap(this.struct.events, next.struct.events)) {
+    for (const name of Object.keys(this.struct.events)) {
+      if (!(name in next.struct.events)) {
+        const handler = this.node.__dompp_handlers?.[name];
+        if (handler) {
+          this.node.removeEventListener(name, handler);
+          delete this.node.__dompp_handlers[name];
+        }
+      }
+    }
+    this.node.setEvents(next.struct.events);
+  }
+
+  const previousChildren = this.struct.children;
+  this.struct = {
+    tag: next.struct.tag,
+    attributes: { ...nextAttributes },
+    styles: { ...nextStyles },
+    events: { ...next.struct.events },
+    children: previousChildren,
+  };
+  this._reconcileChildren(next.struct.children);
+  return this;
+};
+
+function sameEventMap(left, right) {
+  const leftKeys = Object.keys(left);
+  const rightKeys = Object.keys(right);
+  return leftKeys.length === rightKeys.length &&
+    leftKeys.every((key) => left[key] === right[key]);
+}
+
+ElementBuilder.prototype.toNode = function() {
+  return this._createNode();
 };
 
 // ignore it first!
@@ -662,12 +763,12 @@ const counterElement = <CounterElement count={count} />;
 const newCounterElement = <CounterElement count={count} />;
 // console.log("newCounterElement", newCounterElement);
 
-function ViewBuilder(builder) {
+function ComponentBuilder(builder) {
   this.builder = builder;
   this.component = null;
 }
 
-ViewBuilder.prototype.render = function() {
+ComponentBuilder.prototype.render = function() {
   const self = this;
 
   this.component = this.builder(function() {
@@ -677,7 +778,7 @@ ViewBuilder.prototype.render = function() {
   return this;
 };
 
-ViewBuilder.prototype.rerender = function() {
+ComponentBuilder.prototype.rerender = function() {
   const self = this;
   const curr = this.component;
   const next = this.builder(function() {
@@ -685,18 +786,20 @@ ViewBuilder.prototype.rerender = function() {
   });
 
   if (curr.struct.tag === next.struct.tag) {
-    curr.setAttributes(next.struct.attributes);
-    curr.setStyles(next.struct.styles);
-    curr.setEvents(next.struct.events);
-    curr.setChildren(next.struct.children);
+    curr._patchFrom(next);
   } else {
-    //
+    const nextNode = next.toNode();
+    if (curr.node?.parentNode) {
+      curr.node.parentNode.replaceChild(nextNode, curr.node);
+    }
+    curr.node = nextNode;
+    curr.struct = next.struct;
   }
 
   return this;
 };
 
-const x = new ViewBuilder((rerender) => {
+const x = new ComponentBuilder((rerender) => {
   console.log("rerender!", count);
   return (
     <div
