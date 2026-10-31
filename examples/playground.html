@@ -522,7 +522,9 @@ ElementBuilder.prototype.setText = function(text) {
 };
 
 ElementBuilder.prototype.setChildren = function(children) {
-  const nextChildren = (Array.isArray(children) ? children : [children]).flat(Infinity);
+  const nextChildren = (Array.isArray(children) ? children : [children])
+    .flat(Infinity)
+    .filter((child) => child != null && typeof child !== "boolean");
 
   if (this.node) {
     this._reconcileChildren(nextChildren);
@@ -752,7 +754,7 @@ function CounterElement() {
         }}
       >UPDATE</button>}
       <hr />
-      <fragment>Hello, I'm just a Fragment!</fragment>
+      <>Hello, I'm just a Fragment!</>
     </div>
   );
 }
@@ -795,8 +797,11 @@ function ComponentBuilder(builder) {
   return Object.freeze(instance);
 }
 
-const x = new ComponentBuilder((rerender) => {
-  console.log("rerender!", count);
+function componentBuilder(builder) {
+  return new ComponentBuilder(builder);
+}
+
+const x = componentBuilder((rerender) => {
   return (
     <div
       className="card"
@@ -818,7 +823,44 @@ const x = new ComponentBuilder((rerender) => {
   );
 });
 
-console.log("x", x);
+function Validator() {
+  let confirming = false;
+
+  return componentBuilder(rerender => {
+    return (
+      <div className="card">
+        <button
+          onClick={() => {
+            confirming = true;
+            rerender();
+          }}
+        >OPEN</button>
+        {confirming ? (
+          <dialog styles={{
+            bottom: 0,
+            display: "block",
+            height: "100vh",
+            left: 0,
+            position: "fixed",
+            right: 0,
+            top: 0,
+            width: "100%",
+          }}>
+            <h4>Are you sure?</h4>
+            <button
+              class="secondary"
+              onClick={() => {
+                confirming = false;
+                rerender();
+              }}
+            >CLOSE</button>
+          </dialog>
+        ) : null}
+      </div>
+    );
+  })
+  .render();
+}
 
 elementBuilder(
   app,
@@ -826,6 +868,7 @@ elementBuilder(
   <CounterElement />,
   <hr />,
   x.render(),
+  <Validator />,
 );
   </script>
 </body>
