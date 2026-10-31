@@ -372,6 +372,28 @@
       Live Demo
     </h2>
 
+    <h3>Synchronize with server-rendered HTML</h3>
+    <p>
+      The server returns both this HTML and a JSON data block. The synchronizer
+      adopts the existing elements and builds an ElementBuilder struct for them.
+    </p>
+    <section id="messenger" class="card">
+      <ul>
+        <li>Message 3</li>
+        <li>Message 2</li>
+        <li>Message 1</li>
+      </ul>
+      <textarea aria-label="New message"></textarea>
+      <button type="button">SEND</button>
+    </section>
+    <script id="messenger-data" type="json">
+      ["Message 1", "Message 2", "Message 3"]
+    </script>
+    <p id="messenger-status" class="notes">
+      Waiting for the client-side synchronizer.
+    </p>
+
+    <h3>Builder experiments</h3>
     <div id="app"></div>
 
   <!-- ================================= -->
@@ -445,6 +467,11 @@ const svgOnlyTags = new Set([
   "switch",
 ]);
 
+// Convert CSS property names from server styles to JavaScript style keys.
+function toJavaScriptStyleName(name) {
+  return name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+}
+
 // Store the old and new virtual fields needed by the reconciliation pass.
 function ElementBuilder(tag) {
   this.struct = {
@@ -461,6 +488,41 @@ function ElementBuilder(tag) {
   if (tag && tag.nodeType === 1) {
     this.struct.tag = tag.tagName.toLowerCase();
     this.node = tag;
+
+    // Seed the virtual struct from server attributes and inline styles.
+    this.struct.attributes = Object.fromEntries(
+      Array.from(tag.attributes, (attribute) => [attribute.name, attribute.value])
+    );
+
+    for (let index = 0; index < tag.style.length; index += 1) {
+      const cssName = tag.style[index];
+      const propertyName = toJavaScriptStyleName(cssName);
+      this.struct.styles[propertyName] = tag.style.getPropertyValue(cssName);
+    }
+
+    // Ignore indentation-only text nodes so descriptors match visual children.
+    const preservesWhitespace =
+      ["pre", "textarea", "script", "style"].includes(this.struct.tag);
+    this.struct.children = [];
+    Array.from(tag.childNodes).forEach((child) => {
+      const isIndentedWhitespace =
+        child.nodeType === Node.TEXT_NODE &&
+        child.nodeValue.trim() === "" &&
+        /[\r\n]/.test(child.nodeValue);
+
+      if (isIndentedWhitespace && !preservesWhitespace) {
+        tag.removeChild(child);
+        return;
+      }
+
+      if (child.nodeType === 1) {
+        this.struct.children.push(new ElementBuilder(child));
+      } else {
+        this.struct.children.push(
+          child.nodeType === Node.TEXT_NODE ? child.nodeValue : child
+        );
+      }
+    });
   } else {
     this.struct.tag = tag;
   }
@@ -740,6 +802,98 @@ ElementBuilder.prototype._patchFrom = function(next) {
   return this;
 };
 
+/*
+ * Attach descriptors to server-created nodes without treating omitted
+ * children as deletions. Existing child nodes stay in the initial struct.
+ */
+ElementBuilder.prototype._attachChildren = function(children) {
+  const nextChildren = (Array.isArray(children) ? children : [children])
+    .flat(Infinity)
+    .filter((child) => child != null && typeof child !== "boolean");
+  const previousChildren = this.struct.children;
+  const attachedChildren = [...previousChildren];
+
+  nextChildren.forEach((nextChild, index) => {
+    let matchIndex = index;
+
+    if (nextChild instanceof ElementBuilder && nextChild.struct.key != null) {
+      const keyedIndex = previousChildren.findIndex(
+        (child) =>
+          child instanceof ElementBuilder &&
+          child.struct.key === nextChild.struct.key
+      );
+      if (keyedIndex >= 0) {
+        matchIndex = keyedIndex;
+      }
+    }
+
+    const existingChild = previousChildren[matchIndex];
+    if (existingChild == null) {
+      attachedChildren.push(nextChild);
+      return;
+    }
+
+    if (
+      existingChild instanceof ElementBuilder &&
+      nextChild instanceof ElementBuilder
+    ) {
+      if (existingChild.struct.tag !== nextChild.struct.tag) {
+        throw new Error(
+          `Hydration mismatch at child ${matchIndex}: expected <${existingChild.struct.tag}> but received <${nextChild.struct.tag}>.`
+        );
+      }
+      attachedChildren[matchIndex] = existingChild._attachFrom(nextChild);
+      return;
+    }
+
+    const bothText =
+      (typeof existingChild === "string" || typeof existingChild === "number") &&
+      (typeof nextChild === "string" || typeof nextChild === "number");
+    if (bothText) {
+      attachedChildren[matchIndex] = nextChild;
+      return;
+    }
+
+    if (existingChild === nextChild) {
+      attachedChildren[matchIndex] = existingChild;
+      return;
+    }
+
+    throw new Error(`Hydration mismatch at child ${matchIndex}.`);
+  });
+
+  this.struct.children = attachedChildren;
+  this._reconcileChildren(attachedChildren);
+  return this;
+};
+
+// Merge props and handlers onto an existing node while retaining its children.
+ElementBuilder.prototype._attachFrom = function(next) {
+  this.setAttributes(next.struct.attributes);
+  this.struct.attributes = {
+    ...this.struct.attributes,
+    ...next.struct.attributes,
+  };
+
+  this.setStyles(next.struct.styles);
+  this.struct.styles = {
+    ...this.struct.styles,
+    ...next.struct.styles,
+  };
+
+  this.setEvents(next.struct.events);
+  this.struct.events = {
+    ...this.struct.events,
+    ...next.struct.events,
+  };
+
+  if (next.struct.children.length > 0) {
+    this._attachChildren(next.struct.children);
+  }
+
+  return this;
+};
+
 // Public bridge from a virtual descriptor to its DOM representation.
 ElementBuilder.prototype.toNode = function() {
   return this._createNode();
@@ -812,9 +966,14 @@ function elementBuilder(tag, props, ...children) {
 
   element.struct.key = elementKey;
 
-  // Append children.
+  // Use attach mode for an existing element; ordinary builders reconcile.
   if (children.length) {
-    element.setChildren(children);
+    if (element.node) {
+      // Adopt matching nodes and leave unspecified server children untouched.
+      element._attachChildren(children);
+    } else {
+      element.setChildren(children);
+    }
   }
 
   return element;
@@ -824,6 +983,31 @@ function elementBuilder(tag, props, ...children) {
 elementBuilder.fragment = function(...children) {
   return new ElementBuilder("fragment").setChildren(children.flat(Infinity));
 };
+
+/*
+ * Synchronize a server-created root with a render callback. The callback must
+ * return an ElementBuilder attached to that same root node.
+ */
+function componentSynchronizer(existingNode, build) {
+  if (!existingNode || existingNode.nodeType !== 1) {
+    throw new TypeError("componentSynchronizer expects an existing Element node.");
+  }
+  if (typeof build !== "function") {
+    throw new TypeError("componentSynchronizer expects a builder callback.");
+  }
+
+  const synchronizedTree = build(existingNode);
+  if (
+    !(synchronizedTree instanceof ElementBuilder) ||
+    synchronizedTree.node !== existingNode
+  ) {
+    throw new TypeError(
+      "The synchronizer callback must return an ElementBuilder for its existing node."
+    );
+  }
+
+  return synchronizedTree;
+}
 
 /*
  * Example 1: update text and styles directly through ElementBuilder methods,
@@ -919,7 +1103,7 @@ function componentBuilder(builder) {
  * Example 2: rerender(callback) combines a state update with a view update.
  * The callback runs first, so the builder reads the new count.
  */
-const x = componentBuilder((rerender) => {
+const rerenderCallbackCounter = componentBuilder((rerender) => {
   return (
     <div
       className="card"
@@ -1174,6 +1358,38 @@ function FragmentAndArrayExample() {
 }
 
 /*
+ * Example 7: read the JSON data returned beside the server HTML, then attach
+ * descriptors to the existing messenger nodes. The data is chronological,
+ * while the server-rendered list shows the newest message first.
+ */
+const dataFromServer = JSON.parse(
+  document.getElementById("messenger-data").textContent
+);
+const messengerNode = document.getElementById("messenger");
+
+const messengerBuilder = componentSynchronizer(messengerNode, (messengerNode) => {
+  return elementBuilder(
+    messengerNode,
+    null,
+    <ul>
+      {[...dataFromServer].reverse().map((message) => <li>{message}</li>)}
+    </ul>,
+    <textarea aria-label="New message"></textarea>,
+    <button type="button">SEND</button>
+  );
+});
+
+const synchronizedList = messengerBuilder.struct.children.find(
+  (child) =>
+    child instanceof ElementBuilder &&
+    child.struct.tag === "ul"
+);
+document.getElementById("messenger-status").textContent =
+  `Result is an ElementBuilder: ${messengerBuilder instanceof ElementBuilder}. ` +
+  `Existing root node reused: ${messengerBuilder.node === messengerNode}. ` +
+  `Server list items represented in the struct: ${synchronizedList.struct.children.length}.`;
+
+/*
  * Mount all examples into one host. componentBuilder roots are materialized
  * by render(); the host reconciles all JSX children in a single operation.
  */
@@ -1182,16 +1398,18 @@ elementBuilder(
   null,
   <CounterElement />,
   <hr />,
-  x.render(),
+  // render() creates and returns this component's initial DOM root.
+  rerenderCallbackCounter.render(),
   <MVVMExample />,
   <Validator />,
   <KeyedListExample />,
   <FragmentAndArrayExample />,
 );
 
-// Expose the factories for quick experiments in the browser DevTools console.
+// Expose the playground APIs for quick experiments in the browser DevTools console.
 document.elementBuilder = elementBuilder;
 document.componentBuilder = componentBuilder;
+document.componentSynchronizer = componentSynchronizer;
 
   </script>
 </body>
