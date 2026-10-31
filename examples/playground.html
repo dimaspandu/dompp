@@ -210,6 +210,10 @@
         #444;
     }
 
+    fragment {
+      display: contents;
+    }
+
     .signal-count {
 
       font-size:
@@ -992,6 +996,50 @@ function KeyedListExample() {
   )).render();
 }
 
+function ArrayChildComponent() {
+  return [
+    <div key="array-first" styles={{ padding: "8px", backgroundColor: "#eef6ff" }}>
+      Array child one
+    </div>,
+    <div key="array-second" styles={{ padding: "8px", backgroundColor: "#f1f8ed" }}>
+      Array child two
+    </div>,
+    <button key="array-action" type="button">Array child button</button>,
+  ];
+}
+
+function FragmentAndArrayExample() {
+  return (
+    <section className="card">
+      <h3>Fragment wrapper</h3>
+      <p>
+        The bordered parent has two direct children: its label and one literal fragment node. That fragment node owns the two nested div children.
+      </p>
+      <div styles={{ border: "1px solid #ddd", padding: "10px" }}>
+        <strong>Fragment parent</strong>
+        <>
+          <div styles={{ padding: "6px", backgroundColor: "#eef6ff" }}>
+            Nested fragment child one
+          </div>
+          <div styles={{ padding: "6px", backgroundColor: "#f1f8ed" }}>
+            Nested fragment child two
+          </div>
+        </>
+      </div>
+
+      <h3>Array-returning component</h3>
+      <p>
+        The component returns three nodes. setChildren flattens that array, so the bordered parent has five direct children: its label, its paragraph, and the three returned nodes.
+      </p>
+      <div styles={{ border: "1px solid #ddd", padding: "10px" }}>
+        <strong>Array parent heading</strong>
+        <p>Array parent paragraph</p>
+        <ArrayChildComponent />
+      </div>
+    </section>
+  );
+}
+
 elementBuilder(
   app,
   null,
@@ -1000,6 +1048,7 @@ elementBuilder(
   x.render(),
   <Validator />,
   <KeyedListExample />,
+  <FragmentAndArrayExample />,
 );
   </script>
 </body>
