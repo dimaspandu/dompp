@@ -3,251 +3,153 @@ from "http";
 
 import {
   existsSync,
+  readFileSync,
   createReadStream,
-  statSync
+  statSync,
 }
 from "fs";
 
 import {
   extname,
   join,
-  dirname
+  relative,
+  resolve,
+  sep,
+  isAbsolute,
+  dirname,
 }
 from "path";
 
 import {
-  fileURLToPath
+  fileURLToPath,
+  pathToFileURL,
 }
 from "url";
 
-// =====================================
-// PATHS
-// =====================================
+import compileJSX
+from "./libs/js-analyzer/lib/transpileJSX/main.js";
 
-const __filename =
-  fileURLToPath(
-    import.meta.url
-  );
-
-const __dirname =
-  dirname(__filename);
-
-const ROOT_DIR =
-  __dirname;
-
-const PORT =
-  process.env.PORT || 5173;
-
-// =====================================
-// MIME TYPES
-// =====================================
+const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 
 const mimeTypes = {
-
-  ".html":
-    "text/html",
-
-  ".js":
-    "text/javascript",
-
-  ".mjs":
-    "text/javascript",
-
-  ".css":
-    "text/css",
-
-  ".json":
-    "application/json",
-
-  ".svg":
-    "image/svg+xml",
-
-  ".png":
-    "image/png",
-
-  ".jpg":
-    "image/jpeg",
-
-  ".jpeg":
-    "image/jpeg",
-
-  ".webp":
-    "image/webp",
-
-  ".md":
-    "text/markdown",
-
-  ".txt":
-    "text/plain"
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript; charset=utf-8",
+  ".jsx": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".svg": "image/svg+xml",
+  ".png": "image/png",
+  ".jpg": "image/jpeg",
+  ".jpeg": "image/jpeg",
+  ".webp": "image/webp",
+  ".md": "text/markdown; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
 };
 
-// =====================================
-// SERVE FILE
-// =====================================
+function sendText(res, statusCode, message) {
+  res.writeHead(statusCode, {
+    "Content-Type": "text/plain; charset=utf-8",
+  });
+  res.end(message);
+}
 
-function serveFile(
-  res,
-  filePath
-) {
+function resolveRequestFile(rootDir, pathname) {
+  const decodedPath = decodeURIComponent(pathname);
+  const relativePath = decodedPath.replace(/^[/\\]+/, "");
+  const filePath = resolve(rootDir, relativePath || "index.html");
+  const pathFromRoot = relative(rootDir, filePath);
 
   if (
-    !existsSync(filePath)
+    pathFromRoot === ".." ||
+    pathFromRoot.startsWith(`..${sep}`) ||
+    isAbsolute(pathFromRoot)
   ) {
+    return null;
+  }
 
-    res.writeHead(404);
+  return filePath;
+}
 
-    res.end(
-      "Not found"
-    );
-
+function serveFile(res, filePath) {
+  if (!existsSync(filePath)) {
+    sendText(res, 404, "Not found");
     return;
   }
 
-  const ext =
-    extname(filePath);
+  const extension = extname(filePath).toLowerCase();
+  const contentType = mimeTypes[extension] || "application/octet-stream";
 
-  const contentType =
-    mimeTypes[ext] ||
-    "application/octet-stream";
+  if (extension === ".jsx") {
+    try {
+      const source = readFileSync(filePath, "utf8");
+      const javascript = compileJSX(source);
+      res.writeHead(200, { "Content-Type": contentType });
+      res.end(javascript);
+    } catch (error) {
+      sendText(res, 500, `${error.name}: ${error.message}`);
+    }
+    return;
+  }
 
-  res.writeHead(200, {
-    "Content-Type":
-      contentType
-  });
-
-  createReadStream(filePath)
-    .pipe(res);
+  res.writeHead(200, { "Content-Type": contentType });
+  createReadStream(filePath).pipe(res);
 }
 
-// =====================================
-// SERVER
-// =====================================
+export function createDevServer({ rootDir = ROOT_DIR } = {}) {
+  const resolvedRoot = resolve(rootDir);
 
-createServer((req, res) => {
-
-  let urlPath =
-    req.url.split("?")[0];
-
-  console.log(
-    "REQ:",
-    urlPath
-  );
-
-  // =================================
-  // ROOT
-  // =================================
-
-  if (
-    urlPath === "/"
-  ) {
-
-    return serveFile(
-      res,
-      join(
-        ROOT_DIR,
-        "index.html"
-      )
-    );
-  }
-
-  // =================================
-  // NORMAL FILE PATH
-  // =================================
-
-  const filePath =
-    join(
-      ROOT_DIR,
-      urlPath
-    );
-
-  // =================================
-  // DIRECT FILE
-  // =================================
-
-  if (
-    existsSync(filePath) &&
-    !statSync(filePath)
-      .isDirectory()
-  ) {
-
-    return serveFile(
-      res,
-      filePath
-    );
-  }
-
-  // =================================
-  // DIRECTORY -> index.html
-  // =================================
-
-  if (
-    existsSync(filePath) &&
-    statSync(filePath)
-      .isDirectory()
-  ) {
-
-    const indexFile =
-      join(
-        filePath,
-        "index.html"
-      );
-
-    if (
-      existsSync(indexFile)
-    ) {
-
-      return serveFile(
-        res,
-        indexFile
-      );
+  return createServer((req, res) => {
+    let pathname;
+    try {
+      pathname = new URL(req.url, "http://localhost").pathname;
+    } catch {
+      sendText(res, 400, "Invalid request URL");
+      return;
     }
-  }
 
-  // =================================
-  // HTML FILE SUPPORT
-  // /about -> /about.html
-  // =================================
+    let filePath;
+    try {
+      filePath = resolveRequestFile(resolvedRoot, pathname);
+    } catch {
+      sendText(res, 400, "Invalid request path");
+      return;
+    }
 
-  const htmlFile =
-    join(
-      ROOT_DIR,
-      urlPath + ".html"
-    );
+    if (!filePath) {
+      sendText(res, 403, "Forbidden");
+      return;
+    }
 
-  if (
-    existsSync(htmlFile)
-  ) {
+    if (existsSync(filePath) && statSync(filePath).isDirectory()) {
+      serveFile(res, join(filePath, "index.html"));
+      return;
+    }
 
-    return serveFile(
-      res,
-      htmlFile
-    );
-  }
+    if (existsSync(filePath)) {
+      serveFile(res, filePath);
+      return;
+    }
 
-  // =================================
-  // NOT FOUND
-  // =================================
+    if (!extname(filePath)) {
+      const htmlFile = `${filePath}.html`;
+      if (existsSync(htmlFile)) {
+        serveFile(res, htmlFile);
+        return;
+      }
+    }
 
-  res.writeHead(404);
+    sendText(res, 404, "Not found");
+  });
+}
 
-  res.end(
-    "Not found"
-  );
+const isDirectExecution =
+  process.argv[1] != null &&
+  pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
 
-}).listen(PORT, () => {
-
-  console.log("");
-
-  console.log(
-    "DOMPP Dev Server"
-  );
-
-  console.log("");
-
-  console.log(
-    `Local:` +
-    ` http://localhost:${PORT}`
-  );
-
-  console.log("");
-});
+if (isDirectExecution) {
+  const port = Number(process.env.PORT || 5173);
+  createDevServer().listen(port, () => {
+    console.log(`DOMPP Dev Server: http://localhost:${port}`);
+  });
+}
