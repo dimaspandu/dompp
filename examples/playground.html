@@ -389,21 +389,26 @@
 /** @jsx elementBuilder */
 /** @jsxFrag elementBuilder.fragment */
 
+/*
+ * This page is an implementation notebook for the JSX builder experiments.
+ * The examples at the end share one host and focus on creation, reconciliation,
+ * and component updates.
+ */
 const app = document.getElementById("app");
 
 
 /**
- * elementBuilder.js — Custom JSX factory. *
- * The transpiler calls the factory in two ways:
- *   elementBuilder(tag, props, ...children)
- *   elementBuilder.fragment(...children) // for <></>
+ * JSX factory entry points:
+ * - elementBuilder(tag, props, ...children) creates elements and components.
+ * - elementBuilder.fragment(...children) creates a literal fragment wrapper.
  */
 
+// SVG elements need their namespace when they are created.
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 /**
- * Tags that belong to the SVG namespace.
- * Ambiguous tags shared with HTML are intentionally excluded.
+ * SVG-only tags use createElementNS. Tags shared by HTML and SVG are omitted
+ * because their namespace depends on the parent element.
  */
 const svgOnlyTags = new Set([
   "svg",
@@ -440,6 +445,7 @@ const svgOnlyTags = new Set([
   "switch",
 ]);
 
+// Store the old and new virtual fields needed by the reconciliation pass.
 function ElementBuilder(tag) {
   this.struct = {
     tag: null,
@@ -462,6 +468,7 @@ function ElementBuilder(tag) {
   this._attachedEvents = {};
 }
 
+// Apply attributes immediately when a DOM node exists; otherwise cache them.
 ElementBuilder.prototype.setAttributes = function(attrs) {
   attrs = attrs && typeof attrs === "object" ? attrs : {};
   this.struct.attributes = { ...this.struct.attributes, ...attrs };
@@ -479,6 +486,7 @@ ElementBuilder.prototype.setAttributes = function(attrs) {
   return this;
 };
 
+// Styles follow the same descriptor-first, direct-update behavior.
 ElementBuilder.prototype.setStyles = function(styles) {
   styles = styles && typeof styles === "object" ? styles : {};
   this.struct.styles = { ...this.struct.styles, ...styles };
@@ -492,6 +500,7 @@ ElementBuilder.prototype.setStyles = function(styles) {
   return this;
 };
 
+// Replace changed event handlers so rerenders do not accumulate listeners.
 ElementBuilder.prototype.setEvents = function(events) {
   events = events && typeof events === "object" ? events : {};
   const nextEvents = { ...this.struct.events };
@@ -522,10 +531,12 @@ ElementBuilder.prototype.setEvents = function(events) {
   return this;
 };
 
+// Text is represented as a normal child so it uses the same reconciliation.
 ElementBuilder.prototype.setText = function(text) {
   return this.setChildren([text]);
 };
 
+// Flatten arrays and discard null/boolean children before diffing the tree.
 ElementBuilder.prototype.setChildren = function(children) {
   const nextChildren = (Array.isArray(children) ? children : [children])
     .flat(Infinity)
@@ -540,6 +551,7 @@ ElementBuilder.prototype.setChildren = function(children) {
   return this;
 };
 
+// Materialize one DOM node and apply the descriptor's current fields.
 ElementBuilder.prototype._createNode = function() {
   if (this.node) {
     return this.node;
@@ -557,6 +569,11 @@ ElementBuilder.prototype._createNode = function() {
   return this.node;
 };
 
+/*
+ * Match keyed children by key and tag, then match unkeyed children by
+ * position. Reuse matching nodes, replace changed nodes, and move nodes into
+ * their new order.
+ */
 ElementBuilder.prototype._reconcileChildren = function(nextChildren) {
   const previousChildren = this.struct.children;
   const previousNodes = Array.from(this.node.childNodes);
@@ -674,12 +691,14 @@ ElementBuilder.prototype._reconcileChildren = function(nextChildren) {
   this.struct.children = reconciledChildren;
 };
 
+// Keys must be stable primitive values to identify siblings across renders.
 function validateElementKey(key) {
   if (typeof key !== "string" && typeof key !== "number") {
     throw new TypeError("ElementBuilder child keys must be strings or numbers.");
   }
 }
 
+// Patch only changed fields, then reconcile the child descriptors.
 ElementBuilder.prototype._patchFrom = function(next) {
   const previousAttributes = this.struct.attributes;
   const nextAttributes = next.struct.attributes;
@@ -721,11 +740,15 @@ ElementBuilder.prototype._patchFrom = function(next) {
   return this;
 };
 
+// Public bridge from a virtual descriptor to its DOM representation.
 ElementBuilder.prototype.toNode = function() {
   return this._createNode();
 };
 
-// JSX factory: elementBuilder(tag, props, ...children)
+/*
+ * JSX factory: elementBuilder(tag, props, ...children).
+ * It separates attributes, styles, events, and keys into the virtual struct.
+ */
 function elementBuilder(tag, props, ...children) {
 
   // Custom components.
@@ -797,10 +820,15 @@ function elementBuilder(tag, props, ...children) {
   return element;
 }
 
+// JSX fragment syntax uses a real wrapper to preserve one-to-one child counts.
 elementBuilder.fragment = function(...children) {
   return new ElementBuilder("fragment").setChildren(children.flat(Infinity));
 };
 
+/*
+ * Example 1: update text and styles directly through ElementBuilder methods,
+ * without rebuilding the complete component.
+ */
 function CounterElement() {
   let count = 0;
   let h3El;
@@ -833,26 +861,37 @@ function CounterElement() {
   );
 }
 
+// Shared state for the ComponentBuilder callback example.
 let count = 0;
 
+/*
+ * ComponentBuilder owns the render function and current virtual tree.
+ * render() creates the first DOM root; rerender() builds and diffs the next
+ * tree while keeping matching DOM nodes.
+ */
 function ComponentBuilder(builder) {
   let component = null;
 
   const instance = {
     render() {
       if (!component) {
-        component = builder(() => instance.rerender());
+        component = builder((callback) => instance.rerender(callback));
       }
 
       return component.toNode();
     },
 
-    rerender() {
+    rerender(callback) {
+      // Apply an optional state mutation before constructing the next tree.
+      if (typeof callback === "function") {
+        callback();
+      }
+
       if (!component) {
         return instance;
       }
 
-      const next = builder(() => instance.rerender());
+      const next = builder((nextCallback) => instance.rerender(nextCallback));
       if (component.struct.tag === next.struct.tag) {
         component._patchFrom(next);
       } else {
@@ -871,10 +910,15 @@ function ComponentBuilder(builder) {
   return Object.freeze(instance);
 }
 
+// Public helper for creating a stateful component instance.
 function componentBuilder(builder) {
   return new ComponentBuilder(builder);
 }
 
+/*
+ * Example 2: rerender(callback) combines a state update with a view update.
+ * The callback runs first, so the builder reads the new count.
+ */
 const x = componentBuilder((rerender) => {
   return (
     <div
@@ -885,18 +929,95 @@ const x = componentBuilder((rerender) => {
       }}
     >
       <h3>{count}</h3>
+      <p styles={{ color: "white" }}>rerender(callback) runs the state update before rebuilding this view.</p>
       <button
         class="secondary"
         disabled={count === 10}
         onClick={() => {
-          count += 1;
-          rerender();
+          rerender(() => {
+            count += 1;
+          });
         }}
       >UPDATE</button>
     </div>
   );
 });
 
+/*
+ * Example 3: the Model owns the value and has no dependency on the View or DOM.
+ */
+function createCounterModel(initialCount = 0) {
+  let count = initialCount;
+
+  return {
+    get count() {
+      return count;
+    },
+
+    setCount(value) {
+      count = value;
+    },
+  };
+}
+
+/*
+ * The ViewModel exposes Model data and actions, then notifies its subscribers
+ * when data changes. The View subscribes with its rerender method.
+ */
+function createCounterViewModel(model) {
+  const listeners = new Set();
+
+  return {
+    get count() {
+      return model.count;
+    },
+
+    set count(value) {
+      model.setCount(value);
+      this.notifyListener();
+    },
+
+    increment() {
+      this.count = model.count + 1;
+    },
+
+    addListener(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+
+    notifyListener() {
+      listeners.forEach((listener) => listener(this));
+    },
+  };
+}
+
+// The View reads ViewModel state and sends user actions to ViewModel methods.
+function MVVMExample() {
+  const model = createCounterModel();
+  const viewModel = createCounterViewModel(model);
+  let view;
+
+  view = componentBuilder(() => (
+    <section className="card">
+      <h3>MVVM: View / ViewModel / Model</h3>
+      <p>View reads the ViewModel getter: {viewModel.count}</p>
+      <p>The View only calls ViewModel actions. The ViewModel reads and updates its Model, then notifies the View to rerender.</p>
+      <button
+        type="button"
+        onClick={() => viewModel.increment()}
+      >Increment through ViewModel</button>
+    </section>
+  ));
+
+  viewModel.addListener(() => view.rerender());
+  return view.render();
+}
+
+/*
+ * Example 4: conditionally add or remove a dialog during rerender.
+ * Returning null means there is no dialog node in the current virtual tree.
+ */
 function Validator() {
   let confirming = false;
 
@@ -936,6 +1057,10 @@ function Validator() {
   .render();
 }
 
+/*
+ * Example 5: stable keys preserve item nodes during append, prepend, reorder,
+ * and removal. Changing an item's tag intentionally replaces its node.
+ */
 function KeyedListExample() {
   let nextId = 4;
   let items = [
@@ -996,6 +1121,10 @@ function KeyedListExample() {
   )).render();
 }
 
+/*
+ * Example 6a: an array-returning component contributes sibling nodes directly
+ * to its parent without creating an extra wrapper.
+ */
 function ArrayChildComponent() {
   return [
     <div key="array-first" styles={{ padding: "8px", backgroundColor: "#eef6ff" }}>
@@ -1008,6 +1137,10 @@ function ArrayChildComponent() {
   ];
 }
 
+/*
+ * Example 6b: a fragment is one literal wrapper node; an array component
+ * contributes each returned node directly to the parent's child list.
+ */
 function FragmentAndArrayExample() {
   return (
     <section className="card">
@@ -1040,19 +1173,26 @@ function FragmentAndArrayExample() {
   );
 }
 
+/*
+ * Mount all examples into one host. componentBuilder roots are materialized
+ * by render(); the host reconciles all JSX children in a single operation.
+ */
 elementBuilder(
   app,
   null,
   <CounterElement />,
   <hr />,
   x.render(),
+  <MVVMExample />,
   <Validator />,
   <KeyedListExample />,
   <FragmentAndArrayExample />,
 );
 
+// Expose the factories for quick experiments in the browser DevTools console.
 document.elementBuilder = elementBuilder;
 document.componentBuilder = componentBuilder;
+
   </script>
 </body>
 </html>
