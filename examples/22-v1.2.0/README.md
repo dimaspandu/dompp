@@ -3,6 +3,9 @@
 Open this directory through the repository development server (`npm run dev`)
 so native ESM imports and `.jsx` module responses are served correctly.
 
+The JSX transformer is a local dependency at `libs/js-analyzer/`, which is
+gitignored. Keep a local checkout there before starting the development server.
+
 - `dompp-only.html` imports the existing DOM++ setter API from `src/1.2.0/dompp.js`.
 - `builders-only.html` imports the DOM++ builder extensions from `src/1.2.0/dompp-builders.js`, which install `document.elementBuilder` and `document.componentBuilder`.
 - `combined.html` imports the existing setters and both builder APIs from `src/1.2.0/index.js`.
