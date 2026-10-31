@@ -1,0 +1,3 @@
+[submodule "libs/js-analyzer"]
+	path = libs/js-analyzer
+	url = https://github.com/dimaspandu/js-analyzer.git
