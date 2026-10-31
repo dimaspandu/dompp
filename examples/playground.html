@@ -439,6 +439,7 @@ const svgOnlyTags = new Set([
 function ElementBuilder(tag) {
   this.struct = {
     tag: null,
+    key: null,
     attributes: {},
     styles: {},
     events: {},
@@ -554,63 +555,126 @@ ElementBuilder.prototype._createNode = function() {
 
 ElementBuilder.prototype._reconcileChildren = function(nextChildren) {
   const previousChildren = this.struct.children;
-  const retainedChildren = [];
+  const previousNodes = Array.from(this.node.childNodes);
+  const previousKeyedChildren = new Map();
+  const nextKeys = new Set();
 
-  for (let index = 0; index < nextChildren.length; index += 1) {
-    const nextChild = nextChildren[index];
-    const currentChild = previousChildren[index];
-    const currentNode = this.node.childNodes[index] ?? null;
+  previousChildren.forEach((child, index) => {
+    if (!(child instanceof ElementBuilder) || child.struct.key == null) {
+      return;
+    }
+    validateElementKey(child.struct.key);
+    if (previousKeyedChildren.has(child.struct.key)) {
+      throw new Error(`Duplicate child key: ${child.struct.key}`);
+    }
+    previousKeyedChildren.set(child.struct.key, {
+      child,
+      node: previousNodes[index],
+    });
+  });
 
-    if (
-      currentChild instanceof ElementBuilder &&
-      nextChild instanceof ElementBuilder &&
-      currentChild.struct.tag === nextChild.struct.tag &&
-      currentNode &&
-      currentNode.nodeType === 1
-    ) {
+  const reconciledChildren = [];
+  const reconciledNodes = [];
+
+  nextChildren.forEach((nextChild, index) => {
+    let currentChild = null;
+    let currentNode = null;
+
+    if (nextChild instanceof ElementBuilder && nextChild.struct.key != null) {
+      const key = nextChild.struct.key;
+      validateElementKey(key);
+      if (nextKeys.has(key)) {
+        throw new Error(`Duplicate child key: ${key}`);
+      }
+      nextKeys.add(key);
+
+      const previous = previousKeyedChildren.get(key);
+      if (
+        previous &&
+        previous.child.struct.tag === nextChild.struct.tag &&
+        previous.node?.nodeType === 1
+      ) {
+        currentChild = previous.child;
+        currentNode = previous.node;
+      }
+    } else {
+      const candidate = previousChildren[index];
+      const candidateNode = previousNodes[index];
+      const bothUnkeyedBuilders =
+        candidate instanceof ElementBuilder &&
+        nextChild instanceof ElementBuilder &&
+        candidate.struct.key == null &&
+        nextChild.struct.key == null &&
+        candidate.struct.tag === nextChild.struct.tag &&
+        candidateNode?.nodeType === 1;
+      const bothText =
+        (typeof candidate === "string" || typeof candidate === "number") &&
+        (typeof nextChild === "string" || typeof nextChild === "number") &&
+        candidateNode?.nodeType === Node.TEXT_NODE;
+
+      if (bothUnkeyedBuilders || bothText) {
+        currentChild = candidate;
+        currentNode = candidateNode;
+      } else if (candidateNode === nextChild && nextChild?.nodeType) {
+        currentNode = candidateNode;
+      }
+    }
+
+    if (currentChild instanceof ElementBuilder) {
       currentChild.node = currentNode;
       currentChild._patchFrom(nextChild);
-      retainedChildren.push(currentChild);
-      continue;
+      reconciledChildren.push(currentChild);
+      reconciledNodes.push(currentNode);
+      return;
     }
 
     if (
-      (typeof currentChild === "string" || typeof currentChild === "number") &&
-      (typeof nextChild === "string" || typeof nextChild === "number") &&
-      currentNode?.nodeType === Node.TEXT_NODE
+      currentNode?.nodeType === Node.TEXT_NODE &&
+      (typeof nextChild === "string" || typeof nextChild === "number")
     ) {
       const nextText = String(nextChild);
       if (currentNode.nodeValue !== nextText) {
         currentNode.nodeValue = nextText;
       }
-      retainedChildren.push(nextChild);
-      continue;
+      reconciledChildren.push(nextChild);
+      reconciledNodes.push(currentNode);
+      return;
     }
 
     const nextNode = nextChild instanceof ElementBuilder
       ? nextChild._createNode()
       : nextChild?.nodeType
         ? nextChild
-        : document.createTextNode(
-            nextChild == null || typeof nextChild === "boolean"
-              ? ""
-              : String(nextChild)
-          );
+        : document.createTextNode(String(nextChild));
 
-    if (currentNode) {
-      this.node.replaceChild(nextNode, currentNode);
-    } else {
-      this.node.appendChild(nextNode);
+    reconciledChildren.push(nextChild);
+    reconciledNodes.push(nextNode);
+  });
+
+  const nextNodeSet = new Set(reconciledNodes);
+  for (const oldNode of previousNodes) {
+    if (!nextNodeSet.has(oldNode)) {
+      this.node.removeChild(oldNode);
     }
-    retainedChildren.push(nextChild);
   }
 
-  while (this.node.childNodes.length > nextChildren.length) {
-    this.node.removeChild(this.node.lastChild);
+  let anchor = null;
+  for (let index = reconciledNodes.length - 1; index >= 0; index -= 1) {
+    const node = reconciledNodes[index];
+    if (node.parentNode !== this.node || node.nextSibling !== anchor) {
+      this.node.insertBefore(node, anchor);
+    }
+    anchor = node;
   }
 
-  this.struct.children = retainedChildren;
+  this.struct.children = reconciledChildren;
 };
+
+function validateElementKey(key) {
+  if (typeof key !== "string" && typeof key !== "number") {
+    throw new TypeError("ElementBuilder child keys must be strings or numbers.");
+  }
+}
 
 ElementBuilder.prototype._patchFrom = function(next) {
   const previousAttributes = this.struct.attributes;
@@ -643,6 +707,7 @@ ElementBuilder.prototype._patchFrom = function(next) {
   const previousChildren = this.struct.children;
   this.struct = {
     tag: next.struct.tag,
+    key: next.struct.key,
     attributes: { ...nextAttributes },
     styles: { ...nextStyles },
     events: { ...next.struct.events },
@@ -665,6 +730,7 @@ function elementBuilder(tag, props, ...children) {
   }
 
   const element = new ElementBuilder(tag);
+  let elementKey = null;
 
   if (props) {
     const attrs = {};
@@ -673,8 +739,8 @@ function elementBuilder(tag, props, ...children) {
     let style;
     let className;
 
-    for (const [key, value] of Object.entries(props)) {
-      const normalizedKey = key.toLowerCase();
+    for (const [propKey, value] of Object.entries(props)) {
+      const normalizedKey = propKey.toLowerCase();
 
       // Event props: onClick, onclick, ONCLICK, OnClick, etc.
       if (normalizedKey.startsWith("on")) {
@@ -693,8 +759,10 @@ function elementBuilder(tag, props, ...children) {
         normalizedKey === "class"
       ) {
         className ??= value;
+      } else if (normalizedKey === "key") {
+        elementKey = value;
       } else {
-        attrs[key] = value;
+        attrs[propKey] = value;
       }
     }
 
@@ -714,6 +782,8 @@ function elementBuilder(tag, props, ...children) {
       element.setAttributes(attrs);
     }
   }
+
+  element.struct.key = elementKey;
 
   // Append children.
   if (children.length) {
@@ -862,6 +932,66 @@ function Validator() {
   .render();
 }
 
+function KeyedListExample() {
+  let nextId = 4;
+  let items = [
+    { id: 1, label: "Alpha", tag: "article" },
+    { id: 2, label: "Bravo", tag: "article" },
+    { id: 3, label: "Charlie", tag: "article" },
+  ];
+
+  return componentBuilder((rerender) => (
+    <section className="card">
+      <h3>Keyed child list</h3>
+    <p>Stable keys preserve item nodes when the list order changes. Changing an item's tag replaces its node.</p>
+      <div>
+        <button type="button" onClick={() => {
+          const id = nextId++;
+          items = [...items, { id, label: `Item ${id}`, tag: "article" }];
+          rerender();
+        }}>APPEND</button>
+        <button type="button" onClick={() => {
+          const id = nextId++;
+          items = [{ id, label: `Item ${id}`, tag: "article" }, ...items];
+          rerender();
+        }}>PREPEND</button>
+        <button type="button" onClick={() => {
+          items = [...items].reverse();
+          rerender();
+        }}>REVERSE</button>
+        <button type="button" onClick={() => {
+          items = items.slice(1);
+          rerender();
+        }}>REMOVE FIRST</button>
+        <button type="button" onClick={() => {
+          if (items.length) {
+            const [first, ...remaining] = items;
+            items = [{
+              ...first,
+              tag: first.tag === "article" ? "p" : "article",
+            }, ...remaining];
+            rerender();
+          }
+        }}>CHANGE FIRST TAG</button>
+      </div>
+      <div className="keyed-list">
+        {items.map((item) => elementBuilder(
+          item.tag,
+          {
+            key: item.id,
+            styles: {
+              border: "1px solid #ccc",
+              margin: "6px 0",
+              padding: "8px",
+            },
+          },
+          `${item.label} (key: ${item.id})`
+        ))}
+      </div>
+    </section>
+  )).render();
+}
+
 elementBuilder(
   app,
   null,
@@ -869,6 +999,7 @@ elementBuilder(
   <hr />,
   x.render(),
   <Validator />,
+  <KeyedListExample />,
 );
   </script>
 </body>
