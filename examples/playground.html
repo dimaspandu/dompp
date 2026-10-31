@@ -453,36 +453,72 @@ function ElementBuilder(tag) {
   } else {
     this.struct.tag = tag;
   }
+
+  this._attachedEvents = {};
 }
 
 ElementBuilder.prototype.setAttributes = function(attrs) {
+  attrs = attrs && typeof attrs === "object" ? attrs : {};
   this.struct.attributes = { ...this.struct.attributes, ...attrs };
 
   if (this.node) {
-    this.node.setAttributes(attrs);
+    for (const [name, value] of Object.entries(attrs)) {
+      if (value === false || value == null) {
+        this.node.removeAttribute(name);
+      } else {
+        this.node.setAttribute(name, value === true ? "" : value);
+      }
+    }
   }
 
   return this;
 };
 
 ElementBuilder.prototype.setStyles = function(styles) {
+  styles = styles && typeof styles === "object" ? styles : {};
   this.struct.styles = { ...this.struct.styles, ...styles };
 
   if (this.node) {
-    this.node.setStyles(styles);
+    for (const [name, value] of Object.entries(styles)) {
+      this.node.style[name] = value == null ? "" : value;
+    }
   }
 
   return this;
 };
 
 ElementBuilder.prototype.setEvents = function(events) {
-  this.struct.events = { ...this.struct.events, ...events };
+  events = events && typeof events === "object" ? events : {};
+  const nextEvents = { ...this.struct.events };
 
-  if (this.node) {
-    this.node.setEvents(events);
+  for (const [name, handler] of Object.entries(events)) {
+    const previousHandler = this._attachedEvents[name];
+
+    if (typeof handler === "function") {
+      if (this.node && previousHandler !== handler) {
+        if (previousHandler) {
+          this.node.removeEventListener(name, previousHandler);
+        }
+        this.node.addEventListener(name, handler);
+        this._attachedEvents[name] = handler;
+      }
+      nextEvents[name] = handler;
+    } else {
+      if (this.node && previousHandler) {
+        this.node.removeEventListener(name, previousHandler);
+      }
+      delete this._attachedEvents[name];
+      delete nextEvents[name];
+    }
   }
 
+  this.struct.events = nextEvents;
+
   return this;
+};
+
+ElementBuilder.prototype.setText = function(text) {
+  return this.setChildren([text]);
 };
 
 ElementBuilder.prototype.setChildren = function(children) {
@@ -506,15 +542,9 @@ ElementBuilder.prototype._createNode = function() {
     ? document.createElementNS(SVG_NS, this.struct.tag)
     : document.createElement(this.struct.tag);
 
-  if (Object.keys(this.struct.attributes).length) {
-    this.node.setAttributes(this.struct.attributes);
-  }
-  if (Object.keys(this.struct.styles).length) {
-    this.node.setStyles(this.struct.styles);
-  }
-  if (Object.keys(this.struct.events).length) {
-    this.node.setEvents(this.struct.events);
-  }
+  this.setAttributes(this.struct.attributes);
+  this.setStyles(this.struct.styles);
+  this.setEvents(this.struct.events);
 
   this._reconcileChildren(this.struct.children);
   return this.node;
@@ -549,14 +579,7 @@ ElementBuilder.prototype._reconcileChildren = function(nextChildren) {
     ) {
       const nextText = String(nextChild);
       if (currentNode.nodeValue !== nextText) {
-        if (
-          nextChildren.length === 1 &&
-          typeof this.node.setText === "function"
-        ) {
-          this.node.setText(nextText);
-        } else {
-          currentNode.nodeValue = nextText;
-        }
+        currentNode.nodeValue = nextText;
       }
       retainedChildren.push(nextChild);
       continue;
@@ -595,15 +618,8 @@ ElementBuilder.prototype._patchFrom = function(next) {
       this.node.removeAttribute(name);
     }
   }
-  const changedAttributes = {};
-  for (const [name, value] of Object.entries(nextAttributes)) {
-    if (!Object.is(previousAttributes[name], value)) {
-      changedAttributes[name] = value;
-    }
-  }
-  if (Object.keys(changedAttributes).length) {
-    this.node.setAttributes(changedAttributes);
-  }
+  this.setAttributes(nextAttributes);
+  this.struct.attributes = { ...nextAttributes };
 
   const previousStyles = this.struct.styles;
   const nextStyles = next.struct.styles;
@@ -612,28 +628,15 @@ ElementBuilder.prototype._patchFrom = function(next) {
       this.node.style[name] = "";
     }
   }
-  const changedStyles = {};
-  for (const [name, value] of Object.entries(nextStyles)) {
-    if (!Object.is(previousStyles[name], value)) {
-      changedStyles[name] = value;
+  this.setStyles(nextStyles);
+  this.struct.styles = { ...nextStyles };
+  for (const name of Object.keys(this.struct.events)) {
+    if (!(name in next.struct.events)) {
+      this.setEvents({ [name]: null });
     }
   }
-  if (Object.keys(changedStyles).length) {
-    this.node.setStyles(changedStyles);
-  }
-
-  if (!sameEventMap(this.struct.events, next.struct.events)) {
-    for (const name of Object.keys(this.struct.events)) {
-      if (!(name in next.struct.events)) {
-        const handler = this.node.__dompp_handlers?.[name];
-        if (handler) {
-          this.node.removeEventListener(name, handler);
-          delete this.node.__dompp_handlers[name];
-        }
-      }
-    }
-    this.node.setEvents(next.struct.events);
-  }
+  this.setEvents(next.struct.events);
+  this.struct.events = { ...next.struct.events };
 
   const previousChildren = this.struct.children;
   this.struct = {
@@ -647,29 +650,9 @@ ElementBuilder.prototype._patchFrom = function(next) {
   return this;
 };
 
-function sameEventMap(left, right) {
-  const leftKeys = Object.keys(left);
-  const rightKeys = Object.keys(right);
-  return leftKeys.length === rightKeys.length &&
-    leftKeys.every((key) => left[key] === right[key]);
-}
-
 ElementBuilder.prototype.toNode = function() {
   return this._createNode();
 };
-
-// ignore it first!
-// ElementBuilder.prototype.fragment = function(...childrn) {
-//   this.struct.children = Array.isArray(childrn) ? childrn : [childrn];
-
-//   if (this.node !== null) {
-//     const node = document.createDocumentFragment();
-
-//     if (children.length) {
-//       node.setChildren(this.struct.children);
-//     }
-//   }
-// };
 
 // JSX factory: elementBuilder(tag, props, ...children)
 function elementBuilder(tag, props, ...children) {
@@ -738,17 +721,36 @@ function elementBuilder(tag, props, ...children) {
   return element;
 }
 
-function CounterElement({ count }) {
+elementBuilder.fragment = function(...children) {
+  return new ElementBuilder("fragment").setChildren(children.flat(Infinity));
+};
+
+function CounterElement() {
+  let count = 0;
+  let h3El;
+  let buttonEl;
+
   return (
     <div className="card">
-      <h3 style={{
+      {h3El = <h3 style={{
         backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
         color: "white",
-      }}>{count}</h3>
-      <button
+      }}>{count}</h3>}
+      {buttonEl = <button
         class="secondary"
-        onClick={() => console.log(count)}
-      >UPDATE</button>
+        onClick={() => {
+          count += 1;
+          h3El
+            .setStyles({
+              backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
+              color: "white",
+            })
+            .setText(count);
+          if (count === 10) {
+            buttonEl.setAttributes({ disabled: true });
+          }
+        }}
+      >UPDATE</button>}
       <hr />
       <fragment>Hello, I'm just a Fragment!</fragment>
     </div>
@@ -821,7 +823,7 @@ console.log("x", x);
 elementBuilder(
   app,
   null,
-  <CounterElement count={count} />,
+  <CounterElement />,
   <hr />,
   x.render(),
 );
