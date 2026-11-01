@@ -15,364 +15,281 @@
     href="../../assets/favicon.svg"
   />
 
-  <title>
-    JSX Integration
-  </title>
+  <title>DOM++ Builder Playground</title>
 
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
 
   <style>
+    :root {
+      color-scheme: light;
+      font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+      color: #172033;
+      background: #f3f6fb;
+      line-height: 1.6;
+    }
 
     * {
       box-sizing: border-box;
     }
 
     body {
-
       margin: 0;
-
-      font-family:
-        Inter,
-        system-ui,
-        sans-serif;
-
-      background:
-        #f5f5f5;
-
-      color:
-        #222;
-
-      line-height:
-        1.7;
+      background: #f3f6fb;
     }
 
     .container {
-
-      max-width:
-        1100px;
-
-      margin:
-        0 auto;
-
-      padding:
-        48px 24px 96px;
+      width: min(1080px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 40px 0 80px;
     }
 
-    h1 {
-
-      font-size:
-        48px;
-
-      margin-bottom:
-        16px;
+    .page-header {
+      margin-bottom: 36px;
     }
 
-    .description {
-
-      max-width:
-        820px;
-
-      color:
-        #666;
-
-      margin-bottom:
-        40px;
+    .eyebrow {
+      margin: 0 0 8px;
+      color: #526581;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
     }
 
-    .important {
-
-      background:
-        linear-gradient(
-          135deg,
-          #e8f4ff,
-          #d0e8ff
-        );
-
-      border:
-        1px solid #7cb8ff;
-
-      border-radius:
-        16px;
-
-      padding:
-        20px;
-
-      margin-bottom:
-        40px;
-
-      color:
-        #1a365d;
+    .page-header h1 {
+      margin: 0;
+      color: #101828;
+      font-size: clamp(30px, 5vw, 46px);
+      line-height: 1.15;
     }
 
-    .layout {
-
-      display:
-        grid;
-
-      grid-template-columns:
-        1fr 1fr;
-
-      gap:
-        32px;
-
-      align-items:
-        start;
+    .page-description {
+      max-width: 720px;
+      margin: 14px 0 0;
+      color: #526581;
+      font-size: 17px;
     }
 
-    .panel {
-
-      background:
-        white;
-
-      border-radius:
-        20px;
-
-      padding:
-        28px;
-
-      box-shadow:
-        0 8px 24px rgba(0,0,0,0.06);
+    .section-title {
+      margin: 38px 0 16px;
+      color: #344765;
+      font-size: 13px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
     }
 
-    .panel h2 {
+    .case-title {
+      margin: 22px 0 8px;
+      color: #172033;
+      font-size: 19px;
+    }
 
-      margin-top:
-        0;
-
-      font-size:
-        20px;
-
-      margin-bottom:
-        16px;
+    .container > p {
+      max-width: 820px;
+      margin: 0 0 14px;
+      color: #526581;
     }
 
     .card {
-
-      background:
-        white;
-
-      border-radius:
-        16px;
-
-      padding:
-        20px 24px;
-
-      box-shadow:
-        0 4px 12px rgba(0,0,0,0.06);
-
-      margin-bottom:
-        24px;
-
-      border:
-        1px solid #eee;
+      margin: 12px 0 20px;
+      padding: 20px 22px;
+      border: 1px solid #dce4ef;
+      border-radius: 14px;
+      background: #fff;
+      box-shadow: 0 5px 18px rgb(31 51 82 / 6%);
     }
 
-    .card:last-child {
-      margin-bottom: 0;
-    }
-
-    .card h2 {
-
-      font-size:
-        18px;
-
-      margin:
-        0 0 4px;
-    }
-
-    .card small {
-
-      display:
-        block;
-
-      color:
-        #666;
-
-      margin-bottom:
-        12px;
+    .card h2,
+    .card h3 {
+      margin: 8px 0 10px;
+      color: #172033;
     }
 
     .card h3 {
+      font-size: 18px;
+    }
 
-      margin:
-        12px 0 8px;
-
-      font-size:
-        16px;
+    .card h4 {
+      margin: 14px 0 6px;
+      font-size: 15px;
     }
 
     .card p {
-
-      margin:
-        0 0 12px;
-
-      color:
-        #444;
+      margin: 6px 0 12px;
+      color: #526581;
     }
 
-    fragment {
-      display: contents;
+    .card article {
+      margin: 12px 0;
+      border-radius: 10px;
+      background: #f8fafc;
     }
 
-    .signal-count {
-
-      font-size:
-        28px;
-
-      display:
-        block;
-
-      margin:
-        8px 0;
-
-      font-variant-numeric:
-        tabular-nums;
+    .card ul {
+      padding-left: 24px;
     }
 
-    .panel .actions,
-    .card .actions {
+    .card li {
+      margin: 6px 0;
+    }
 
-      display:
-        flex;
-
-      gap:
-        8px;
-
-      margin-top:
-        12px;
+    .card button + button {
+      margin-left: 8px;
     }
 
     button {
+      min-height: 36px;
+      padding: 7px 13px;
+      border: 1px solid #315a9b;
+      border-radius: 8px;
+      background: #315a9b;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-size: 14px;
+      transition: background-color .15s ease, transform .15s ease;
+    }
 
-      padding:
-        8px 16px;
+    button:hover {
+      background: #244779;
+    }
 
-      border:
-        1px solid #222;
+    button:active {
+      transform: translateY(1px);
+    }
 
-      background:
-        #222;
+    button:focus-visible {
+      outline: 3px solid #9bc2ff;
+      outline-offset: 2px;
+    }
 
-      color:
-        white;
-
-      border-radius:
-        8px;
-
-      cursor:
-        pointer;
-
-      font-size:
-        14px;
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .55;
     }
 
     button.secondary {
-
-      background:
-        white;
-
-      color:
-        #222;
+      border-color: #c8d3e1;
+      background: #fff;
+      color: #26364f;
     }
 
-    .note {
-
-      font-size:
-        13px;
-
-      color:
-        #666;
-
-      margin-top:
-        12px;
+    button.secondary:hover {
+      background: #f1f5f9;
     }
 
-    /* Syntax highlight (reused + extended) */
-
-    pre {
-
-      margin:
-        0;
-
-      background:
-        #0d1117;
-
-      color:
-        #c9d1d9;
-
-      padding:
-        20px;
-
-      border-radius:
-        12px;
-
-      font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        Monaco,
-        Consolas,
-        monospace;
-
-      font-size:
-        13px;
-
-      line-height:
-        1.6;
-
-      overflow:
-        auto;
+    textarea,
+    input {
+      max-width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #c8d3e1;
+      border-radius: 8px;
+      font: inherit;
     }
 
-    .code-keyword { color: #ff7b72; }
-    .code-method { color: #79c0ff; }
-    .code-string { color: #a5d6ff; }
-    .code-property { color: #d2a8ff; }
-    .code-variable { color: #ffa657; }
-    .code-comment { color: #8b949e; font-style: italic; }
-    .code-tag { color: #7ee787; }
-    .code-jsx-brace { color: #c9d1d9; }
+    #reactive-messenger textarea {
+      display: block;
+      width: min(100%, 460px);
+      min-height: 76px;
+      margin: 10px 0;
+    }
 
     .notes {
-
-      margin-top:
-        24px;
-
-      color:
-        #666;
-
-      font-size:
-        14px;
+      margin: 8px 0 24px;
+      color: #61718a;
+      font-size: 13px;
     }
 
-    @media (max-width: 900px) {
+    .counter-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
 
-      .layout {
-        grid-template-columns: 1fr;
+    #big-view article {
+      border-radius: 10px;
+    }
+
+    #big-view article p {
+      margin-bottom: 8px;
+    }
+
+    #big-view-mvvm header {
+      flex-wrap: wrap;
+      margin: 14px 0;
+    }
+
+    #big-view-mvvm header h3 {
+      margin: 0;
+    }
+
+    #big-view-mvvm li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      max-width: 620px;
+      padding: 8px 0;
+      border-bottom: 1px solid #e7edf5;
+    }
+
+    #big-view-mvvm li button {
+      flex: 0 0 auto;
+    }
+
+    #big-view-mvvm > button {
+      margin-top: 8px;
+    }
+
+    dialog {
+      border: 1px solid #dce4ef;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        width: min(100% - 24px, 1080px);
+        padding-top: 28px;
       }
 
-    }
+      .card {
+        padding: 16px;
+      }
 
+      .card button + button {
+        margin: 8px 0 0;
+      }
+
+      #big-view-mvvm li {
+        align-items: flex-start;
+      }
+    }
   </style>
+
+  <!-- Load the non-JSX builder engine before the examples are evaluated. -->
+  <script src="./playground-engine.js"></script>
+  <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
 </head>
 <body>
 
   <div class="container">
 
-    <h1>
-      Stateful UI
-    </h1>
+    <header class="page-header">
+      <p class="eyebrow">DOM++ / learning playground</p>
+      <h1>Builder and rendering experiments</h1>
+      <p class="page-description">
+        Small examples for direct element updates, keyed reconciliation,
+        independently stateful views, server DOM adoption, and layered MVVM.
+      </p>
+    </header>
 
     <!-- ================================= -->
     <!-- LIVE DEMO -->
     <!-- ================================= -->
 
-    <h2>
-      Live Demo
-    </h2>
+    <h2 class="section-title">Server DOM adoption</h2>
 
-    <h3>Synchronize with server-rendered HTML</h3>
+    <h3 class="case-title">07 · Adopt server-rendered HTML</h3>
     <p>
       The server returns this HTML and a JSON data block. elementBuilder adopts
       the existing list and builds an ElementBuilder struct for its nodes.
@@ -388,7 +305,7 @@
       Waiting for elementBuilder to adopt the server nodes.
     </p>
 
-    <h3>Reactive server-rendered messenger</h3>
+    <h3 class="case-title">08 · Reactive server-rendered messenger</h3>
     <p>
       elementBuilder adopts the existing nodes on first render. New messages
       are shown at the top while the component rerenders its keyed list.
@@ -409,7 +326,7 @@
       Waiting for the reactive component to attach.
     </p>
 
-    <h3>Big view with independent updates</h3>
+    <h3 class="case-title">09 · BigView with independent updates</h3>
     <p>
       This server-created view has a stable outer section. Its title and menu
       update directly, while two small stateful components can rerender
@@ -417,7 +334,7 @@
     </p>
     <section id="big-view" class="card"></section>
 
-    <h3>Big view with MVVM layers</h3>
+    <h3 class="case-title">10 · BigView with MVVM layers</h3>
     <p>
       The View composes focused sections, the ViewModel coordinates commands
       and notifications, and the Model owns the project data. Each section only
@@ -425,19 +342,10 @@
     </p>
     <section id="big-view-mvvm" class="card"></section>
 
-    <h3>Builder experiments</h3>
+    <h2 class="section-title">Builder cases</h2>
     <div id="app"></div>
 
-  <!-- ================================= -->
-  <!-- SCRIPTS -->
-  <!-- ================================= -->
-
-  <script
-    type="module"
-    src="../../src/index.js"
-  ></script>
-  <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+  <!-- The body script below contains only the rendered examples and demos. -->
   <script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
 /** @jsxRuntime classic */
 /** @jsx elementBuilder */
@@ -451,627 +359,28 @@
 const app = document.getElementById("app");
 
 
-/**
- * JSX factory entry points:
- * - elementBuilder(tagOrNode, props, ...children) creates elements or adopts
- *   an existing DOM node into an ElementBuilder struct.
- * - elementBuilder.fragment(...children) creates a literal fragment wrapper.
- */
-
-// SVG elements need their namespace when they are created.
-const SVG_NS = "http://www.w3.org/2000/svg";
-const attachedEventsByNode = new WeakMap();
-const elementKeysByNode = new WeakMap();
-
-function persistElementKey(node, key) {
-  if (!node) {
-    return;
-  }
-
-  if (key == null) {
-    elementKeysByNode.delete(node);
-  } else {
-    elementKeysByNode.set(node, key);
-  }
-}
-
-/**
- * SVG-only tags use createElementNS. Tags shared by HTML and SVG are omitted
- * because their namespace depends on the parent element.
- */
-const svgOnlyTags = new Set([
-  "svg",
-  "circle",
-  "path",
-  "rect",
-  "line",
-  "polyline",
-  "polygon",
-  "ellipse",
-  "g",
-  "defs",
-  "use",
-  "symbol",
-  "text",
-  "tspan",
-  "textPath",
-  "image",
-  "foreignObject",
-  "mask",
-  "clipPath",
-  "pattern",
-  "linearGradient",
-  "radialGradient",
-  "stop",
-  "filter",
-  "feGaussianBlur",
-  "feColorMatrix",
-  "animate",
-  "animateTransform",
-  "animateMotion",
-  "marker",
-  "view",
-  "switch",
-]);
-
-// Convert CSS property names from server styles to JavaScript style keys.
-function toJavaScriptStyleName(name) {
-  return name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
-}
-
-// Store the old and new virtual fields needed by the reconciliation pass.
-function ElementBuilder(tag) {
-  this.struct = {
-    tag: null,
-    key: null,
-    attributes: {},
-    styles: {},
-    events: {},
-    children: [],
-  };
-
-  this.node = null;
-
-  if (tag && tag.nodeType === 1) {
-    this.struct.tag = tag.tagName.toLowerCase();
-    this.node = tag;
-    this.struct.key = elementKeysByNode.get(tag) ?? null;
-
-    // Seed the virtual struct from server attributes and inline styles.
-    this.struct.attributes = Object.fromEntries(
-      Array.from(tag.attributes, (attribute) => [attribute.name, attribute.value])
-    );
-
-    for (let index = 0; index < tag.style.length; index += 1) {
-      const cssName = tag.style[index];
-      const propertyName = toJavaScriptStyleName(cssName);
-      this.struct.styles[propertyName] = tag.style.getPropertyValue(cssName);
-    }
-
-    // Ignore indentation-only text nodes so descriptors match visual children.
-    const preservesWhitespace =
-      ["pre", "textarea", "script", "style"].includes(this.struct.tag);
-    this.struct.children = [];
-    Array.from(tag.childNodes).forEach((child) => {
-      const isIndentedWhitespace =
-        child.nodeType === Node.TEXT_NODE &&
-        child.nodeValue.trim() === "" &&
-        /[\r\n]/.test(child.nodeValue);
-
-      if (isIndentedWhitespace && !preservesWhitespace) {
-        tag.removeChild(child);
-        return;
-      }
-
-      if (child.nodeType === 1) {
-        this.struct.children.push(new ElementBuilder(child));
-      } else {
-        this.struct.children.push(
-          child.nodeType === Node.TEXT_NODE ? child.nodeValue : child
-        );
-      }
-    });
-  } else {
-    this.struct.tag = tag;
-  }
-
-  this._attachedEvents = this.node
-    ? attachedEventsByNode.get(this.node) ?? {}
-    : {};
-}
-
-// Apply attributes immediately when a DOM node exists; otherwise cache them.
-ElementBuilder.prototype.setAttributes = function(attrs) {
-  attrs = attrs && typeof attrs === "object" ? attrs : {};
-  this.struct.attributes = { ...this.struct.attributes, ...attrs };
-
-  if (this.node) {
-    for (const [name, value] of Object.entries(attrs)) {
-      if (value === false || value == null) {
-        this.node.removeAttribute(name);
-      } else {
-        this.node.setAttribute(name, value === true ? "" : value);
-      }
-    }
-  }
-
-  return this;
-};
-
-// Styles follow the same descriptor-first, direct-update behavior.
-ElementBuilder.prototype.setStyles = function(styles) {
-  styles = styles && typeof styles === "object" ? styles : {};
-  this.struct.styles = { ...this.struct.styles, ...styles };
-
-  if (this.node) {
-    for (const [name, value] of Object.entries(styles)) {
-      this.node.style[name] = value == null ? "" : value;
-    }
-  }
-
-  return this;
-};
-
-// Replace changed event handlers so rerenders do not accumulate listeners.
-ElementBuilder.prototype.setEvents = function(events) {
-  events = events && typeof events === "object" ? events : {};
-  const nextEvents = { ...this.struct.events };
-
-  for (const [name, handler] of Object.entries(events)) {
-    const previousHandler = this._attachedEvents[name];
-
-    if (typeof handler === "function") {
-      if (this.node && previousHandler !== handler) {
-        if (previousHandler) {
-          this.node.removeEventListener(name, previousHandler);
-        }
-        this.node.addEventListener(name, handler);
-        this._attachedEvents[name] = handler;
-      }
-      nextEvents[name] = handler;
-    } else {
-      if (this.node && previousHandler) {
-        this.node.removeEventListener(name, previousHandler);
-      }
-      delete this._attachedEvents[name];
-      delete nextEvents[name];
-    }
-  }
-
-  this.struct.events = nextEvents;
-  if (this.node) {
-    attachedEventsByNode.set(this.node, this._attachedEvents);
-  }
-
-  return this;
-};
-
-// Text is represented as a normal child so it uses the same reconciliation.
-ElementBuilder.prototype.setText = function(text) {
-  return this.setChildren([text]);
-};
-
-// Flatten arrays and discard null/boolean children before diffing the tree.
-ElementBuilder.prototype.setChildren = function(children) {
-  const nextChildren = (Array.isArray(children) ? children : [children])
-    .flat(Infinity)
-    .filter((child) => child != null && typeof child !== "boolean");
-
-  if (this.node) {
-    this._reconcileChildren(nextChildren);
-  } else {
-    this.struct.children = nextChildren;
-  }
-
-  return this;
-};
-
-// Materialize one DOM node and apply the descriptor's current fields.
-ElementBuilder.prototype._createNode = function() {
-  if (this.node) {
-    return this.node;
-  }
-
-  this.node = svgOnlyTags.has(this.struct.tag)
-    ? document.createElementNS(SVG_NS, this.struct.tag)
-    : document.createElement(this.struct.tag);
-
-  this.setAttributes(this.struct.attributes);
-  this.setStyles(this.struct.styles);
-  this.setEvents(this.struct.events);
-
-  this._reconcileChildren(this.struct.children);
-  persistElementKey(this.node, this.struct.key);
-  return this.node;
-};
-
-/*
- * Match keyed children by key and tag, then match unkeyed children by
- * position. Reuse matching nodes, replace changed nodes, and move nodes into
- * their new order.
- */
-ElementBuilder.prototype._reconcileChildren = function(nextChildren, previousChildrenOverride) {
-  const previousChildren = previousChildrenOverride ?? this.struct.children;
-  const previousNodes = Array.from(this.node.childNodes);
-  const previousKeyedChildren = new Map();
-  const nextKeys = new Set();
-
-  previousChildren.forEach((child, index) => {
-    if (!(child instanceof ElementBuilder) || child.struct.key == null) {
-      return;
-    }
-    validateElementKey(child.struct.key);
-    if (previousKeyedChildren.has(child.struct.key)) {
-      throw new Error(`Duplicate child key: ${child.struct.key}`);
-    }
-    previousKeyedChildren.set(child.struct.key, {
-      child,
-      node: previousNodes[index],
-    });
-  });
-
-  const reconciledChildren = [];
-  const reconciledNodes = [];
-
-  nextChildren.forEach((nextChild, index) => {
-    let currentChild = null;
-    let currentNode = null;
-
-    if (nextChild instanceof ElementBuilder && nextChild.struct.key != null) {
-      const key = nextChild.struct.key;
-      validateElementKey(key);
-      if (nextKeys.has(key)) {
-        throw new Error(`Duplicate child key: ${key}`);
-      }
-      nextKeys.add(key);
-
-      const previous = previousKeyedChildren.get(key);
-      if (
-        previous &&
-        previous.child.struct.tag === nextChild.struct.tag &&
-        previous.node?.nodeType === 1
-      ) {
-        currentChild = previous.child;
-        currentNode = previous.node;
-      }
-    } else {
-      const candidate = previousChildren[index];
-      const candidateNode = previousNodes[index];
-      const bothUnkeyedBuilders =
-        candidate instanceof ElementBuilder &&
-        nextChild instanceof ElementBuilder &&
-        candidate.struct.key == null &&
-        nextChild.struct.key == null &&
-        candidate.struct.tag === nextChild.struct.tag &&
-        candidateNode?.nodeType === 1;
-      const bothText =
-        (typeof candidate === "string" || typeof candidate === "number") &&
-        (typeof nextChild === "string" || typeof nextChild === "number") &&
-        candidateNode?.nodeType === Node.TEXT_NODE;
-
-      if (bothUnkeyedBuilders || bothText) {
-        currentChild = candidate;
-        currentNode = candidateNode;
-      } else if (candidateNode === nextChild && nextChild?.nodeType) {
-        currentNode = candidateNode;
-      }
-    }
-
-    if (currentChild instanceof ElementBuilder) {
-      currentChild.node = currentNode;
-      currentChild._patchFrom(nextChild);
-      reconciledChildren.push(currentChild);
-      reconciledNodes.push(currentNode);
-      return;
-    }
-
-    if (
-      currentNode?.nodeType === Node.TEXT_NODE &&
-      (typeof nextChild === "string" || typeof nextChild === "number")
-    ) {
-      const nextText = String(nextChild);
-      if (currentNode.nodeValue !== nextText) {
-        currentNode.nodeValue = nextText;
-      }
-      reconciledChildren.push(nextChild);
-      reconciledNodes.push(currentNode);
-      return;
-    }
-
-    const nextNode = nextChild instanceof ElementBuilder
-      ? nextChild._createNode()
-      : nextChild?.nodeType
-        ? nextChild
-        : document.createTextNode(String(nextChild));
-
-    reconciledChildren.push(nextChild);
-    reconciledNodes.push(nextNode);
-  });
-
-  const nextNodeSet = new Set(reconciledNodes);
-  for (const oldNode of previousNodes) {
-    if (!nextNodeSet.has(oldNode)) {
-      this.node.removeChild(oldNode);
-    }
-  }
-
-  let anchor = null;
-  for (let index = reconciledNodes.length - 1; index >= 0; index -= 1) {
-    const node = reconciledNodes[index];
-    if (node.parentNode !== this.node || node.nextSibling !== anchor) {
-      this.node.insertBefore(node, anchor);
-    }
-    anchor = node;
-  }
-
-  this.struct.children = reconciledChildren;
-};
-
-// Keys must be stable primitive values to identify siblings across renders.
-function validateElementKey(key) {
-  if (typeof key !== "string" && typeof key !== "number") {
-    throw new TypeError("ElementBuilder child keys must be strings or numbers.");
-  }
-}
-
-// Patch only changed fields, then reconcile the child descriptors.
-ElementBuilder.prototype._patchFrom = function(next) {
-  const previousAttributes = this.struct.attributes;
-  const nextAttributes = next.struct.attributes;
-  for (const name of Object.keys(previousAttributes)) {
-    if (!(name in nextAttributes)) {
-      this.node.removeAttribute(name);
-    }
-  }
-  this.setAttributes(nextAttributes);
-  this.struct.attributes = { ...nextAttributes };
-
-  const previousStyles = this.struct.styles;
-  const nextStyles = next.struct.styles;
-  for (const name of Object.keys(previousStyles)) {
-    if (!(name in nextStyles)) {
-      this.node.style[name] = "";
-    }
-  }
-  this.setStyles(nextStyles);
-  this.struct.styles = { ...nextStyles };
-  for (const name of Object.keys(this.struct.events)) {
-    if (!(name in next.struct.events)) {
-      this.setEvents({ [name]: null });
-    }
-  }
-  this.setEvents(next.struct.events);
-  this.struct.events = { ...next.struct.events };
-
-  const previousChildren = this.struct.children;
-  this.struct = {
-    tag: next.struct.tag,
-    key: next.struct.key,
-    attributes: { ...nextAttributes },
-    styles: { ...nextStyles },
-    events: { ...next.struct.events },
-    children: previousChildren,
-  };
-  persistElementKey(this.node, this.struct.key);
-  this._reconcileChildren(next.struct.children);
-  return this;
-};
-
-/*
- * Attach descriptors to server-created nodes without treating omitted
- * children as deletions. Existing child nodes stay in the initial struct.
- */
-ElementBuilder.prototype._attachChildren = function(children) {
-  const nextChildren = (Array.isArray(children) ? children : [children])
-    .flat(Infinity)
-    .filter((child) => child != null && typeof child !== "boolean");
-  const previousChildren = this.struct.children;
-  if (nextChildren.length === 0) {
-    return this;
-  }
-
-  const usedChildren = new Set();
-  const attachedChildren = nextChildren.map((nextChild, index) => {
-    let matchIndex = -1;
-
-    if (nextChild instanceof ElementBuilder && nextChild.struct.key != null) {
-      matchIndex = previousChildren.findIndex((child, childIndex) =>
-        !usedChildren.has(childIndex) &&
-        child instanceof ElementBuilder &&
-        child.struct.key === nextChild.struct.key &&
-        child.struct.tag === nextChild.struct.tag
-      );
-    }
-
-    // During first hydration, server nodes have no virtual keys yet. Adopt
-    // the same-position node when its tag matches the descriptor.
-    if (matchIndex < 0) {
-      const candidate = previousChildren[index];
-      if (
-        !usedChildren.has(index) &&
-        candidate instanceof ElementBuilder &&
-        nextChild instanceof ElementBuilder &&
-        candidate.struct.key == null &&
-        candidate.struct.tag === nextChild.struct.tag
-      ) {
-        matchIndex = index;
-      } else if (
-        !usedChildren.has(index) &&
-        (typeof candidate === "string" || typeof candidate === "number") &&
-        (typeof nextChild === "string" || typeof nextChild === "number")
-      ) {
-        matchIndex = index;
-      }
-    }
-
-    if (matchIndex < 0) {
-      return nextChild;
-    }
-
-    usedChildren.add(matchIndex);
-    const existingChild = previousChildren[matchIndex];
-    if (existingChild instanceof ElementBuilder) {
-      existingChild._attachFrom(nextChild);
-      // Keep references held by callers (for example ComponentBuilder or a
-      // directly updated title/menu) connected to the adopted server node.
-      nextChild.node = existingChild.node;
-      nextChild.struct = existingChild.struct;
-      nextChild._attachedEvents = existingChild._attachedEvents;
-      return nextChild;
-    }
-    return nextChild;
-  });
-
-  // Keep any server children omitted by a partial descriptor, while ordering
-  // described children according to their virtual tree.
-  previousChildren.forEach((child, index) => {
-    if (!usedChildren.has(index)) attachedChildren.push(child);
-  });
-
-  this._reconcileChildren(attachedChildren, previousChildren);
-  return this;
-};
-
-// Merge props and handlers onto an existing node while retaining its children.
-ElementBuilder.prototype._attachFrom = function(next) {
-  this.struct.key = next.struct.key;
-  persistElementKey(this.node, this.struct.key);
-  this.setAttributes(next.struct.attributes);
-  this.struct.attributes = {
-    ...this.struct.attributes,
-    ...next.struct.attributes,
-  };
-
-  this.setStyles(next.struct.styles);
-  this.struct.styles = {
-    ...this.struct.styles,
-    ...next.struct.styles,
-  };
-
-  this.setEvents(next.struct.events);
-  this.struct.events = {
-    ...this.struct.events,
-    ...next.struct.events,
-  };
-
-  if (next.struct.children.length > 0) {
-    this._attachChildren(next.struct.children);
-  }
-
-  return this;
-};
-
-// Public bridge from a virtual descriptor to its DOM representation.
-ElementBuilder.prototype.toNode = function() {
-  return this._createNode();
-};
-
-/*
- * JSX factory: elementBuilder(tag, props, ...children).
- * It separates attributes, styles, events, and keys into the virtual struct.
- */
-function elementBuilder(tag, props, ...children) {
-
-  // Custom components.
-  if (typeof tag === "function") {
-    return tag(props, ...children);
-  }
-
-  const element = new ElementBuilder(tag);
-  let elementKey = null;
-
-  if (props) {
-    const attrs = {};
-    const events = {};
-
-    let style;
-    let className;
-
-    for (const [propKey, value] of Object.entries(props)) {
-      const normalizedKey = propKey.toLowerCase();
-
-      // Event props: onClick, onclick, ONCLICK, OnClick, etc.
-      if (normalizedKey.startsWith("on")) {
-        const eventName = normalizedKey.slice(2);
-
-        if (eventName) {
-          events[eventName] = value;
-        }
-      } else if (
-        normalizedKey === "styles" ||
-        normalizedKey === "style"
-      ) {
-        style = value;
-      } else if (
-        normalizedKey === "classname" ||
-        normalizedKey === "class"
-      ) {
-        className ??= value;
-      } else if (normalizedKey === "key") {
-        elementKey = value;
-      } else {
-        attrs[propKey] = value;
-      }
-    }
-
-    if (className != null) {
-      element.setAttributes({ class: className });
-    }
-
-    if (style != null) {
-      element.setStyles(style);
-    }
-
-    if (Object.keys(events).length) {
-      element.setEvents(events);
-    }
-
-    if (Object.keys(attrs).length) {
-      element.setAttributes(attrs);
-    }
-  }
-
-  element.struct.key = elementKey;
-  persistElementKey(element.node, elementKey);
-
-  // Use attach mode for an existing element; ordinary builders reconcile.
-  if (children.length) {
-    if (element.node) {
-      // Adopt matching nodes and leave unspecified server children untouched.
-      element._attachChildren(children);
-    } else {
-      element.setChildren(children);
-    }
-  }
-
-  return element;
-}
-
-// JSX fragment syntax uses a real wrapper to preserve one-to-one child counts.
-elementBuilder.fragment = function(...children) {
-  return new ElementBuilder("fragment").setChildren(children.flat(Infinity));
-};
-
 /*
  * Example 1: update text and styles directly through ElementBuilder methods,
  * without rebuilding the complete component.
  */
 function CounterElement() {
   let count = 0;
-  let h3El;
+  let countEl;
   let buttonEl;
 
   return (
     <div className="card">
-      {h3El = <h3 style={{
+      <h3>01 · Direct element updates</h3>
+      <p>Update a node with ElementBuilder setters without rerendering its parent.</p>
+      {countEl = <p className="counter-value" style={{
         backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
         color: "white",
-      }}>{count}</h3>}
+      }}>{count}</p>}
       {buttonEl = <button
         class="secondary"
         onClick={() => {
           count += 1;
-          h3El
+          countEl
             .setStyles({
               backgroundColor: count % 2 === 0 ? "purple" : "fuchsia",
               color: "white",
@@ -1092,65 +401,6 @@ function CounterElement() {
 let count = 0;
 
 /*
- * ComponentBuilder owns the render function and current virtual tree.
- * render() returns the initial ElementBuilder; the parent materializes it.
- * rerender() builds and diffs the next tree while keeping matching DOM nodes.
- */
-function ComponentBuilder(builder) {
-  let component = null;
-
-  const instance = {
-    render() {
-      if (!component) {
-        component = builder((callback) => instance.rerender(callback));
-      }
-
-      // why do we need to return the node?! It's supposed to be always return the ElementBuidler
-      return component;
-    },
-
-    rerender(callback) {
-      // Apply an optional state mutation before constructing the next tree.
-      if (typeof callback === "function") {
-        callback();
-      }
-
-      if (!component) {
-        return instance;
-      }
-
-      const next = builder((nextCallback) => instance.rerender(nextCallback));
-      if (component.node && component.node === next.node) {
-        // elementBuilder already synchronized this existing root in place.
-        component.struct = next.struct;
-        component._attachedEvents = next._attachedEvents;
-        return instance;
-      }
-
-      if (component.struct.tag === next.struct.tag) {
-        component._patchFrom(next);
-      } else {
-        const nextNode = next.toNode();
-        if (component.node?.parentNode) {
-          component.node.parentNode.replaceChild(nextNode, component.node);
-        }
-        component.node = nextNode;
-        component.struct = next.struct;
-      }
-
-      return instance;
-    },
-  };
-
-  return Object.freeze(instance);
-}
-
-// Public helper for creating a stateful component instance.
-function componentBuilder(builder) {
-  return new ComponentBuilder(builder);
-}
-
-/*
  * Example 2: rerender(callback) combines a state update with a view update.
  * The callback runs first, so the builder reads the new count.
  */
@@ -1163,7 +413,8 @@ const rerenderCallbackCounter = componentBuilder((rerender) => {
         color: "white",
       }}
     >
-      <h3>{count}</h3>
+      <h3 styles={{ color: "white" }}>02 · ComponentBuilder rerender</h3>
+      <p className="counter-value" styles={{ color: "white" }}>{count}</p>
       <p styles={{ color: "white" }}>rerender(callback) runs the state update before rebuilding this view.</p>
       <button
         class="secondary"
@@ -1235,7 +486,7 @@ function MVVMExample() {
 
   view = componentBuilder(() => (
     <section className="card">
-      <h3>MVVM: View / ViewModel / Model</h3>
+      <h3>03 · MVVM: View / ViewModel / Model</h3>
       <p>View reads the ViewModel getter: {viewModel.count}</p>
       <p>The View only calls ViewModel actions. The ViewModel reads and updates its Model, then notifies the View to rerender.</p>
       <button
@@ -1259,6 +510,8 @@ function Validator() {
   return componentBuilder(rerender => {
     return (
       <div className="card">
+        <h3>04 · Conditional child reconciliation</h3>
+        <p>The dialog is added or removed by rerendering only this component.</p>
         <button
           onClick={() => {
             confirming = true;
@@ -1306,8 +559,8 @@ function KeyedListExample() {
 
   return componentBuilder((rerender) => (
     <section className="card">
-      <h3>Keyed child list</h3>
-    <p>Stable keys preserve item nodes when the list order changes. Changing an item's tag replaces its node.</p>
+      <h3>05 · Keyed child reconciliation</h3>
+      <p>Stable keys preserve item nodes when the list order changes. Changing an item's tag replaces its node.</p>
       <div>
         <button type="button" onClick={() => {
           const id = nextId++;
@@ -1379,7 +632,8 @@ function ArrayChildComponent() {
 function FragmentAndArrayExample() {
   return (
     <section className="card">
-      <h3>Fragment wrapper</h3>
+      <h3>06 · Fragments and array components</h3>
+      <h4>Literal fragment wrapper</h4>
       <p>
         The bordered parent has two direct children: its label and one literal fragment node. That fragment node owns the two nested div children.
       </p>
@@ -1395,7 +649,7 @@ function FragmentAndArrayExample() {
         </>
       </div>
 
-      <h3>Array-returning component</h3>
+      <h4>Array-returning component</h4>
       <p>
         The component returns three nodes. setChildren flattens that array, so the bordered parent has five direct children: its label, its paragraph, and the three returned nodes.
       </p>
