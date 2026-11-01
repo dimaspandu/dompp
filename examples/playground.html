@@ -375,9 +375,25 @@
     <h3>Synchronize with server-rendered HTML</h3>
     <p>
       The server returns both this HTML and a JSON data block. The synchronizer
-      adopts the existing elements and builds an ElementBuilder struct for them.
+      adopts the existing list and builds an ElementBuilder struct for its nodes.
     </p>
     <section id="messenger" class="card">
+      <ul>
+        <li>Message 3</li>
+        <li>Message 2</li>
+        <li>Message 1</li>
+      </ul>
+    </section>
+    <p id="messenger-status" class="notes">
+      Waiting for the client-side synchronizer.
+    </p>
+
+    <h3>Reactive server-rendered messenger</h3>
+    <p>
+      The first render synchronizes the server HTML. Sending a message prepends
+      it to the data array and rerenders the component.
+    </p>
+    <section id="reactive-messenger" class="card">
       <ul>
         <li>Message 3</li>
         <li>Message 2</li>
@@ -387,10 +403,10 @@
       <button type="button">SEND</button>
     </section>
     <script id="messenger-data" type="json">
-      ["Message 1", "Message 2", "Message 3"]
+      [{ "id": 1, "text": "Message 1" }, { "id": 2, "text": "Message 2" }, { "id": 3, "text": "Message 3" }]
     </script>
-    <p id="messenger-status" class="notes">
-      Waiting for the client-side synchronizer.
+    <p id="reactive-messenger-status" class="notes">
+      Waiting for the reactive component to attach.
     </p>
 
     <h3>Builder experiments</h3>
@@ -1062,7 +1078,8 @@ function ComponentBuilder(builder) {
         component = builder((callback) => instance.rerender(callback));
       }
 
-      return component.toNode();
+      // why do we need to return the node?! It's supposed to be always return the ElementBuidler
+      return component;
     },
 
     rerender(callback) {
@@ -1076,6 +1093,13 @@ function ComponentBuilder(builder) {
       }
 
       const next = builder((nextCallback) => instance.rerender(nextCallback));
+      if (component.node && component.node === next.node) {
+        // A synchronizer already patched this existing DOM root in place.
+        component.struct = next.struct;
+        component._attachedEvents = next._attachedEvents;
+        return instance;
+      }
+
       if (component.struct.tag === next.struct.tag) {
         component._patchFrom(next);
       } else {
@@ -1362,32 +1386,95 @@ function FragmentAndArrayExample() {
  * descriptors to the existing messenger nodes. The data is chronological,
  * while the server-rendered list shows the newest message first.
  */
-const dataFromServer = JSON.parse(
-  document.getElementById("messenger-data").textContent
-);
-const messengerNode = document.getElementById("messenger");
-
-const messengerBuilder = componentSynchronizer(messengerNode, (messengerNode) => {
-  return elementBuilder(
-    messengerNode,
-    null,
-    <ul>
-      {[...dataFromServer].reverse().map((message) => <li>{message}</li>)}
-    </ul>,
-    <textarea aria-label="New message"></textarea>,
-    <button type="button">SEND</button>
+(function() {
+  const dataFromServer = JSON.parse(
+    document.getElementById("messenger-data").textContent
   );
-});
 
-const synchronizedList = messengerBuilder.struct.children.find(
-  (child) =>
-    child instanceof ElementBuilder &&
-    child.struct.tag === "ul"
-);
-document.getElementById("messenger-status").textContent =
-  `Result is an ElementBuilder: ${messengerBuilder instanceof ElementBuilder}. ` +
-  `Existing root node reused: ${messengerBuilder.node === messengerNode}. ` +
-  `Server list items represented in the struct: ${synchronizedList.struct.children.length}.`;
+  const messengerNode = document.getElementById("messenger");
+
+  const messengerBuilder = componentSynchronizer(messengerNode, (existingNode) =>
+    elementBuilder(
+      existingNode,
+      null,
+      <ul>
+        {dataFromServer.map((message) => <li key={message.id}>{message.text}</li>)}
+      </ul>
+    )
+  );
+
+  const synchronizedList = messengerBuilder.struct.children.find(
+    (child) =>
+      child instanceof ElementBuilder &&
+      child.struct.tag === "ul"
+  );
+  document.getElementById("messenger-status").textContent =
+    `Result is an ElementBuilder: ${messengerBuilder instanceof ElementBuilder}. ` +
+    `Existing root node reused: ${messengerBuilder.node === messengerNode}. ` +
+    `Server list items represented in the struct: ${synchronizedList.struct.children.length}.`;
+})();
+
+/*
+ * Example 8: keep the server-created root and wrap its synchronization callback
+ * in ComponentBuilder. The data array is shown newest-first, so unshift()
+ * prepends each new message to the visible list.
+ */
+(function() {
+  const dataFromServer = JSON.parse(
+    document.getElementById("messenger-data").textContent
+  );
+  
+  function sendReactiveMessage(payload, rerender) {
+    dataFromServer.unshift(payload);
+
+    rerender();
+
+    reactiveMessengerStatus.textContent =
+      `Added "${message}" at the top. Messages: ${dataFromServer.length}.`;
+  }
+
+  const messengerNode = document.getElementById("reactive-messenger");
+
+  const payload = {
+    id: null,
+    text: null,
+  };
+
+  const messengerBuilder = componentBuilder(rerender => (
+    componentSynchronizer(messengerNode, (existingNode) =>
+      elementBuilder(
+        existingNode,
+        null,
+        <ul>
+          {dataFromServer.map((message) => <li key={message.id}>{message.text}</li>)}
+        </ul>,
+        <textarea
+          aria-label="New message"
+          onInput={(e) => {
+            payload.id = new Date().toISOString().split('T')[0];
+            payload.text = e.target.value;
+          }}
+        ></textarea>,
+        <button
+          type="button"
+          onClick={() => sendReactiveMessage(payload, rerender)}
+        >SEND</button>,
+      )
+    )
+  ))
+  .render();
+
+  const synchronizedList = messengerBuilder.struct.children.find(
+    (child) =>
+      child instanceof ElementBuilder &&
+      child.struct.tag === "ul"
+  );
+  elementBuilder(
+    document.getElementById("reactive-messenger-status"),
+    null,
+    `Attached to server nodes; enter a message and select SEND.`
+  );
+})();
 
 /*
  * Mount all examples into one host. componentBuilder roots are materialized
