@@ -101,8 +101,11 @@ export function createDevServer({ rootDir = ROOT_DIR } = {}) {
 
   return createServer((req, res) => {
     let pathname;
+    let search;
     try {
-      pathname = new URL(req.url, "http://localhost").pathname;
+      const requestUrl = new URL(req.url, "http://localhost");
+      pathname = requestUrl.pathname;
+      search = requestUrl.search;
     } catch {
       sendText(res, 400, "Invalid request URL");
       return;
@@ -122,6 +125,14 @@ export function createDevServer({ rootDir = ROOT_DIR } = {}) {
     }
 
     if (existsSync(filePath) && statSync(filePath).isDirectory()) {
+      if (!pathname.endsWith("/")) {
+        res.writeHead(308, {
+          Location: `${pathname}/${search}`,
+        });
+        res.end();
+        return;
+      }
+
       serveFile(res, join(filePath, "index.html"));
       return;
     }

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="../../assets/favicon.svg"
+  />
+
+  <title>DOM++ Builder Playground</title>
+
+
+  <link rel="stylesheet" href="./playground.css" />
+
+</head>
+<body>
+
+  <div class="container">
+
+    <header class="page-header">
+      <p class="eyebrow">DOM++ / learning playground</p>
+      <h1>Builder and rendering experiments</h1>
+      <p class="page-description">
+        Small examples for direct element updates, keyed reconciliation,
+        independently stateful views, server DOM adoption, and layered MVVM.
+      </p>
+    </header>
+
+    <!-- ================================= -->
+    <!-- LIVE DEMO -->
+    <!-- ================================= -->
+
+    <h2 class="section-title">Server DOM adoption</h2>
+
+    <h3 class="case-title">07 · Adopt server-rendered HTML</h3>
+    <p>
+      The server returns this HTML and a JSON data block. elementBuilder adopts
+      the existing list and builds an ElementBuilder struct for its nodes.
+    </p>
+    <section id="messenger" class="card">
+      <ul>
+        <li>Message 3</li>
+        <li>Message 2</li>
+        <li>Message 1</li>
+      </ul>
+    </section>
+    <p id="messenger-status" class="notes">
+      Waiting for elementBuilder to adopt the server nodes.
+    </p>
+
+    <h3 class="case-title">08 · Reactive server-rendered messenger</h3>
+    <p>
+      elementBuilder adopts the existing nodes on first render. New messages
+      are shown at the top while the component rerenders its keyed list.
+    </p>
+    <section id="reactive-messenger" class="card">
+      <ul>
+        <li>Message 3</li>
+        <li>Message 2</li>
+        <li>Message 1</li>
+      </ul>
+      <textarea aria-label="New message"></textarea>
+      <button type="button">SEND</button>
+    </section>
+    <script id="messenger-data" type="json">
+      [{ "id": 1, "text": "Message 1" }, { "id": 2, "text": "Message 2" }, { "id": 3, "text": "Message 3" }]
+    </script>
+    <p id="reactive-messenger-status" class="notes">
+      Waiting for the reactive component to attach.
+    </p>
+
+    <h3 class="case-title">09 · BigView with independent updates</h3>
+    <p>
+      This server-created view has a stable outer section. Its title and menu
+      update directly, while two small stateful components can rerender
+      independently or trigger each other.
+    </p>
+    <section id="big-view" class="card"></section>
+
+    <h3 class="case-title">10 · BigView with MVVM layers</h3>
+    <p>
+      The View composes focused sections, the ViewModel coordinates commands
+      and notifications, and the Model owns the project data. Each section only
+      rerenders for the data it displays.
+    </p>
+    <section id="big-view-mvvm" class="card"></section>
+
+    <h2 class="section-title">Builder cases</h2>
+    <div id="app"></div>
+  </div>
+
+  <script type="module" src="./examples.jsx"></script>
+</body>
+</html>

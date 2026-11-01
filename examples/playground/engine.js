@@ -655,3 +655,5 @@ function ComponentBuilder(builder) {
 function componentBuilder(builder) {
   return new ComponentBuilder(builder);
 }
+
+export { ElementBuilder, elementBuilder, componentBuilder };
