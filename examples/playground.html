@@ -417,6 +417,14 @@
     </p>
     <section id="big-view" class="card"></section>
 
+    <h3>Big view with MVVM layers</h3>
+    <p>
+      The View composes focused sections, the ViewModel coordinates commands
+      and notifications, and the Model owns the project data. Each section only
+      rerenders for the data it displays.
+    </p>
+    <section id="big-view-mvvm" class="card"></section>
+
     <h3>Builder experiments</h3>
     <div id="app"></div>
 
@@ -1581,6 +1589,200 @@ const bigView = (
     </dialog>
   </BigView>
 );
+
+/*
+ * Example 10, Model: owns project data and domain updates. It has no DOM or
+ * rendering dependency, so it can be reused independently of this View.
+ */
+function createProjectModel() {
+  let title = "Project dashboard";
+  let nextTaskId = 4;
+  const tasks = [
+    { id: 1, label: "Review the design", complete: true },
+    { id: 2, label: "Implement the view", complete: false },
+    { id: 3, label: "Check the interaction", complete: false },
+  ];
+
+  return {
+    getSnapshot() {
+      return {
+        title,
+        tasks: tasks.map((task) => ({ ...task })),
+      };
+    },
+
+    setTitle(nextTitle) {
+      title = nextTitle;
+    },
+
+    addTask() {
+      const task = {
+        id: nextTaskId++,
+        label: `New project task ${nextTaskId - 1}`,
+        complete: false,
+      };
+      tasks.push(task);
+      return task;
+    },
+
+    toggleTask(taskId) {
+      const task = tasks.find((item) => item.id === taskId);
+      if (task) {
+        task.complete = !task.complete;
+      }
+    },
+  };
+}
+
+/*
+ * Example 10, ViewModel: coordinates Model operations and notifies interested
+ * View sections with a small topic name instead of exposing mutable data.
+ */
+function createProjectViewModel(model) {
+  const listeners = new Set();
+
+  function notify(topic) {
+    listeners.forEach((listener) => listener(topic));
+  }
+
+  return {
+    getSnapshot() {
+      return model.getSnapshot();
+    },
+
+    renameTitle() {
+      const currentTitle = model.getSnapshot().title;
+      model.setTitle(
+        currentTitle === "Project dashboard"
+          ? "Project dashboard: reviewed"
+          : "Project dashboard"
+      );
+      notify("title");
+    },
+
+    addTask() {
+      model.addTask();
+      notify("tasks");
+    },
+
+    toggleTask(taskId) {
+      model.toggleTask(taskId);
+      notify("tasks");
+    },
+
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+}
+
+/*
+ * Example 10, View sections: each section owns a ComponentBuilder and
+ * subscribes only to the ViewModel topic that affects its displayed data.
+ */
+function createBigViewHeader(viewModel) {
+  const component = componentBuilder(() => {
+    const { title } = viewModel.getSnapshot();
+    return (
+      <header styles={{ alignItems: "center", display: "flex", gap: "12px" }}>
+        <h3>{title}</h3>
+        <button type="button" onClick={() => viewModel.renameTitle()}>
+          Rename project
+        </button>
+      </header>
+    );
+  });
+
+  const unsubscribe = viewModel.subscribe((topic) => {
+    if (topic === "title") component.rerender();
+  });
+
+  return { builder: component.render(), dispose: unsubscribe };
+}
+
+function createBigViewSummary(viewModel) {
+  const component = componentBuilder(() => {
+    const tasks = viewModel.getSnapshot().tasks;
+    const completeCount = tasks.filter((task) => task.complete).length;
+    return (
+      <p>
+        {completeCount} of {tasks.length} project tasks complete.
+      </p>
+    );
+  });
+
+  const unsubscribe = viewModel.subscribe((topic) => {
+    if (topic === "tasks") component.rerender();
+  });
+
+  return { builder: component.render(), dispose: unsubscribe };
+}
+
+function createBigViewTaskList(viewModel) {
+  const component = componentBuilder(() => (
+    <ul>
+      {viewModel.getSnapshot().tasks.map((task) => (
+        <li key={task.id}>
+          <span>{task.complete ? "[done]" : "[todo]"} {task.label}</span>
+          <button
+            type="button"
+            aria-pressed={task.complete}
+            onClick={() => viewModel.toggleTask(task.id)}
+          >
+            {task.complete ? "Reopen" : "Complete"}
+          </button>
+        </li>
+      ))}
+    </ul>
+  ));
+
+  const unsubscribe = viewModel.subscribe((topic) => {
+    if (topic === "tasks") component.rerender();
+  });
+
+  return { builder: component.render(), dispose: unsubscribe };
+}
+
+/*
+ * Example 10, View: composes the Model, ViewModel, and focused View sections.
+ * The root is stable; notifications rerender only the interested sections.
+ */
+function MaintainableBigView() {
+  const model = createProjectModel();
+  const viewModel = createProjectViewModel(model);
+  const header = createBigViewHeader(viewModel);
+  const summary = createBigViewSummary(viewModel);
+  const taskList = createBigViewTaskList(viewModel);
+
+  const root = elementBuilder(
+    document.getElementById("big-view-mvvm"),
+    null,
+    <p>
+      Model owns the task data. ViewModel handles commands and publishes
+      updates. These View sections subscribe only to the topics they display.
+    </p>,
+    header.builder,
+    summary.builder,
+    <button type="button" onClick={() => viewModel.addTask()}>
+      Add task
+    </button>,
+    taskList.builder,
+  );
+
+  return {
+    root,
+    model,
+    viewModel,
+    dispose() {
+      header.dispose();
+      summary.dispose();
+      taskList.dispose();
+    },
+  };
+}
+
+const maintainableBigView = MaintainableBigView();
 
 /*
  * Mount all examples into one host. componentBuilder.render() returns its
