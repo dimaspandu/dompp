@@ -443,6 +443,20 @@ const app = document.getElementById("app");
 
 // SVG elements need their namespace when they are created.
 const SVG_NS = "http://www.w3.org/2000/svg";
+const attachedEventsByNode = new WeakMap();
+const elementKeysByNode = new WeakMap();
+
+function persistElementKey(node, key) {
+  if (!node) {
+    return;
+  }
+
+  if (key == null) {
+    elementKeysByNode.delete(node);
+  } else {
+    elementKeysByNode.set(node, key);
+  }
+}
 
 /**
  * SVG-only tags use createElementNS. Tags shared by HTML and SVG are omitted
@@ -504,6 +518,7 @@ function ElementBuilder(tag) {
   if (tag && tag.nodeType === 1) {
     this.struct.tag = tag.tagName.toLowerCase();
     this.node = tag;
+    this.struct.key = elementKeysByNode.get(tag) ?? null;
 
     // Seed the virtual struct from server attributes and inline styles.
     this.struct.attributes = Object.fromEntries(
@@ -543,7 +558,9 @@ function ElementBuilder(tag) {
     this.struct.tag = tag;
   }
 
-  this._attachedEvents = {};
+  this._attachedEvents = this.node
+    ? attachedEventsByNode.get(this.node) ?? {}
+    : {};
 }
 
 // Apply attributes immediately when a DOM node exists; otherwise cache them.
@@ -605,6 +622,9 @@ ElementBuilder.prototype.setEvents = function(events) {
   }
 
   this.struct.events = nextEvents;
+  if (this.node) {
+    attachedEventsByNode.set(this.node, this._attachedEvents);
+  }
 
   return this;
 };
@@ -644,6 +664,7 @@ ElementBuilder.prototype._createNode = function() {
   this.setEvents(this.struct.events);
 
   this._reconcileChildren(this.struct.children);
+  persistElementKey(this.node, this.struct.key);
   return this.node;
 };
 
@@ -652,8 +673,8 @@ ElementBuilder.prototype._createNode = function() {
  * position. Reuse matching nodes, replace changed nodes, and move nodes into
  * their new order.
  */
-ElementBuilder.prototype._reconcileChildren = function(nextChildren) {
-  const previousChildren = this.struct.children;
+ElementBuilder.prototype._reconcileChildren = function(nextChildren, previousChildrenOverride) {
+  const previousChildren = previousChildrenOverride ?? this.struct.children;
   const previousNodes = Array.from(this.node.childNodes);
   const previousKeyedChildren = new Map();
   const nextKeys = new Set();
@@ -814,6 +835,7 @@ ElementBuilder.prototype._patchFrom = function(next) {
     events: { ...next.struct.events },
     children: previousChildren,
   };
+  persistElementKey(this.node, this.struct.key);
   this._reconcileChildren(next.struct.children);
   return this;
 };
@@ -827,64 +849,71 @@ ElementBuilder.prototype._attachChildren = function(children) {
     .flat(Infinity)
     .filter((child) => child != null && typeof child !== "boolean");
   const previousChildren = this.struct.children;
-  const attachedChildren = [...previousChildren];
+  if (nextChildren.length === 0) {
+    return this;
+  }
 
-  nextChildren.forEach((nextChild, index) => {
-    let matchIndex = index;
+  const usedChildren = new Set();
+  const attachedChildren = nextChildren.map((nextChild, index) => {
+    let matchIndex = -1;
 
     if (nextChild instanceof ElementBuilder && nextChild.struct.key != null) {
-      const keyedIndex = previousChildren.findIndex(
-        (child) =>
-          child instanceof ElementBuilder &&
-          child.struct.key === nextChild.struct.key
+      matchIndex = previousChildren.findIndex((child, childIndex) =>
+        !usedChildren.has(childIndex) &&
+        child instanceof ElementBuilder &&
+        child.struct.key === nextChild.struct.key &&
+        child.struct.tag === nextChild.struct.tag
       );
-      if (keyedIndex >= 0) {
-        matchIndex = keyedIndex;
+    }
+
+    // During first hydration, server nodes have no virtual keys yet. Adopt
+    // the same-position node when its tag matches the descriptor.
+    if (matchIndex < 0) {
+      const candidate = previousChildren[index];
+      if (
+        !usedChildren.has(index) &&
+        candidate instanceof ElementBuilder &&
+        nextChild instanceof ElementBuilder &&
+        candidate.struct.key == null &&
+        candidate.struct.tag === nextChild.struct.tag
+      ) {
+        matchIndex = index;
+      } else if (
+        !usedChildren.has(index) &&
+        (typeof candidate === "string" || typeof candidate === "number") &&
+        (typeof nextChild === "string" || typeof nextChild === "number")
+      ) {
+        matchIndex = index;
       }
     }
 
+    if (matchIndex < 0) {
+      return nextChild;
+    }
+
+    usedChildren.add(matchIndex);
     const existingChild = previousChildren[matchIndex];
-    if (existingChild == null) {
-      attachedChildren.push(nextChild);
-      return;
+    if (existingChild instanceof ElementBuilder) {
+      existingChild._attachFrom(nextChild);
+      return existingChild;
     }
-
-    if (
-      existingChild instanceof ElementBuilder &&
-      nextChild instanceof ElementBuilder
-    ) {
-      if (existingChild.struct.tag !== nextChild.struct.tag) {
-        throw new Error(
-          `Hydration mismatch at child ${matchIndex}: expected <${existingChild.struct.tag}> but received <${nextChild.struct.tag}>.`
-        );
-      }
-      attachedChildren[matchIndex] = existingChild._attachFrom(nextChild);
-      return;
-    }
-
-    const bothText =
-      (typeof existingChild === "string" || typeof existingChild === "number") &&
-      (typeof nextChild === "string" || typeof nextChild === "number");
-    if (bothText) {
-      attachedChildren[matchIndex] = nextChild;
-      return;
-    }
-
-    if (existingChild === nextChild) {
-      attachedChildren[matchIndex] = existingChild;
-      return;
-    }
-
-    throw new Error(`Hydration mismatch at child ${matchIndex}.`);
+    return nextChild;
   });
 
-  this.struct.children = attachedChildren;
-  this._reconcileChildren(attachedChildren);
+  // Keep any server children omitted by a partial descriptor, while ordering
+  // described children according to their virtual tree.
+  previousChildren.forEach((child, index) => {
+    if (!usedChildren.has(index)) attachedChildren.push(child);
+  });
+
+  this._reconcileChildren(attachedChildren, previousChildren);
   return this;
 };
 
 // Merge props and handlers onto an existing node while retaining its children.
 ElementBuilder.prototype._attachFrom = function(next) {
+  this.struct.key = next.struct.key;
+  persistElementKey(this.node, this.struct.key);
   this.setAttributes(next.struct.attributes);
   this.struct.attributes = {
     ...this.struct.attributes,
@@ -981,6 +1010,7 @@ function elementBuilder(tag, props, ...children) {
   }
 
   element.struct.key = elementKey;
+  persistElementKey(element.node, elementKey);
 
   // Use attach mode for an existing element; ordinary builders reconcile.
   if (children.length) {
@@ -1398,7 +1428,7 @@ function FragmentAndArrayExample() {
       existingNode,
       null,
       <ul>
-        {dataFromServer.map((message) => <li key={message.id}>{message.text}</li>)}
+        {[...dataFromServer].reverse().map((message) => <li key={message.id}>{message.text}</li>)}
       </ul>
     )
   );
@@ -1423,56 +1453,60 @@ function FragmentAndArrayExample() {
   const dataFromServer = JSON.parse(
     document.getElementById("messenger-data").textContent
   );
+
+  const reactiveMessengerStatus = elementBuilder(
+    document.getElementById("reactive-messenger-status"),
+    null,
+    `Attached to server nodes; enter a message and select SEND.`
+  );
   
-  function sendReactiveMessage(payload, rerender) {
-    dataFromServer.unshift(payload);
+  let nextMessageId = Math.max(
+    0,
+    ...dataFromServer.map((message) => Number(message.id) || 0)
+  ) + 1;
+
+  function sendReactiveMessage(rerender) {
+    const textarea = messengerNode.querySelector("textarea");
+    const text = textarea.value.trim();
+    if (!text) return;
+
+    const message = { id: nextMessageId++, text };
+    dataFromServer.push(message);
+    textarea.value = "";
 
     rerender();
 
-    reactiveMessengerStatus.textContent =
-      `Added "${message}" at the top. Messages: ${dataFromServer.length}.`;
+    reactiveMessengerStatus.setText(
+      `Added "${message.text}" at the top. Messages: ${dataFromServer.length}.`
+    );
   }
 
   const messengerNode = document.getElementById("reactive-messenger");
 
-  const payload = {
-    id: null,
-    text: null,
-  };
-
-  const messengerBuilder = componentBuilder(rerender => (
-    componentSynchronizer(messengerNode, (existingNode) =>
+  const messengerBuilder = componentBuilder(rerender => {
+    return componentSynchronizer(messengerNode, (existingNode) =>
       elementBuilder(
         existingNode,
         null,
         <ul>
-          {dataFromServer.map((message) => <li key={message.id}>{message.text}</li>)}
+          {[...dataFromServer].reverse().map((message) => <li key={message.id}>{message.text}</li>)}
         </ul>,
         <textarea
           aria-label="New message"
-          onInput={(e) => {
-            payload.id = new Date().toISOString().split('T')[0];
-            payload.text = e.target.value;
-          }}
         ></textarea>,
         <button
           type="button"
-          onClick={() => sendReactiveMessage(payload, rerender)}
+          onClick={() => sendReactiveMessage(rerender)}
         >SEND</button>,
       )
-    )
-  ))
+    );
+  })
   .render();
 
   const synchronizedList = messengerBuilder.struct.children.find(
     (child) =>
       child instanceof ElementBuilder &&
       child.struct.tag === "ul"
-  );
-  elementBuilder(
-    document.getElementById("reactive-messenger-status"),
-    null,
-    `Attached to server nodes; enter a message and select SEND.`
   );
 })();
 
