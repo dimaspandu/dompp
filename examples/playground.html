@@ -437,7 +437,8 @@ const app = document.getElementById("app");
 
 /**
  * JSX factory entry points:
- * - elementBuilder(tag, props, ...children) creates elements and components.
+ * - elementBuilder(tagOrNode, props, ...children) creates elements or adopts
+ *   an existing DOM node into an ElementBuilder struct.
  * - elementBuilder.fragment(...children) creates a literal fragment wrapper.
  */
 
@@ -1031,31 +1032,6 @@ elementBuilder.fragment = function(...children) {
 };
 
 /*
- * Synchronize a server-created root with a render callback. The callback must
- * return an ElementBuilder attached to that same root node.
- */
-function componentSynchronizer(existingNode, build) {
-  if (!existingNode || existingNode.nodeType !== 1) {
-    throw new TypeError("componentSynchronizer expects an existing Element node.");
-  }
-  if (typeof build !== "function") {
-    throw new TypeError("componentSynchronizer expects a builder callback.");
-  }
-
-  const synchronizedTree = build(existingNode);
-  if (
-    !(synchronizedTree instanceof ElementBuilder) ||
-    synchronizedTree.node !== existingNode
-  ) {
-    throw new TypeError(
-      "The synchronizer callback must return an ElementBuilder for its existing node."
-    );
-  }
-
-  return synchronizedTree;
-}
-
-/*
  * Example 1: update text and styles directly through ElementBuilder methods,
  * without rebuilding the complete component.
  */
@@ -1412,9 +1388,8 @@ function FragmentAndArrayExample() {
 }
 
 /*
- * Example 7: read the JSON data returned beside the server HTML, then attach
- * descriptors to the existing messenger nodes. The data is chronological,
- * while the server-rendered list shows the newest message first.
+ * Example 7: pass the server-created root directly to elementBuilder. The
+ * builder adopts its existing DOM tree and synchronizes the supplied list.
  */
 (function() {
   const dataFromServer = JSON.parse(
@@ -1423,17 +1398,15 @@ function FragmentAndArrayExample() {
 
   const messengerNode = document.getElementById("messenger");
 
-  const messengerBuilder = componentSynchronizer(messengerNode, (existingNode) =>
-    elementBuilder(
-      existingNode,
-      null,
-      <ul>
-        {[...dataFromServer].reverse().map((message) => <li key={message.id}>{message.text}</li>)}
-      </ul>
-    )
+  const messengerBuilder = elementBuilder(
+    messengerNode,
+    null,
+    <ul>
+      {[...dataFromServer].reverse().map((message) => <li key={message.id}>{message.text}</li>)}
+    </ul>
   );
 
-  const synchronizedList = messengerBuilder.struct.children.find(
+  const messageListBuilder = messengerBuilder.struct.children.find(
     (child) =>
       child instanceof ElementBuilder &&
       child.struct.tag === "ul"
@@ -1441,13 +1414,12 @@ function FragmentAndArrayExample() {
   document.getElementById("messenger-status").textContent =
     `Result is an ElementBuilder: ${messengerBuilder instanceof ElementBuilder}. ` +
     `Existing root node reused: ${messengerBuilder.node === messengerNode}. ` +
-    `Server list items represented in the struct: ${synchronizedList.struct.children.length}.`;
+    `Server list items represented in the struct: ${messageListBuilder.struct.children.length}.`;
 })();
 
 /*
- * Example 8: keep the server-created root and wrap its synchronization callback
- * in ComponentBuilder. The data array is shown newest-first, so unshift()
- * prepends each new message to the visible list.
+ * Example 8: use the same direct node adoption inside ComponentBuilder. The
+ * data array stays chronological; reversing it displays the newest message first.
  */
 (function() {
   const dataFromServer = JSON.parse(
@@ -1483,36 +1455,27 @@ function FragmentAndArrayExample() {
 
   const messengerNode = document.getElementById("reactive-messenger");
 
-  const messengerBuilder = componentBuilder(rerender => {
-    return componentSynchronizer(messengerNode, (existingNode) =>
-      elementBuilder(
-        existingNode,
-        null,
-        <ul>
-          {[...dataFromServer].reverse().map((message) => <li key={message.id}>{message.text}</li>)}
-        </ul>,
-        <textarea
-          aria-label="New message"
-        ></textarea>,
-        <button
-          type="button"
-          onClick={() => sendReactiveMessage(rerender)}
-        >SEND</button>,
-      )
-    );
-  })
+  const messengerBuilder = componentBuilder(rerender =>
+    elementBuilder(
+      messengerNode,
+      null,
+      <ul>
+        {[...dataFromServer].reverse().map((message) => <li key={message.id}>{message.text}</li>)}
+      </ul>,
+      <textarea aria-label="New message"></textarea>,
+      <button
+        type="button"
+        onClick={() => sendReactiveMessage(rerender)}
+      >SEND</button>,
+    )
+  )
   .render();
 
-  const synchronizedList = messengerBuilder.struct.children.find(
-    (child) =>
-      child instanceof ElementBuilder &&
-      child.struct.tag === "ul"
-  );
 })();
 
 /*
- * Mount all examples into one host. componentBuilder roots are materialized
- * by render(); the host reconciles all JSX children in a single operation.
+ * Mount all examples into one host. componentBuilder.render() returns its
+ * ElementBuilder, which the host reconciles with the other JSX children.
  */
 elementBuilder(
   app,
@@ -1530,7 +1493,6 @@ elementBuilder(
 // Expose the playground APIs for quick experiments in the browser DevTools console.
 document.elementBuilder = elementBuilder;
 document.componentBuilder = componentBuilder;
-document.componentSynchronizer = componentSynchronizer;
 
   </script>
 </body>
