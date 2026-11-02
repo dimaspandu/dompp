@@ -64,6 +64,73 @@ function toJavaScriptStyleName(name) {
   return name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 }
 
+const HTTP_PROTOCOLS = new Set(["http:", "https:"]);
+const LINK_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+const URL_ATTRIBUTES = new Set([
+  "href",
+  "xlink:href",
+  "src",
+  "action",
+  "formaction",
+  "poster",
+  "cite",
+  "background",
+  "data",
+  "manifest",
+  "codebase",
+  "longdesc",
+  "profile",
+  "usemap",
+]);
+const URL_LIST_ATTRIBUTES = new Set(["srcset", "imagesrcset"]);
+
+function validateURLAttribute(name, value) {
+  const urls = URL_LIST_ATTRIBUTES.has(name)
+    ? String(value).split(",").map((candidate) => candidate.trim().split(/\s+/, 1)[0])
+    : [String(value)];
+  const allowedProtocols = name === "href" || name === "xlink:href"
+    ? LINK_PROTOCOLS
+    : HTTP_PROTOCOLS;
+
+  for (const urlValue of urls) {
+    if (!urlValue) continue;
+
+    // Strip control characters that can obscure a URL scheme before parsing.
+    const normalizedURL = urlValue.replace(/[\u0000-\u001f\u007f]/g, "");
+    let protocol;
+    try {
+      protocol = new URL(normalizedURL, document.baseURI).protocol;
+    } catch {
+      throw new TypeError(`Invalid URL value for the ${name} attribute.`);
+    }
+
+    if (!allowedProtocols.has(protocol)) {
+      throw new TypeError(`Unsafe URL protocol for the ${name} attribute: ${protocol}`);
+    }
+  }
+}
+
+function validateAttribute(name, value) {
+  if (value === false || value == null) return;
+
+  const normalizedName = String(name).toLowerCase();
+  if (normalizedName.startsWith("on")) {
+    throw new TypeError(
+      `Inline event attributes are disabled. Use setEvents() for ${name}.`
+    );
+  }
+  if (normalizedName === "srcdoc") {
+    throw new TypeError("The srcdoc attribute is disabled because it accepts HTML.");
+  }
+  if (normalizedName === "style") {
+    throw new TypeError("Use setStyles() instead of setting the style attribute.");
+  }
+
+  if (URL_ATTRIBUTES.has(normalizedName) || URL_LIST_ATTRIBUTES.has(normalizedName)) {
+    validateURLAttribute(normalizedName, value);
+  }
+}
+
 // Store the old and new virtual fields needed by the reconciliation pass.
 function ElementBuilder(tag) {
   this.struct = {
@@ -79,13 +146,28 @@ function ElementBuilder(tag) {
 
   if (tag && tag.nodeType === 1) {
     this.struct.tag = tag.tagName.toLowerCase();
+    if (this.struct.tag === "script") {
+      throw new TypeError(
+        "Script elements cannot be managed by ElementBuilder. Use a trusted ESM import."
+      );
+    }
     this.node = tag;
     this.struct.key = elementKeysByNode.get(tag) ?? null;
 
     // Seed the virtual struct from server attributes and inline styles.
-    this.struct.attributes = Object.fromEntries(
-      Array.from(tag.attributes, (attribute) => [attribute.name, attribute.value])
-    );
+    this.struct.attributes = {};
+    Array.from(tag.attributes).forEach((attribute) => {
+      const normalizedName = attribute.name.toLowerCase();
+      if (normalizedName === "style") return;
+
+      try {
+        validateAttribute(attribute.name, attribute.value);
+        this.struct.attributes[attribute.name] = attribute.value;
+      } catch {
+        // Do not preserve unsafe server attributes when adopting existing DOM.
+        tag.removeAttribute(attribute.name);
+      }
+    });
 
     for (let index = 0; index < tag.style.length; index += 1) {
       const cssName = tag.style[index];
@@ -109,7 +191,11 @@ function ElementBuilder(tag) {
       }
 
       if (child.nodeType === 1) {
-        this.struct.children.push(new ElementBuilder(child));
+        this.struct.children.push(
+          child.tagName.toLowerCase() === "script"
+            ? child
+            : new ElementBuilder(child)
+        );
       } else {
         this.struct.children.push(
           child.nodeType === Node.TEXT_NODE ? child.nodeValue : child
@@ -117,6 +203,11 @@ function ElementBuilder(tag) {
       }
     });
   } else {
+    if (typeof tag === "string" && tag.toLowerCase() === "script") {
+      throw new TypeError(
+        "Script elements cannot be created with ElementBuilder. Use a trusted ESM import."
+      );
+    }
     this.struct.tag = tag;
   }
 
@@ -128,6 +219,10 @@ function ElementBuilder(tag) {
 // Apply attributes immediately when a DOM node exists; otherwise cache them.
 ElementBuilder.prototype.setAttributes = function(attrs) {
   attrs = attrs && typeof attrs === "object" ? attrs : {};
+  for (const [name, value] of Object.entries(attrs)) {
+    validateAttribute(name, value);
+  }
+
   this.struct.attributes = { ...this.struct.attributes, ...attrs };
 
   if (this.node) {
