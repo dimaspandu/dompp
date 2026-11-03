@@ -773,6 +773,6 @@ elementBuilder(
   <FragmentAndArrayExample />,
 );
 
-// Expose the playground APIs for quick experiments in the browser DevTools console.
+// Expose the builder APIs for quick experiments in the browser DevTools console.
 document.elementBuilder = elementBuilder;
 document.componentBuilder = componentBuilder;

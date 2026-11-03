@@ -1,5 +1,5 @@
 /*
- * DOM++ playground builder engine.
+ * DOM++ builder experiments engine.
  * This file contains the non-JSX ElementBuilder and ComponentBuilder runtime.
  */
 
