@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -26,6 +26,23 @@ This project follows semantic versioning principles.
   - **Fragment**: `<fragment>` / `<Fragment>` creates `document.createDocumentFragment()`
   - **SVG elements**: `<svg>`, `<circle>`, `<path>`, `<rect>`, `<line>`, `<polyline>`, `<polygon>`, `<ellipse>`, `<g>`, `<defs>`, `<use>`, `<symbol>`, `<text>`, `<tspan>`, `<textPath>`, `<image>`, `<foreignObject>`, `<mask>`, `<clipPath>`, `<pattern>`, `<linearGradient>`, `<radialGradient>`, `<stop>`, `<filter>`, `<feGaussianBlur>`, `<feColorMatrix>`, `<animate>`, `<animateTransform>`, `<animateMotion>`, `<marker>`, `<view>`, `<switch>`, `<a>`, `<script>`, `<style>`, `<title>`, `<desc>`, `<metadata>` create elements via `document.createElementNS("http://www.w3.org/2000/svg", tag)`
   - Updated `examples/21-jsx-integration/index.html` with enhanced factory
+
+## [1.6.0] - 2026-11-04
+
+### Added
+
+- Added `elementBuilder` and `componentBuilder` APIs for virtual descriptor-based DOM construction with reconciliation.
+- Added `builders-minimal.js` entrypoint to use only builders without full DOMPP extensions.
+- Added builders barrel export (`src/1.2.0/builders/index.js`) and extracted constants/validators for better modularity.
+
+### Changed
+
+- Switched default entrypoint to `src/1.2.0/` with builders integrated into the core install.
+- Refactored helpers into local `helpers/` directory (replaced submodule usage).
+
+### Removed
+
+- Removed `.gitmodules` in favor of local helpers.
 
 ## Unreleased
 
