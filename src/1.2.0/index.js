@@ -1,7 +1,21 @@
-import "./dompp.js";
-import "./dompp-builders.js";
+import { installDOMPP }
+from "./install/install-dompp.js";
 
-export { createDOMPP } from "./dompp.js";
-export { installBuilderApis } from "./install-builder-apis.js";
+// Node.js / unit tests
 
-export const version = "1.2.0";
+export const createDOMPP =
+  () => installDOMPP();
+
+// Browser globals
+
+if (
+  typeof window !==
+  "undefined"
+) {
+
+  const dompp =
+    installDOMPP();
+
+  window.DOMPP =
+    dompp;
+}
