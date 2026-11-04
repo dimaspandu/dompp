@@ -27,7 +27,7 @@ import {
 from "url";
 
 import compileJSX
-from "./libs/js-analyzer/lib/transpileJSX/main.js";
+from "./helpers/compileJSX.js";
 
 const ROOT_DIR = dirname(fileURLToPath(import.meta.url));
 

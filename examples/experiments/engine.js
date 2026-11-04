@@ -132,7 +132,7 @@ function validateAttribute(name, value) {
 }
 
 // Store the old and new virtual fields needed by the reconciliation pass.
-function ElementBuilder(tag) {
+function ElementBuilder(selector) {
   this.struct = {
     tag: null,
     key: null,
@@ -144,19 +144,19 @@ function ElementBuilder(tag) {
 
   this.node = null;
 
-  if (tag && tag.nodeType === 1) {
-    this.struct.tag = tag.tagName.toLowerCase();
+  if (selector && selector.nodeType === 1) {
+    this.struct.tag = selector.tagName.toLowerCase();
     if (this.struct.tag === "script") {
       throw new TypeError(
         "Script elements cannot be managed by ElementBuilder. Use a trusted ESM import."
       );
     }
-    this.node = tag;
-    this.struct.key = elementKeysByNode.get(tag) ?? null;
+    this.node = selector;
+    this.struct.key = elementKeysByNode.get(selector) ?? null;
 
     // Seed the virtual struct from server attributes and inline styles.
     this.struct.attributes = {};
-    Array.from(tag.attributes).forEach((attribute) => {
+    Array.from(selector.attributes).forEach((attribute) => {
       const normalizedName = attribute.name.toLowerCase();
       if (normalizedName === "style") return;
 
@@ -165,28 +165,28 @@ function ElementBuilder(tag) {
         this.struct.attributes[attribute.name] = attribute.value;
       } catch {
         // Do not preserve unsafe server attributes when adopting existing DOM.
-        tag.removeAttribute(attribute.name);
+        selector.removeAttribute(attribute.name);
       }
     });
 
-    for (let index = 0; index < tag.style.length; index += 1) {
-      const cssName = tag.style[index];
+    for (let index = 0; index < selector.style.length; index += 1) {
+      const cssName = selector.style[index];
       const propertyName = toJavaScriptStyleName(cssName);
-      this.struct.styles[propertyName] = tag.style.getPropertyValue(cssName);
+      this.struct.styles[propertyName] = selector.style.getPropertyValue(cssName);
     }
 
     // Ignore indentation-only text nodes so descriptors match visual children.
     const preservesWhitespace =
       ["pre", "textarea", "script", "style"].includes(this.struct.tag);
     this.struct.children = [];
-    Array.from(tag.childNodes).forEach((child) => {
+    Array.from(selector.childNodes).forEach((child) => {
       const isIndentedWhitespace =
         child.nodeType === Node.TEXT_NODE &&
         child.nodeValue.trim() === "" &&
         /[\r\n]/.test(child.nodeValue);
 
       if (isIndentedWhitespace && !preservesWhitespace) {
-        tag.removeChild(child);
+        selector.removeChild(child);
         return;
       }
 
@@ -203,12 +203,12 @@ function ElementBuilder(tag) {
       }
     });
   } else {
-    if (typeof tag === "string" && tag.toLowerCase() === "script") {
+    if (typeof selector === "string" && selector.toLowerCase() === "script") {
       throw new TypeError(
         "Script elements cannot be created with ElementBuilder. Use a trusted ESM import."
       );
     }
-    this.struct.tag = tag;
+    this.struct.tag = selector;
   }
 
   this._attachedEvents = this.node
