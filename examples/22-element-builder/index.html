@@ -90,7 +90,7 @@
   <script type="module">
     const [js, jsx] = await Promise.all([
       fetch("./demo.js").then((r) => r.text()),
-      fetch("./demo.jsx").then((r) => r.text()).catch(() => fetch("./demo.compiled.js").then((r) => r.text()).catch(() => "// JSX source unavailable")),
+      fetch("./demo.jsx", { headers: { Accept: "text/plain" } }).then((r) => r.text()).catch(() => fetch("./demo.compiled.js").then((r) => r.text()).catch(() => "// JSX source unavailable")),
     ]);
     const jsBlock = document.getElementById("js-source");
     const jsxBlock = document.getElementById("jsx-source");
