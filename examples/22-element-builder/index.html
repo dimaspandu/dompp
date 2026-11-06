@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <title>Element Builder</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: #f5f5f5;
+      color: #222;
+      line-height: 1.7;
+    }
+    .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 96px; }
+    h1 { font-size: 48px; margin-bottom: 16px; }
+    .description { max-width: 820px; color: #666; margin-bottom: 40px; }
+    .important {
+      background: linear-gradient(135deg, #e8f4ff, #d0e8ff);
+      border: 1px solid #7cb8ff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 40px;
+      color: #1a365d;
+    }
+    .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+    .panel { background: white; border-radius: 20px; padding: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .panel h2 { margin-top: 0; }
+    .demo-mount { border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; min-height: 120px; background: #fafafa; }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; }
+    .counter-value { display: inline-block; padding: 8px 12px; border-radius: 10px; font-weight: 700; margin: 8px 0; }
+    button.secondary { background: #111827; color: white; border: none; border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+    button.secondary[disabled] { opacity: 0.5; cursor: not-allowed; }
+    pre { margin: 0; border-radius: 14px; overflow: auto; }
+    code.hljs { border-radius: 14px; padding: 16px; }
+    .notes { color: #555; font-size: 14px; margin-top: 12px; }
+    @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } h1 { font-size: 36px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Element Builder</h1>
+    <p class="description">
+      Introduces <code>elementBuilder</code>: a small virtual-descriptor API that can adopt or create DOM nodes,
+      apply attributes/styles/events, and mutate specific nodes directly through returned builder instances.
+    </p>
+
+    <div class="important">
+      <strong>What this example shows</strong><br /><br />
+      <code>document.elementBuilder</code> (or <code>elementBuilder</code> in JSX) returns an <code>ElementBuilder</code>
+      descriptor with a <code>struct</code> (tag, key, attributes, styles, events, children) and a materialized/adopted
+      <code>node</code> when available.<br /><br />
+      The JavaScript version uses the builder factory directly. The JSX version uses a JSX factory that produces the same
+      builder descriptors, so variables like <code>countEl</code> and <code>buttonEl</code> still reference builder
+      instances that can be mutated with <code>setStyles</code>, <code>setText</code>, and <code>setAttributes</code>.
+    </div>
+
+    <h2>Live Demo (JavaScript API)</h2>
+    <div class="panel">
+      <div id="app-js" class="demo-mount"></div>
+    </div>
+
+    <h2 style="margin-top: 32px;">Live Demo (JSX)</h2>
+    <p class="notes">The JSX module is compiled by the DOMPP dev server (<code>.jsx</code> to native ESM JavaScript). The JSX pragma uses <code>elementBuilder</code> as the factory.</p>
+    <div class="panel">
+      <div id="app-jsx" class="demo-mount"></div>
+    </div>
+
+    <h2 style="margin-top: 48px;">JavaScript Source</h2>
+    <pre><code id="js-source" class="language-javascript"></code></pre>
+
+    <h2 style="margin-top: 32px;">JSX Source</h2>
+    <pre><code id="jsx-source" class="language-jsx"></code></pre>
+  </div>
+
+  <script type="module" src="../../src/index.js"></script>
+  <script type="module" src="./demo.js"></script>
+  <script type="module" src="./demo.jsx"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script type="module">
+    const [js, jsx] = await Promise.all([
+      fetch("./demo.js").then((r) => r.text()),
+      fetch("./demo.jsx").then((r) => r.text()),
+    ]);
+    const jsBlock = document.getElementById("js-source");
+    const jsxBlock = document.getElementById("jsx-source");
+    jsBlock.textContent = js.trim();
+    jsxBlock.textContent = jsx.trim();
+    hljs.highlightElement(jsBlock);
+    hljs.highlightElement(jsxBlock);
+  </script>
+</body>
+</html>
