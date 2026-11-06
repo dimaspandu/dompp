@@ -64,7 +64,7 @@
     </div>
 
     <h2 style="margin-top: 32px;">Live Demo (JSX)</h2>
-    <p class="notes">The JSX module is compiled by the DOMPP dev server (<code>.jsx</code> to native ESM JavaScript). The JSX pragma uses <code>elementBuilder</code> as the factory.</p>
+    <p class="notes">In local development, <code>server.js</code> compiles <code>.jsx</code> on the fly. On Netlify (static hosting), the page loads a precompiled <code>.compiled.js</code> module generated during build.</p>
     <div class="panel">
       <div id="app-jsx" class="demo-mount"></div>
     </div>
@@ -78,12 +78,19 @@
 
   <script type="module" src="../../src/index.js"></script>
   <script type="module" src="./demo.js"></script>
-  <script type="module" src="./demo.jsx"></script>
+  <script type="module">
+    // Local dev (server.js): compile .jsx on the fly. Netlify/static: load precompiled .compiled.js.
+    try {
+      await import("./demo.jsx");
+    } catch {
+      await import("./demo.compiled.js");
+    }
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script type="module">
     const [js, jsx] = await Promise.all([
       fetch("./demo.js").then((r) => r.text()),
-      fetch("./demo.jsx").then((r) => r.text()),
+      fetch("./demo.jsx").then((r) => r.text()).catch(() => fetch("./demo.compiled.js").then((r) => r.text()).catch(() => "// JSX source unavailable")),
     ]);
     const jsBlock = document.getElementById("js-source");
     const jsxBlock = document.getElementById("jsx-source");
