@@ -83,6 +83,14 @@ function serveFile(res, filePath) {
   if (extension === ".jsx") {
     try {
       const source = readFileSync(filePath, "utf8");
+      const wantsSource =
+        req.headers.accept?.includes("text/plain") ||
+        new URL(req.url || "/", "http://localhost").searchParams.has("source");
+      if (wantsSource) {
+        res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });
+        res.end(source);
+        return;
+      }
       const javascript = compileJSX(source);
       res.writeHead(200, { "Content-Type": contentType });
       res.end(javascript);
@@ -91,7 +99,6 @@ function serveFile(res, filePath) {
     }
     return;
   }
-
   res.writeHead(200, { "Content-Type": contentType });
   createReadStream(filePath).pipe(res);
 }
