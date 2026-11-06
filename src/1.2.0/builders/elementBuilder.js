@@ -1,5 +1,5 @@
-import { SVG_NS, svgOnlyTags } from './constants.js';
-import { toJavaScriptStyleName, validateAttribute } from './validators.js';
+import { SVG_NS, svgOnlyTags } from "./constants.js";
+import { toJavaScriptStyleName, validateAttribute } from "./validators.js";
 
 const attachedEventsByNode = new WeakMap();
 const elementKeysByNode = new WeakMap();
@@ -15,17 +15,136 @@ function persistElementKey(node, key) {
     elementKeysByNode.set(node, key);
   }
 }
-  if (key == null) {
-    elementKeysByNode.delete(node);
+
+// Store the old and new virtual fields needed by the reconciliation pass.
+function ElementBuilder(selector) {
+  this.struct = {
+    tag: null,
+    key: null,
+    attributes: {},
+    styles: {},
+    events: {},
+    children: [],
+  };
+
+  this.node = null;
+
+  if (selector && selector.nodeType === 1) {
+    this.struct.tag = selector.tagName.toLowerCase();
+    if (this.struct.tag === "script") {
+      throw new TypeError(
+        "Script elements cannot be managed by ElementBuilder. Use a trusted ESM import."
+      );
+    }
+    this.node = selector;
+    this.struct.key = elementKeysByNode.get(selector) ?? null;
+
+    // Seed the virtual struct from server attributes and inline styles.
+    this.struct.attributes = {};
+    Array.from(selector.attributes).forEach((attribute) => {
+      const normalizedName = attribute.name.toLowerCase();
+      if (normalizedName === "style") return;
+
+      try {
+        validateAttribute(attribute.name, attribute.value);
+        this.struct.attributes[attribute.name] = attribute.value;
+      } catch {
+        // Do not preserve unsafe server attributes when adopting existing DOM.
+        selector.removeAttribute(attribute.name);
+      }
+    });
+
+    for (let index = 0; index < selector.style.length; index += 1) {
+      const cssName = selector.style[index];
+      const propertyName = toJavaScriptStyleName(cssName);
+      this.struct.styles[propertyName] = selector.style.getPropertyValue(cssName);
+    }
+
+    // Ignore indentation-only text nodes so descriptors match visual children.
+    const preservesWhitespace =
+      ["pre", "textarea", "script", "style"].includes(this.struct.tag);
+    this.struct.children = [];
+    Array.from(selector.childNodes).forEach((child) => {
+      const isIndentedWhitespace =
+        child.nodeType === Node.TEXT_NODE &&
+        child.nodeValue.trim() === "" &&
+        /[\r\n]/.test(child.nodeValue);
+
+      if (isIndentedWhitespace && !preservesWhitespace) {
+        selector.removeChild(child);
+        return;
+      }
+
+      if (child.nodeType === 1) {
+        this.struct.children.push(
+          child.tagName.toLowerCase() === "script"
+            ? child
+            : new ElementBuilder(child)
+        );
+      } else {
+        this.struct.children.push(
+          child.nodeType === Node.TEXT_NODE ? child.nodeValue : child
+        );
+      }
+    });
   } else {
-    elementKeysByNode.set(node, key);
+    if (typeof selector === "string" && selector.toLowerCase() === "script") {
+      throw new TypeError(
+        "Script elements cannot be created with ElementBuilder. Use a trusted ESM import."
+      );
+    }
+    this.struct.tag = selector;
   }
+
+  this._attachedEvents = this.node
+    ? attachedEventsByNode.get(this.node) ?? {}
+    : {};
 }
 
-/**
- * SVG-only tags use createElementNS. Tags shared by HTML and SVG are omitted
- * because their namespace depends on the parent element.
- */
+// Apply attributes immediately when a DOM node exists; otherwise cache them.
+ElementBuilder.prototype.setAttributes = function(attrs) {
+  attrs = attrs && typeof attrs === "object" ? attrs : {};
+  for (const [name, value] of Object.entries(attrs)) {
+    validateAttribute(name, value);
+  }
+
+  this.struct.attributes = { ...this.struct.attributes, ...attrs };
+
+  if (this.node) {
+    for (const [name, value] of Object.entries(attrs)) {
+      if (value === false || value == null) {
+        this.node.removeAttribute(name);
+      } else {
+        this.node.setAttribute(name, value === true ? "" : value);
+      }
+    }
+  }
+
+  return this;
+};
+
+// Styles follow the same descriptor-first, direct-update behavior.
+ElementBuilder.prototype.setStyles = function(styles) {
+  styles = styles && typeof styles === "object" ? styles : {};
+  this.struct.styles = { ...this.struct.styles, ...styles };
+
+  if (this.node) {
+    for (const [name, value] of Object.entries(styles)) {
+      this.node.style[name] = value == null ? "" : value;
+    }
+  }
+
+  return this;
+};
+
+// Replace changed event handlers so rerenders do not accumulate listeners.
+ElementBuilder.prototype.setEvents = function(events) {
+  events = events && typeof events === "object" ? events : {};
+  const nextEvents = { ...this.struct.events };
+
+  for (const [name, handler] of Object.entries(events)) {
+    const previousHandler = this._attachedEvents[name];
+
     if (typeof handler === "function") {
       if (this.node && previousHandler !== handler) {
         if (previousHandler) {
@@ -389,17 +508,20 @@ function elementBuilder(tag, props, ...children) {
   if (props) {
     const attrs = {};
     const events = {};
-
-    let style;
     let className;
+    let style;
 
     for (const [propKey, value] of Object.entries(props)) {
       const normalizedKey = propKey.toLowerCase();
-
-      // Event props: onClick, onclick, ONCLICK, OnClick, etc.
-      if (normalizedKey.startsWith("on")) {
-        const eventName = normalizedKey.slice(2);
-
+      if (
+        normalizedKey.startsWith("on") &&
+        typeof value === "function"
+      ) {
+        // JSX onClick maps to DOM click listeners.
+        const eventName = propKey
+          .slice(2)
+          .toLowerCase()
+          .replace(/^:/, "");
         if (eventName) {
           events[eventName] = value;
         }

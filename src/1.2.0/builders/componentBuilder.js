@@ -12,7 +12,6 @@ function ComponentBuilder(builder) {
         component = builder((callback) => instance.rerender(callback));
       }
 
-      // why do we need to return the node?! It's supposed to be always return the ElementBuidler
       return component;
     },
 
