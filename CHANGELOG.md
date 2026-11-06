@@ -44,6 +44,20 @@ This project follows semantic versioning principles.
 
 - Removed `.gitmodules` in favor of local helpers.
 
+## [1.6.1] - 2026-11-06
+
+### Added
+
+- Added examples/22-element-builder/ to introduce elementBuilder with direct DOM mutations in JavaScript and JSX forms.
+- Added src/1.2.0/builders/README.md with high-level architecture and reconciliation notes for contributors.
+
+### Fixed
+
+- Restored src/1.2.0/builders-minimal.js as a working minimal entrypoint that installs and re-exports builders.
+- Repaired src/1.2.0/builders/elementBuilder.js after an incomplete refactor and removed stale internal code/comments.
+- Exposed window.elementBuilder and window.componentBuilder from installBuilders() so JSX-compiled modules can resolve the factory.
+- Removed the redundant src/1.2.0/builders-only.js entrypoint and cleaned stale 1.2.0 example navigation entries.
+
 ## Unreleased
 
 ## [1.4.0] - 2026-05-25
