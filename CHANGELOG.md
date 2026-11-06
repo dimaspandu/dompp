@@ -27,6 +27,18 @@ This project follows semantic versioning principles.
   - **SVG elements**: `<svg>`, `<circle>`, `<path>`, `<rect>`, `<line>`, `<polyline>`, `<polygon>`, `<ellipse>`, `<g>`, `<defs>`, `<use>`, `<symbol>`, `<text>`, `<tspan>`, `<textPath>`, `<image>`, `<foreignObject>`, `<mask>`, `<clipPath>`, `<pattern>`, `<linearGradient>`, `<radialGradient>`, `<stop>`, `<filter>`, `<feGaussianBlur>`, `<feColorMatrix>`, `<animate>`, `<animateTransform>`, `<animateMotion>`, `<marker>`, `<view>`, `<switch>`, `<a>`, `<script>`, `<style>`, `<title>`, `<desc>`, `<metadata>` create elements via `document.createElementNS("http://www.w3.org/2000/svg", tag)`
   - Updated `examples/21-jsx-integration/index.html` with enhanced factory
 
+## [1.6.2] - 2026-11-06
+
+### Added
+
+- Added examples/23-component-builder/ demonstrating componentBuilder ender()/erender(callback) flow with JSX.
+
+### Fixed
+
+- Fixed dev server JSX handling by passing the request context and serving raw .jsx source for example source panels.
+- Updated example 22/23 JSX loading to use hostname-based local/static behavior and avoid broken compiled fallback requests during local development.
+
+## Unreleased
 ## [1.6.0] - 2026-11-04
 
 ### Added
@@ -58,7 +70,7 @@ This project follows semantic versioning principles.
 - Exposed window.elementBuilder and window.componentBuilder from installBuilders() so JSX-compiled modules can resolve the factory.
 - Removed the redundant src/1.2.0/builders-only.js entrypoint and cleaned stale 1.2.0 example navigation entries.
 
-## Unreleased
+
 
 ## [1.4.0] - 2026-05-25
 
