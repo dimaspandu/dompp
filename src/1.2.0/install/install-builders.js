@@ -20,4 +20,9 @@ export function installBuilders() {
     "componentBuilder",
     componentBuilder
   );
+
+  if (typeof window !== "undefined") {
+    window.elementBuilder ??= elementBuilder;
+    window.componentBuilder ??= componentBuilder;
+  }
 }
