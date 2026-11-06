@@ -291,7 +291,7 @@ Signals are opt-in via:
 
 # ESM Architecture
 
-As of `1.1.1`, DOMPP is internally modularized using ESM.
+DOMPP is internally modularized using ESM (current source layout: `src/1.2.0/`).
 
 This improves:
 
@@ -302,9 +302,9 @@ This improves:
 
 Structure:
 
-```txt
+`	xt
 src/
-  1.1.1/
+  1.2.0/
 
     context/
     core/
@@ -581,3 +581,10 @@ Live documentation: https://dompp.digital/
 MIT License
 
 Copyright (c) Dimas Pandu Pratama
+
+
+---
+
+## Element and Component Builders (1.2.0)
+
+DOMPP 1.2.0 adds optional elementBuilder and componentBuilder APIs for descriptor-based DOM construction and reconciliation. These builders are installed by the default DOMPP entrypoint. A minimal entrypoint (src/1.2.0/builders-minimal.js) is available when you only want builders without installing DOMPP prototype setters/reactive wrappers. See src/1.2.0/builders/README.md for implementation details and examples/22-element-builder/ for usage.

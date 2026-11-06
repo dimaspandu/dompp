@@ -97,12 +97,12 @@ Avoid APIs that replace the browser platform with a framework-specific abstracti
 
 # Architecture Guidelines
 
-As of `1.1.1`, DOMPP uses ESM modular architecture.
+DOMPP uses ESM modular architecture (current source layout: `src/1.2.0/`).
 
 Current structure:
 
-```txt
-src/1.1.1/
+`	xt
+src/1.2.0/
 
   context/
   core/
@@ -403,3 +403,4 @@ The project prioritizes:
 * architectural simplicity
 
 Please help preserve that direction.
+
