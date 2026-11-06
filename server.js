@@ -71,7 +71,7 @@ function resolveRequestFile(rootDir, pathname) {
   return filePath;
 }
 
-function serveFile(res, filePath) {
+function serveFile(res, filePath, req) {
   if (!existsSync(filePath)) {
     sendText(res, 404, "Not found");
     return;
@@ -140,19 +140,19 @@ export function createDevServer({ rootDir = ROOT_DIR } = {}) {
         return;
       }
 
-      serveFile(res, join(filePath, "index.html"));
+      serveFile(res, join(filePath, "index.html"), req);
       return;
     }
 
     if (existsSync(filePath)) {
-      serveFile(res, filePath);
+      serveFile(res, filePath, req);
       return;
     }
 
     if (!extname(filePath)) {
       const htmlFile = `${filePath}.html`;
       if (existsSync(htmlFile)) {
-        serveFile(res, htmlFile);
+        serveFile(res, htmlFile, req);
         return;
       }
     }
