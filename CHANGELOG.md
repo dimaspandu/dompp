@@ -27,6 +27,13 @@ This project follows semantic versioning principles.
   - **SVG elements**: `<svg>`, `<circle>`, `<path>`, `<rect>`, `<line>`, `<polyline>`, `<polygon>`, `<ellipse>`, `<g>`, `<defs>`, `<use>`, `<symbol>`, `<text>`, `<tspan>`, `<textPath>`, `<image>`, `<foreignObject>`, `<mask>`, `<clipPath>`, `<pattern>`, `<linearGradient>`, `<radialGradient>`, `<stop>`, `<filter>`, `<feGaussianBlur>`, `<feColorMatrix>`, `<animate>`, `<animateTransform>`, `<animateMotion>`, `<marker>`, `<view>`, `<switch>`, `<a>`, `<script>`, `<style>`, `<title>`, `<desc>`, `<metadata>` create elements via `document.createElementNS("http://www.w3.org/2000/svg", tag)`
   - Updated `examples/21-jsx-integration/index.html` with enhanced factory
 
+## [1.6.3] - 2026-11-06
+
+### Added
+
+- Added examples/24-mvvm-component-builder/ demonstrating a layered MVVM pattern with elementBuilder and componentBuilder in JSX.
+
+## Unreleased
 ## [1.6.2] - 2026-11-06
 
 ### Added
@@ -38,7 +45,6 @@ This project follows semantic versioning principles.
 - Fixed dev server JSX handling by passing the request context and serving raw .jsx source for example source panels.
 - Updated example 22/23 JSX loading to use hostname-based local/static behavior and avoid broken compiled fallback requests during local development.
 
-## Unreleased
 ## [1.6.0] - 2026-11-04
 
 ### Added
