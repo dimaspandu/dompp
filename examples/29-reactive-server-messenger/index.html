@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <title>Reactive Server Messenger</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f5f5f5; color: #222; line-height: 1.7; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 96px; }
+    h1 { font-size: 48px; margin-bottom: 16px; }
+    .description { max-width: 860px; color: #666; margin-bottom: 24px; }
+    .important { background: linear-gradient(135deg, #e8f4ff, #d0e8ff); border: 1px solid #7cb8ff; border-radius: 16px; padding: 20px; margin-bottom: 24px; color: #1a365d; }
+    .panel { background: white; border-radius: 20px; padding: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 16px; }
+    textarea { width: 100%; min-height: 72px; margin: 10px 0; padding: 10px; border-radius: 10px; border: 1px solid #cbd5e1; font: inherit; }
+    button { background: #111827; color: white; border: none; border-radius: 10px; padding: 10px 14px; cursor: pointer; }
+    pre { margin: 0; border-radius: 14px; overflow: auto; }
+    code.hljs { border-radius: 14px; padding: 16px; }
+    .notes { color: #555; font-size: 14px; margin-top: 12px; }
+    @media (max-width: 900px) { h1 { font-size: 36px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Reactive Server Messenger</h1>
+    <p class="description">
+      Demonstrates server DOM adoption with <code>componentBuilder</code>. The component adopts an existing server-rendered root and rerenders a keyed message list when new messages are added.
+    </p>
+    <div class="important">
+      <strong>How it works:</strong> <code>elementBuilder(messengerNode, ...)</code> adopts the existing root. <code>componentBuilder</code> provides <code>rerender</code>, and the SEND action updates the in-memory array before rebuilding the descriptor tree.
+    </div>
+    <h2>Server-rendered markup</h2>
+    <div class="panel">
+      <section id="reactive-messenger" class="card">
+        <ul>
+          <li>Message 3</li>
+          <li>Message 2</li>
+          <li>Message 1</li>
+        </ul>
+        <textarea aria-label="New message"></textarea>
+        <button type="button">SEND</button>
+      </section>
+      <script id="messenger-data" type="application/json">[{"id":1,"text":"Message 1"},{"id":2,"text":"Message 2"},{"id":3,"text":"Message 3"}]</script>
+      <p id="reactive-messenger-status" class="notes">Waiting for the reactive component to attach.</p>
+    </div>
+    <h2 style="margin-top: 48px;">JSX Source</h2>
+    <pre><code id="jsx-source" class="language-jsx"></code></pre>
+  </div>
+  <script type="module" src="../../src/index.js"></script>
+  <script type="module">const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1"; await import(isLocal ? "./demo.jsx" : "./demo.compiled.js");</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script type="module">const jsx = await fetch("./demo.jsx", { headers: { Accept: "text/plain" } }).then((r) => r.text()).catch(() => fetch("./demo.compiled.js").then((r) => r.text()).catch(() => "// JSX source unavailable")); const jsxBlock = document.getElementById("jsx-source"); jsxBlock.textContent = jsx.trim(); hljs.highlightElement(jsxBlock);</script>
+</body>
+</html>
