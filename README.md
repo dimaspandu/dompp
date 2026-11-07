@@ -14,6 +14,13 @@ Instead, DOMPP extends native DOM prototypes with ergonomic setters while preser
 
 ---
 
+
+## Install
+
+```bash
+npm install @dimpandu/domplusplus
+```
+
 # Philosophy
 
 DOMPP is intentionally designed around:

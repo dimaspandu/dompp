@@ -1,5 +1,5 @@
 {
-  "name": "domplusplus",
+  "name": "@dimpandu/domplusplus",
   "version": "1.6.4",
   "description": "Lightweight native DOM enhancement library with deterministic mutation, chainable setters, optional reactivity, and JSX-compatible builders.",
   "type": "module",
@@ -40,6 +40,9 @@
     "CHANGELOG.md"
   ],
   "sideEffects": true,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "node server.js",
     "test": "node --test"
