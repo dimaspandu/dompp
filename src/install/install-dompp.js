@@ -15,6 +15,7 @@ from "../runtime/signals.js";
 
 import { createSignalEffect }
 from "../runtime/signals.js";
+import { installBuilders } from "./install-builders.js";
 
 export function installDOMPP() {
 
@@ -26,9 +27,11 @@ export function installDOMPP() {
 
   installReactiveWrappers();
 
+  installBuilders();
+
   return {
 
-    version: "1.1.1",
+    version: "1.6.4",
 
     createSignal,
 

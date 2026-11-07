@@ -1,0 +1,28 @@
+# Source control / local tooling
+.git
+.gitignore
+.kilo
+.agent
+.agent2
+.ai
+
+# Site, docs, demos, tests, and dev helpers (not part of the npm runtime package)
+assets/
+docs/
+examples/
+helpers/
+scripts/
+tests/
+index.html
+netlify.toml
+server.js
+CONTRIBUTING.md
+AGENTS.md
+
+# Local/dev artifacts
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+.env

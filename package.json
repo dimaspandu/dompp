@@ -1,7 +1,50 @@
 {
+  "name": "domplusplus",
+  "version": "1.6.4",
+  "description": "Lightweight native DOM enhancement library with deterministic mutation, chainable setters, optional reactivity, and JSX-compatible builders.",
   "type": "module",
+  "license": "MIT",
+  "author": "Dimas Pandu Pratama",
+  "homepage": "https://dompp.digital/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dimaspandu/dompp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dimaspandu/dompp/issues"
+  },
+  "keywords": [
+    "dom",
+    "dompp",
+    "domplusplus",
+    "dom-plus-plus",
+    "browser",
+    "native-dom",
+    "jsx",
+    "builder",
+    "reactive",
+    "signals"
+  ],
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./builders": "./src/builders/index.js",
+    "./builders-minimal": "./src/builders-minimal.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "LICENSE.md",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": true,
   "scripts": {
     "dev": "node server.js",
     "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
