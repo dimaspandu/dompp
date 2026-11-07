@@ -588,3 +588,6 @@ Copyright (c) Dimas Pandu Pratama
 ## Element and Component Builders (1.2.0)
 
 DOMPP 1.2.0 adds optional elementBuilder and componentBuilder APIs for descriptor-based DOM construction and reconciliation. These builders are installed by the default DOMPP entrypoint. A minimal entrypoint (src/1.2.0/builders-minimal.js) is available when you only want builders without installing DOMPP prototype setters/reactive wrappers. See src/1.2.0/builders/README.md for implementation details and examples/22-element-builder/ for usage.
+
+
+Architecture diagrams for builders are available in docs/architecture/ (uilders-structure.png, uilders-high-level-architecture.png, element-builder-lifecycle-recon-flow.png, element-builder-render-rerender-flow.png).

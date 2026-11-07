@@ -201,6 +201,26 @@ while preserving direct DOM access underneath.
 
 ---
 
+
+---
+
+# Element & Component Builders (1.2.0)
+
+DOMPP 1.2.0 adds descriptor-based builders for direct, local DOM reconciliation.
+
+![Builders Structure](./builders-structure.png)
+![Builders High-level Architecture](./builders-high-level-architecture.png)
+![ElementBuilder Lifecycle & Reconciliation](./element-builder-lifecycle-recon-flow.png)
+![ComponentBuilder Render/Rerender Flow](./element-builder-render-rerender-flow.png)
+
+Key ideas:
+
+* descriptor-first state (struct) with optional direct DOM mutation
+* local reconciliation/patching (keyed/unkeyed reuse, attach/adopt semantics)
+* no separate virtual DOM diff engine and no separate renderer runtime
+* componentBuilder as a render boundary; ElementBuilder handles DOM mutation details
+---
+
 # Notes
 
 These diagrams are conceptual runtime documentation.
