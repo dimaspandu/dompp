@@ -1,19 +1,12 @@
 # DOMPP (DOM++)
 
-DOMPP (read as DOM plus plus) is a lightweight native DOM enhancement library focused on deterministic mutation, chainable APIs, optional reactivity, and minimal runtime overhead.
+DOMPP (DOM plus plus) is a lightweight native DOM enhancement library focused on deterministic mutation, chainable APIs, optional reactivity, and JSX-compatible builders.
 
 The name "DOM++" is inspired by C++ naming style:
 
 > DOM extended with small, explicit, chainable methods.
 
-DOMPP does not use a virtual DOM.
-DOMPP does not wrap elements in custom objects.
-DOMPP does not require compilation.
-
-Instead, DOMPP extends native DOM prototypes with ergonomic setters while preserving direct access to the browser platform.
-
----
-
+DOMPP does not use a virtual DOM. It does not wrap elements in custom objects and does not require a compiler. It extends native DOM APIs with ergonomic setters while preserving direct access to the browser platform.
 
 ## Install
 
@@ -21,52 +14,116 @@ Instead, DOMPP extends native DOM prototypes with ergonomic setters while preser
 npm install @dimpandu/domplusplus
 ```
 
-# Philosophy
-
-DOMPP is intentionally designed around:
-
-* native DOM first
-* explicit mutation
-* deterministic updates
-* low abstraction overhead
-* minimal tooling
-* progressive capability
-
-DOMPP should feel like:
+## Quick Start
 
 ```js
-const card =
-  document
-    .createElement("div")
-    .setChildren(
-      document
-        .createElement("h2")
-        .setText("Hello DOM++")
-    );
+import { createDOMPP } from "@dimpandu/domplusplus";
+
+createDOMPP(); // Node/tests; in browsers the default entry also installs globals
+
+const card = document
+  .createElement("div")
+  .setStyles({ padding: "20px", background: "black", color: "white" })
+  .setChildren(
+    document.createElement("h1").setText("Hello DOM++"),
+    document.createElement("button").setText("Click Me").setEvents({
+      click() {
+        alert("DOM++");
+      },
+    })
+  );
+
+document.body.append(card);
 ```
 
-not like a framework runtime.
+## Element and Component Builders
 
----
+DOMPP includes `elementBuilder` and `componentBuilder` for descriptor-based construction and reconciliation (JSX-compatible via a custom pragma/factory).
 
-# Features
+### Counter with `componentBuilder` rerender
 
-## Runtime Architecture
+```jsx
+/** @jsx elementBuilder */
+import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
 
-DOMPP extends native DOM APIs with small,
-chainable mutation setters and optional
-reactive runtimes.
+let count = 0;
 
-Unlike virtual DOM frameworks, DOMPP performs
-direct deterministic DOM mutation.
+const counter = componentBuilder((rerender) => (
+  <section className="card">
+    <p>Count: {count}</p>
+    <button
+      type="button"
+      onClick={() => rerender(() => { count += 1; })}
+    >
+      Increment
+    </button>
+  </section>
+));
+
+elementBuilder(document.getElementById("app"), null, counter.render());
+```
+
+### MVVM-style view with `componentBuilder`
+
+```jsx
+/** @jsx elementBuilder */
+import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
+
+function createCounterModel(initialCount = 0) {
+  let count = initialCount;
+  return {
+    get count() { return count; },
+    setCount(value) { count = value; },
+  };
+}
+
+function createCounterViewModel(model) {
+  const listeners = new Set();
+  return {
+    get count() { return model.count; },
+    increment() {
+      model.setCount(model.count + 1);
+      listeners.forEach((listener) => listener(this));
+    },
+    addListener(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+  };
+}
+
+function CounterView() {
+  const model = createCounterModel();
+  const viewModel = createCounterViewModel(model);
+  const view = componentBuilder(() => (
+    <section className="card">
+      <p>Count: {viewModel.count}</p>
+      <button type="button" onClick={() => viewModel.increment()}>
+        Increment through ViewModel
+      </button>
+    </section>
+  ));
+  viewModel.addListener(() => view.rerender());
+  return view.render();
+}
+
+elementBuilder(document.getElementById("app"), null, <CounterView />);
+```
+
+Builder entry points:
+- Default package: `@dimpandu/domplusplus` (installs DOMPP APIs; exposes `createDOMPP`).
+- Builders: `@dimpandu/domplusplus/builders`
+- Builders only (no prototype setter/reactive wrapper installation): `@dimpandu/domplusplus/builders-minimal`
+
+## Features
+
+### Runtime Architecture
+
+DOMPP extends native DOM APIs with chainable mutation setters and optional reactive runtimes. Unlike virtual DOM frameworks, DOMPP performs direct deterministic DOM mutation.
 
 ![DOMPP Runtime Architecture](./docs/architecture/runtime-flow.png)
 
----
-
-## Chainable DOM Setters
-
-DOMPP adds a small set of chainable mutation helpers:
+### Chainable DOM Setters
 
 * `setText(...)`
 * `setChildren(...)`
@@ -77,363 +134,57 @@ DOMPP adds a small set of chainable mutation helpers:
 * `setEnhancement(...)`
 * `setFineGrained(...)`
 
----
-
-## Stateful Reactive Runtime
-
-DOMPP includes an optional element-local reactive runtime using `setState()`.
+### Stateful Reactive Runtime
 
 ```js
-const counter =
-  document
-    .createElement("button")
-    .setState({
-      count: 0
-    })
-    .setText(({ state }) => {
-      return `Count: ${state.count}`;
-    })
-    .setEvents(({ state, setState }) => ({
-      click() {
-        setState({
-          count: state.count + 1
-        });
-      }
-    }));
+const counter = document
+  .createElement("button")
+  .setState({ count: 0 })
+  .setText(({ state }) => `Count: ${state.count}`)
+  .setEvents(({ state, setState }) => ({
+    click() {
+      setState({ count: state.count + 1 });
+    },
+  }));
 ```
 
-Reactive setter callbacks rerun automatically after state updates.
-
----
-
-## Fine-Grained Signals
-
-DOMPP also supports optional fine-grained signals.
+### Fine-Grained Signals
 
 ```js
-const [count, setCount] =
-  document.createSignal(0);
+const [count, setCount] = document.createSignal(0);
 
-const title =
-  document
-    .createElement("h1")
-    .setFineGrained()
-    .setText(() => {
-      return count();
-    });
+const title = document
+  .createElement("h1")
+  .setFineGrained()
+  .setText(() => count());
 ```
-
-Signals are completely optional.
-
-DOMPP still supports the original stateful runtime model.
 
 ![DOMPP Fine-Grained Signals](./docs/architecture/fine-grained-signals.png)
 
----
-
-## Existing DOM Enhancement
-
-DOMPP can enhance existing server-rendered or static HTML without recreating the subtree.
-
-```html
-<section id="counter-app">
-  <h2>0</h2>
-  <button>+</button>
-</section>
-```
+### Existing DOM Enhancement
 
 ```js
-document
-  .getElementById("counter-app")
-  .setEnhancement(({ childNodes }) => {
-
-    childNodes[1].setEvents({
-      click() {
-        childNodes[0].setText("1");
-      }
-    });
+document.getElementById("counter-app").setEnhancement(({ childNodes }) => {
+  childNodes[1].setEvents({
+    click() {
+      childNodes[0].setText("1");
+    },
   });
+});
 ```
-
-This allows DOM assimilation without hydration frameworks or virtual DOM diffing.
 
 ![DOMPP Existing DOM Enhancement](./docs/architecture/enhancement-flow.png)
 
----
+## JSX Integration
 
-# Core Concepts
-
-## Consistent Mutation APIs
-
-DOMPP setters are intentionally designed to be consistent.
-
-Example:
-
-```js
-element.setText("Hello");
-```
-
-can later become:
-
-```js
-element.setText(({ text }) => {
-  return text + "!";
-});
-```
-
-The same pattern applies to:
-
-* `setStyles()`
-* `setAttributes()`
-* `setChildren()`
-* `setEvents()`
-
-This removes the need to mentally switch between:
-
-* `appendChild()`
-* `replaceChildren()`
-* `innerHTML`
-* `replaceWith()`
-* `textContent`
-* `setAttribute()`
-
-DOMPP keeps mutation ergonomics predictable.
-
----
-
-## children vs childNodes
-
-Setter callbacks expose both:
-
-* `children`
-* `childNodes`
-
-### `children`
-
-Element-only children.
-
-Whitespace text nodes are excluded.
-
-```js
-setChildren(({ children }) => {
-  return [
-    children[0]
-  ];
-});
-```
-
-Useful for:
-
-* hydration
-* enhancement
-* reusable element references
-
----
-
-### `childNodes`
-
-Raw node list.
-
-Includes:
-
-* text nodes
-* whitespace
-* comments
-* elements
-
-```js
-setChildren(({ childNodes }) => {
-  return [
-    childNodes[0],
-    childNodes[1]
-  ];
-});
-```
-
-Useful when preserving exact DOM structure.
-
----
-
-# Fine-Grained vs Stateful Runtime
-
-DOMPP supports two reactive models.
-
-## Stateful Runtime
-
-Uses:
-
-```js
-setState(...)
-```
-
-Reactive setters rerun after state updates.
-
-Simple and ergonomic.
-
----
-
-## Fine-Grained Signals
-
-Uses:
-
-```js
-document.createSignal(...)
-```
-
-Only setters directly consuming signals rerun.
-
-Useful for:
-
-* granular updates
-* explicit subscriptions
-* minimal reruns
-
-Signals are opt-in via:
-
-```js
-.setFineGrained()
-```
-
----
-
-# ESM Architecture
-
-DOMPP is internally modularized using ESM (current source layout: `src/1.2.0/`).
-
-This improves:
-
-* maintainability
-* scalability
-* unit testing
-* runtime separation
-
-Structure:
-
-`	xt
-src/
-  1.2.0/
-
-    context/
-    core/
-    install/
-    runtime/
-    setters/
-    utils/
-```
-
----
-
-# Project Structure
-
-```txt
-/
-├── docs/
-├── examples/
-├── src/
-├── tests/
-├── index.html
-├── server.js
-├── README.md
-├── package.json
-└── ...
-```
-
----
-
-# Quick Start
-
-## Install
-
-Clone the repository:
-
-```bash
-git clone <repository-url>
-```
-
----
-
-## Run Local Dev Server
-
-```bash
-node server.js
-```
-
-Open:
-
-```txt
-http://localhost:5173
-```
-
-The examples page includes:
-
-* basic setters
-* mutation consistency
-* children vs childNodes
-* reactive state
-* signals
-* enhancement
-* existing DOM assimilation
-
----
-
-# Basic Example
-
-```html
-<div id="app"></div>
-
-<script type="module">
-
-import "./src/index.js";
-
-const card =
-  document
-    .createElement("div")
-
-    .setStyles({
-      padding: "20px",
-      background: "black",
-      color: "white"
-    })
-
-    .setChildren(
-
-      document
-        .createElement("h1")
-        .setText("Hello DOM++"),
-
-      document
-        .createElement("button")
-        .setText("Click Me")
-        .setEvents({
-          click() {
-            alert("DOM++");
-          }
-        })
-    );
-
-app.append(card);
-
-</script>
-```
-
----
-
-# JSX Integration
-
-DOMPP works with JSX via a custom factory function. Configure your bundler (Vite, esbuild, Parcel, etc.) or use Babel Standalone with the `/** @jsx d */` pragma.
+DOMPP works with JSX via a custom factory function. Configure your bundler or use Babel Standalone with the `/** @jsx d */` pragma (or use `elementBuilder` as the pragma for builder-based JSX).
 
 ```js
 /** @jsx d */
 function d(tag, props, ...children) {
-  // SVG elements
   const svgTags = new Set([
     "svg", "circle", "path", "rect", "line", "polyline", "polygon", "ellipse",
-    "g", "defs", "use", "symbol", "text", "tspan", "textPath",
-    "image", "foreignObject", "mask", "clipPath", "pattern",
-    "linearGradient", "radialGradient", "stop",
-    "filter", "feGaussianBlur", "feColorMatrix",
-    "animate", "animateTransform", "animateMotion",
-    "marker", "view", "switch", "a", "script", "style", "title", "desc", "metadata"
+    "g", "defs", "use", "symbol", "text", "tspan", "image", "foreignObject",
   ]);
 
   let node;
@@ -457,79 +208,28 @@ function d(tag, props, ...children) {
 }
 ```
 
-Usage:
+See `examples/21-jsx-integration/` for a live JSX demo and `examples/22-element-builder/` onward for builder examples.
 
-```jsx
-/** @jsx d */
-import "./src/index.js";
+## Local Development
 
-const app = document.getElementById("app");
+Clone the repository and run the dev server:
 
-// Fragment support
-const items = (
-  <fragment>
-    <div className="item">A</div>
-    <div className="item">B</div>
-    <div className="item">C</div>
-  </fragment>
-);
-
-// SVG support
-const icon = (
-  <svg viewBox="0 0 24 24" width="24" height="24">
-    <circle cx="12" cy="12" r="10" fill="currentColor" />
-  </svg>
-);
-
-app.setChildren(
-  <section className="card">
-    {items}
-    {icon}
-  </section>
-);
+```bash
+git clone https://github.com/dimaspandu/dompp.git
+cd dompp
+npm install
+npm run dev
 ```
 
-See `examples/21-jsx-integration/` for a live demo with:
-- Basic usage
-- Stateful panels with `setState` + reactive `setChildren`
-- Cross-element updates
-- Fine-grained signals (`document.createSignal` + `.setFineGrained()`)
+Open `http://localhost:5173`. Examples cover basic setters, mutation consistency, children vs childNodes, reactive state, signals, enhancement, JSX, and builders.
 
----
-
-# Testing
-
-DOMPP uses:
-
-* native Node.js test runner
-* native ESM
-* zero test dependencies
-
-Run tests:
+## Testing
 
 ```bash
 npm test
 ```
 
-Or directly:
-
-```bash
-node --test
-```
-
-Tests focus primarily on:
-
-* runtime behavior
-* signals
-* utilities
-* state scheduling
-* deterministic mutation logic
-
-Browser integration testing is demonstrated through the examples.
-
----
-
-# Design Principles
+## Design Principles
 
 * Explicit over magical behavior
 * Native platform first
@@ -540,61 +240,18 @@ Browser integration testing is demonstrated through the examples.
 * Predictable mutation flow
 * Optional reactivity
 
----
+## Status
 
-# Status
+DOMPP is experimental and under active iteration. Breaking changes may occur while APIs and runtime architecture continue evolving.
 
-DOMPP is experimental and under active iteration.
+## Contributing
 
-Breaking changes may occur while APIs and runtime architecture continue evolving.
+Contributions are welcome. Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting large architectural changes.
 
-The project exists primarily to explore:
+## Live Documentation
 
-* DOM mutation ergonomics
-* reactive runtime design
-* enhancement-based hydration
-* fine-grained subscriptions
-* native-first UI architecture
+https://dompp.digital/
 
----
+## License
 
-# Contributing
-
-Contributions are welcome.
-
-Please read:
-
-* CONTRIBUTING.md
-
-before submitting large architectural changes.
-
-DOMPP prioritizes:
-
-* clarity
-* minimalism
-* deterministic behavior
-* native DOM mental models
-
----
-
-# Live Documentation
-
-Live documentation: https://dompp.digital/
-
----
-
-# License
-
-MIT License
-
-Copyright (c) Dimas Pandu Pratama
-
-
----
-
-## Element and Component Builders (1.2.0)
-
-DOMPP 1.2.0 adds optional elementBuilder and componentBuilder APIs for descriptor-based DOM construction and reconciliation. These builders are installed by the default DOMPP entrypoint. A minimal entrypoint (src/1.2.0/builders-minimal.js) is available when you only want builders without installing DOMPP prototype setters/reactive wrappers. See src/1.2.0/builders/README.md for implementation details and examples/22-element-builder/ for usage.
-
-
-Architecture diagrams for builders are available in docs/architecture/ (uilders-structure.png, uilders-high-level-architecture.png, element-builder-lifecycle-recon-flow.png, element-builder-render-rerender-flow.png).
+MIT License. Copyright (c) Dimas Pandu Pratama.
