@@ -1205,10 +1205,87 @@
     </div>
 
     <!-- ================================= -->
-    <!-- ARCHITECTURE -->
+    <!-- BUILDERS (1.2.0) -->
     <!-- ================================= -->
 
     <div class="examples-group">
+
+      <h3>Builders (1.2.0)</h3>
+
+      <div class="examples">
+
+        <a href="./examples/22-element-builder/" class="example-link">
+          <strong>22 — Element Builder</strong>
+          Descriptor-based <code>elementBuilder</code> with direct setters, struct inspection, and JSX factory usage.
+        </a>
+
+        <a href="./examples/23-component-builder/" class="example-link">
+          <strong>23 — Component Builder</strong>
+          Stateful render boundary with <code>componentBuilder</code>, <code>render()</code>, and <code>rerender(callback)</code>.
+        </a>
+
+        <a href="./examples/24-mvvm-component-builder/" class="example-link">
+          <strong>24 — MVVM (Component Builder)</strong>
+          Layered Model/ViewModel/View pattern using <code>elementBuilder</code> and <code>componentBuilder</code>.
+        </a>
+
+        <a href="./examples/25-conditional-rendering/" class="example-link">
+          <strong>25 — Conditional Rendering</strong>
+          Add or remove children during rerender; <code>null</code> means no node in the current virtual tree.
+        </a>
+
+        <a href="./examples/26-keyed-list/" class="example-link">
+          <strong>26 — Keyed List</strong>
+          Stable keys preserve item identity across append, prepend, reorder, removal, and tag replacement.
+        </a>
+
+        <a href="./examples/27-fragments-and-arrays/" class="example-link">
+          <strong>27 — Fragments and Arrays</strong>
+          Fragment boundaries and array-returning components contributing sibling child descriptors.
+        </a>
+
+        <a href="./examples/28-server-dom-adoption/" class="example-link">
+          <strong>28 — Server DOM Adoption</strong>
+          Adopt existing server-rendered HTML with <code>elementBuilder</code> and synchronize descriptor children.
+        </a>
+
+        <a href="./examples/29-reactive-server-messenger/" class="example-link">
+          <strong>29 — Reactive Server Messenger</strong>
+          Component rerender over an adopted server root with keyed message list updates.
+        </a>
+
+        <a href="./examples/30-bigview-independent-updates/" class="example-link">
+          <strong>30 — BigView Independent Updates</strong>
+          Stable adopted root, direct builder mutations, and independent/coordinated component rerenders.
+        </a>
+
+        <a href="./examples/31-mvvm-bigview-sections/" class="example-link">
+          <strong>31 — MVVM BigView Sections</strong>
+          Focused sections subscribe to ViewModel topics and rerender only when relevant data changes.
+        </a>
+
+        <a href="./examples/32-security-boundary/" class="example-link">
+          <strong>32 — Security Boundary</strong>
+          Builder validation for unsafe attributes/protocols and text rendering for untrusted content.
+        </a>
+
+        <a href="./examples/33-element-builder-reset/" class="example-link">
+          <strong>33 — elementBuilder Outlet with reset()</strong>
+          Route outlet pattern using <code>elementBuilder</code> + <code>.reset()</code> for clean slate on each navigation.
+        </a>
+
+        <a href="./examples/34-component-builder-rerender/" class="example-link">
+          <strong>34 — componentBuilder Outlet with rerender()</strong>
+          Route outlet pattern using <code>componentBuilder</code> + <code>rerender()</code>; <code>_patchFrom</code> fully replaces attributes/styles/children.
+        </a>
+
+      </div>
+
+    </div>
+
+    <!-- ================================= -->
+    <!-- ARCHITECTURE -->
+    <!-- ================================= -->
 
       <h3>
         Native Runtime Exploration

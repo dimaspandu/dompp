@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" type="image/svg+xml" href="../../assets/favicon.svg" />
+  <title>elementBuilder Outlet with reset()</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #f5f5f5; color: #222; line-height: 1.7; }
+    .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px 96px; }
+    h1 { font-size: 48px; margin-bottom: 16px; }
+    .description { max-width: 860px; color: #666; margin-bottom: 24px; }
+    .important { background: linear-gradient(135deg, #e8f4ff, #d0e8ff); border: 1px solid #7cb8ff; border-radius: 16px; padding: 20px; margin-bottom: 24px; color: #1a365d; }
+    .panel { background: white; border-radius: 20px; padding: 28px; box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+    .demo-mount { border: 1px dashed #cbd5e1; border-radius: 12px; padding: 16px; min-height: 120px; background: #fafafa; }
+    button { background: #111827; color: white; border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; margin: 2px; }
+    pre { margin: 0; border-radius: 14px; overflow: auto; background: #111827; color: #f8fafc; padding: 12px; }
+    code.hljs { border-radius: 14px; padding: 16px; }
+    #status { font-family: monospace; font-size: 14px; color: #444; background: #f0f0f0; padding: 12px; border-radius: 8px; margin-top: 12px; }
+    @media (max-width: 900px) { h1 { font-size: 36px; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>elementBuilder Outlet with reset()</h1>
+    <p class="description">Using <code>elementBuilder</code> on a shared outlet with <code>.reset()</code> to ensure a clean slate on each route change. This removes all attributes, styles, and children from the previous route before rendering the next.</p>
+    <div class="important"><strong>How it works:</strong> <code>.reset()</code> clears the virtual struct (styles, attributes, children, events) and the live DOM node (removes all attributes, clears style, replaces children). Then <code>setChildren()</code> renders the new route view.</div>
+    <h2>Live Demo (JSX)</h2>
+    <div class="panel">
+      <section id="outlet" class="demo-mount"></section>
+      <p id="status"></p>
+      <div id="controls"></div>
+    </div>
+    <h2 style="margin-top: 48px;">JSX Source</h2>
+    <pre><code id="jsx-source" class="language-jsx"></code></pre>
+  </div>
+  <script type="module" src="../../src/index.js"></script>
+  <script type="module">const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1"; await import(isLocal ? "./demo.jsx" : "./demo.compiled.js");</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script type="module">const jsx = await fetch("./demo.jsx", { headers: { Accept: "text/plain" } }).then((r) => r.text()).catch(() => fetch("./demo.compiled.js").then((r) => r.text()).catch(() => "// JSX source unavailable")); const jsxBlock = document.getElementById("jsx-source"); jsxBlock.textContent = jsx.trim(); hljs.highlightElement(jsxBlock);</script>
+</body>
+</html>

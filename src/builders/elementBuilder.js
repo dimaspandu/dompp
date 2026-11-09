@@ -176,6 +176,22 @@ ElementBuilder.prototype.setText = function(text) {
   return this.setChildren([text]);
 };
 
+ElementBuilder.prototype.reset = function() {
+  this.struct.styles = {};
+  this.struct.attributes = {};
+  this.struct.children = [];
+  this.struct.events = {};
+
+  if (this.node) {
+    Array.from(this.node.attributes).forEach((attr) => {
+      this.node.removeAttribute(attr.name);
+    });
+    this.node.removeAttribute("style");
+    this.node.replaceChildren();
+  }
+  return this;
+};
+
 // Flatten arrays and discard null/boolean children before diffing the tree.
 ElementBuilder.prototype.setChildren = function(children) {
   const nextChildren = (Array.isArray(children) ? children : [children])

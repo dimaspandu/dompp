@@ -101,6 +101,32 @@
     </p>
     <section id="security-example" class="card"></section>
 
+    <h2 class="section-title">Routing / Outlet patterns</h2>
+
+    <h3 class="case-title">12 · elementBuilder outlet with reset()</h3>
+    <p>
+      Using <code>elementBuilder</code> on a shared outlet with <code>.reset()</code>
+      to ensure a clean slate on each route change. This removes all attributes,
+      styles, and children from the previous route before rendering the next.
+    </p>
+    <section id="router-outlet-reset" class="card">
+      <div id="router-outlet-reset-host"></div>
+      <p id="router-outlet-reset-status" class="notes"></p>
+      <div id="router-outlet-reset-controls"></div>
+    </section>
+
+    <h3 class="case-title">13 · componentBuilder outlet with rerender()</h3>
+    <p>
+      Using <code>componentBuilder</code> with <code>rerender()</code> for route
+      transitions. The component's <code>_patchFrom</code> replaces attributes,
+      styles, and children entirely, so no explicit reset is needed.
+    </p>
+    <section id="router-outlet-component" class="card">
+      <div id="router-outlet-component-host"></div>
+      <p id="router-outlet-component-status" class="notes"></p>
+      <div id="router-outlet-component-controls"></div>
+    </section>
+
     <h2 class="section-title">Builder cases</h2>
     <div id="app"></div>
   </div>

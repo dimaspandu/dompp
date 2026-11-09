@@ -776,3 +776,123 @@ elementBuilder(
 // Expose the builder APIs for quick experiments in the browser DevTools console.
 document.elementBuilder = elementBuilder;
 document.componentBuilder = componentBuilder;
+
+/*
+ * Example 12: elementBuilder outlet with reset()
+ * Demonstrates using elementBuilder on a shared outlet with .reset() to ensure
+ * a clean slate on each route change.
+ */
+(function RouterOutletResetExample() {
+  function Home() {
+    return (
+      <section className="page page--home">
+        <h4>Home</h4>
+        <p>Home route content with elementBuilder + reset().</p>
+        <div className="home-only" data-route="home">This div has class="home-only" and data-route="home"</div>
+      </section>
+    );
+  }
+
+  function About() {
+    return (
+      <section className="page page--about">
+        <h4>About</h4>
+        <p>About route content (no home-only class or data-route).</p>
+        <div className="about-only" data-route="about">This div has class="about-only" and data-route="about"</div>
+      </section>
+    );
+  }
+
+  const host = document.getElementById("router-outlet-reset-host");
+  const status = document.getElementById("router-outlet-reset-status");
+  if (!host || !status) return;
+
+  function describeHost() {
+    const attrs = Array.from(host.attributes).map(a => `${a.name}="${a.value}"`).join(" ") || "(none)";
+    const style = host.getAttribute("style") || "(none)";
+    const children = Array.from(host.children).map(c => `${c.tagName.toLowerCase()}${c.className ? "." + c.className.split(" ").join(".") : ""}${c.id ? "#" + c.id : ""}`).join(", ") || "(none)";
+    return `attrs: [${attrs}]; style: "${style}"; children: [${children}]`;
+  }
+
+  function renderReset(path) {
+    const view = path === "/about" ? <About /> : <Home />;
+    elementBuilder(host, { class: path === "/about" ? "page page--about" : "page page--home", id: "router-outlet-reset-host" })
+      .reset()
+      .setChildren(view);
+    status.textContent = `elementBuilder + reset() → ${path}: ${describeHost()}`;
+  }
+
+  elementBuilder(
+    document.getElementById("router-outlet-reset-controls"),
+    null,
+    <div>
+      <button type="button" onClick={() => renderReset("/")}>Route "/" (Home)</button>
+      <button type="button" onClick={() => renderReset("/about")}>Route "/about" (About)</button>
+    </div>
+  );
+
+  renderReset("/");
+})();
+
+/*
+ * Example 13: componentBuilder outlet with rerender()
+ * Demonstrates using componentBuilder for route transitions where _patchFrom
+ * replaces attributes, styles, and children entirely.
+ */
+(function RouterOutletComponentExample() {
+  let currentRoute = "/";
+
+  function Home() {
+    return (
+      <section className="page page--home">
+        <h4>Home</h4>
+        <p>Home route content via componentBuilder.</p>
+        <div className="home-only" data-route="home">This div has class="home-only" and data-route="home"</div>
+      </section>
+    );
+  }
+
+  function About() {
+    return (
+      <section className="page page--about">
+        <h4>About</h4>
+        <p>About route content (no home-only class or data-route).</p>
+        <div className="about-only" data-route="about">This div has class="about-only" and data-route="about"</div>
+      </section>
+    );
+  }
+
+  const host = document.getElementById("router-outlet-component-host");
+  const status = document.getElementById("router-outlet-component-status");
+  if (!host || !status) return;
+
+  function describeHost() {
+    const attrs = Array.from(host.attributes).map(a => `${a.name}="${a.value}"`).join(" ") || "(none)";
+    const style = host.getAttribute("style") || "(none)";
+    const children = Array.from(host.children).map(c => `${c.tagName.toLowerCase()}${c.className ? "." + c.className.split(" ").join(".") : ""}${c.id ? "#" + c.id : ""}`).join(", ") || "(none)";
+    return `attrs: [${attrs}]; style: "${style}"; children: [${children}]`;
+  }
+
+  const routerComponent = componentBuilder((rerender) => {
+    const view = currentRoute === "/about" ? <About /> : <Home />;
+    return elementBuilder(host, { class: currentRoute === "/about" ? "page page--about" : "page page--home", id: "router-outlet-component-host" }, view);
+  });
+
+  function renderComponent(path) {
+    currentRoute = path;
+    routerComponent.rerender();
+    status.textContent = `componentBuilder + rerender() → ${path}: ${describeHost()}`;
+  }
+
+  elementBuilder(
+    document.getElementById("router-outlet-component-controls"),
+    null,
+    <div>
+      <button type="button" onClick={() => renderComponent("/")}>Route "/" (Home)</button>
+      <button type="button" onClick={() => renderComponent("/about")}>Route "/about" (About)</button>
+    </div>
+  );
+
+  routerComponent.render();
+  renderComponent("/");
+})();
