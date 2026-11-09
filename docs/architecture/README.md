@@ -8,6 +8,7 @@ The goal of these diagrams is to explain:
 * how reactivity works internally
 * how signals propagate updates
 * how enhancement differs from hydration
+* how builders perform local reconciliation
 * how DOMPP positions itself architecturally
 
 DOMPP intentionally prioritizes:
@@ -201,9 +202,6 @@ while preserving direct DOM access underneath.
 
 ---
 
-
----
-
 # Element & Component Builders (1.2.0)
 
 DOMPP 1.2.0 adds descriptor-based builders for direct, local DOM reconciliation.
@@ -219,6 +217,62 @@ Key ideas:
 * local reconciliation/patching (keyed/unkeyed reuse, attach/adopt semantics)
 * no separate virtual DOM diff engine and no separate renderer runtime
 * componentBuilder as a render boundary; ElementBuilder handles DOM mutation details
+* `elementBuilder.reset()` clears virtual struct and live DOM for clean slate patterns
+
+API summary:
+
+* `elementBuilder(tag, props, ...children)` — creates or adopts an element with descriptor
+* `elementBuilder(node, props, ...children)` — adopts existing DOM node
+* `ElementBuilder.prototype.reset()` — clears styles, attributes, children, events on struct and live node
+* `componentBuilder((rerender) => tree)` — stateful render boundary with `render()` and `rerender(callback)`
+* `componentBuilder._patchFrom()` — full attribute/style/children replacement on rerender
+
+---
+
+# Example Coverage
+
+The `examples/` directory contains 34 progressive examples demonstrating all features:
+
+**Foundations (01-08)**
+* 01 Basic Text — `setText()`
+* 02 Basic Styles — `setStyles()`
+* 03 Basic Attributes — `setAttributes()`
+* 04 Basic Children — `setChildren()`
+* 05 Basic Events — `setEvents()`
+* 06 Mutation Consistency — unified setter patterns
+* 07 Children vs ChildNodes — structural vs raw node access
+* 08 Fragment Support — DocumentFragment usage
+
+**Reactive Runtime (09-20)**
+* 09 Reactive Counter — local `setState()` with reactive text/styles/attributes
+* 10 Reactive Children — dynamic child trees from state
+* 11 Reusable Stateful Elements — element reuse across parents
+* 12 Cross-Element State — coordinated mutations via `setState()`
+* 13 Existing DOM Enhancement — `setEnhancement()` progressive enhancement
+* 14 Fine-Grained Signals — `createSignal()`, `setFineGrained()`
+* 15 Enhancement + Signals — reactive progressive enhancement
+* 16 State Equality Behavior — reference vs value equality
+* 17 Nested Stateful Elements — independent nested state
+* 18 Keyed List Behavior — stable keys for list reconciliation
+* 19 DOM Identity Preservation — focus/selection preservation
+* 20 Reactive Feed — prepend/append feed patterns
+
+**JSX & Builders (21-34)**
+* 21 JSX Integration — Babel Standalone, custom factory, all reactive features
+* 22 Element Builder — descriptor API, direct setters, JSX factory
+* 23 Component Builder — `componentBuilder`, `render()`, `rerender(callback)`
+* 24 MVVM Component Builder — Model/ViewModel/View layering
+* 25 Conditional Rendering — `null` children, dynamic presence
+* 26 Keyed List — reconciliation with stable keys
+* 27 Fragments and Arrays — fragment boundaries, array components
+* 28 Server DOM Adoption — adoption of server-rendered HTML
+* 29 Reactive Server Messenger — component over adopted server root
+* 30 BigView Independent Updates — stable root, direct mutations, coordinated rerenders
+* 31 MVVM BigView Sections — topic-based selective rerenders
+* 32 Security Boundary — attribute validation, text rendering for untrusted content
+* 33 elementBuilder Outlet with reset() — clean slate route transitions
+* 34 componentBuilder Outlet with rerender() — `_patchFrom` route transitions
+
 ---
 
 # Notes

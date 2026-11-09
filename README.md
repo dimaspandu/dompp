@@ -36,105 +36,24 @@ const card = document
 document.body.append(card);
 ```
 
-## Element and Component Builders
-
-DOMPP includes `elementBuilder` and `componentBuilder` for descriptor-based construction and reconciliation (JSX-compatible via a custom pragma/factory).
-
-### Counter with `componentBuilder` rerender
-
-```jsx
-/** @jsx elementBuilder */
-import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
-
-let count = 0;
-
-const counter = componentBuilder((rerender) => (
-  <section className="card">
-    <p>Count: {count}</p>
-    <button
-      type="button"
-      onClick={() => rerender(() => { count += 1; })}
-    >
-      Increment
-    </button>
-  </section>
-));
-
-elementBuilder(document.getElementById("app"), null, counter.render());
-```
-
-### MVVM-style view with `componentBuilder`
-
-```jsx
-/** @jsx elementBuilder */
-import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
-
-function createCounterModel(initialCount = 0) {
-  let count = initialCount;
-  return {
-    get count() { return count; },
-    setCount(value) { count = value; },
-  };
-}
-
-function createCounterViewModel(model) {
-  const listeners = new Set();
-  return {
-    get count() { return model.count; },
-    increment() {
-      model.setCount(model.count + 1);
-      listeners.forEach((listener) => listener(this));
-    },
-    addListener(listener) {
-      listeners.add(listener);
-      return () => listeners.delete(listener);
-    },
-  };
-}
-
-function CounterView() {
-  const model = createCounterModel();
-  const viewModel = createCounterViewModel(model);
-  const view = componentBuilder(() => (
-    <section className="card">
-      <p>Count: {viewModel.count}</p>
-      <button type="button" onClick={() => viewModel.increment()}>
-        Increment through ViewModel
-      </button>
-    </section>
-  ));
-  viewModel.addListener(() => view.rerender());
-  return view.render();
-}
-
-elementBuilder(document.getElementById("app"), null, <CounterView />);
-```
-
-Builder entry points:
-- Default package: `@dimpandu/domplusplus` (installs DOMPP APIs; exposes `createDOMPP`).
-- Builders: `@dimpandu/domplusplus/builders`
-- Builders only (no prototype setter/reactive wrapper installation): `@dimpandu/domplusplus/builders-minimal`
-
-## Features
-
-### Runtime Architecture
-
-DOMPP extends native DOM APIs with chainable mutation setters and optional reactive runtimes. Unlike virtual DOM frameworks, DOMPP performs direct deterministic DOM mutation.
-
-![DOMPP Runtime Architecture](./docs/architecture/runtime-flow.png)
+## Features Overview
 
 ### Chainable DOM Setters
 
-* `setText(...)`
-* `setChildren(...)`
-* `setStyles(...)`
-* `setAttributes(...)`
-* `setEvents(...)`
-* `setState(...)`
-* `setEnhancement(...)`
-* `setFineGrained(...)`
+All setters return the element for chaining:
 
-### Stateful Reactive Runtime
+| Method | Purpose |
+|--------|---------|
+| `setText(text \| fn)` | Set text content, optionally reactive |
+| `setChildren(...nodes)` | Replace children with elements, fragments, arrays |
+| `setStyles(obj)` | Apply CSS styles object |
+| `setAttributes(obj)` | Set HTML attributes |
+| `setEvents(obj)` | Attach event listeners |
+| `setState(obj)` | Local reactive state, triggers reruns |
+| `setEnhancement(fn)` | Progressive enhancement on existing DOM |
+| `setFineGrained()` | Opt-in to fine-grained signal reactivity |
+
+### Reactive State Runtime
 
 ```js
 const counter = document
@@ -148,6 +67,8 @@ const counter = document
   }));
 ```
 
+State changes trigger microtask-flushed reruns of all reactive setters on that element.
+
 ### Fine-Grained Signals
 
 ```js
@@ -159,7 +80,7 @@ const title = document
   .setText(() => count());
 ```
 
-![DOMPP Fine-Grained Signals](./docs/architecture/fine-grained-signals.png)
+Only consumers of `count()` rerun. No global flush.
 
 ### Existing DOM Enhancement
 
@@ -173,11 +94,11 @@ document.getElementById("counter-app").setEnhancement(({ childNodes }) => {
 });
 ```
 
-![DOMPP Existing DOM Enhancement](./docs/architecture/enhancement-flow.png)
+Attaches behavior to server-rendered or static HTML without recreation.
 
-## JSX Integration
+### JSX Integration
 
-DOMPP works with JSX via a custom factory function. Configure your bundler or use Babel Standalone with the `/** @jsx d */` pragma (or use `elementBuilder` as the pragma for builder-based JSX).
+DOMPP works with JSX via a custom factory. Use Babel Standalone with `/** @jsx d */` pragma:
 
 ```js
 /** @jsx d */
@@ -208,11 +129,100 @@ function d(tag, props, ...children) {
 }
 ```
 
-See `examples/21-jsx-integration/` for a live JSX demo and `examples/22-element-builder/` onward for builder examples.
+See `examples/21-jsx-integration/` for a live JSX demo.
+
+### Element & Component Builders (1.2.0)
+
+Descriptor-based builders for direct, local DOM reconciliation. No virtual DOM diff engine, no separate renderer runtime.
+
+```js
+import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
+```
+
+#### elementBuilder
+
+```jsx
+/** @jsx elementBuilder */
+elementBuilder("div", { class: "card" },
+  elementBuilder("h1", {}, "Title"),
+  elementBuilder("button", { onClick: () => console.log("click") }, "Click")
+);
+```
+
+* `elementBuilder(tag, props, ...children)` — creates or adopts element
+* `elementBuilder(existingNode, props, ...children)` — adopts existing DOM node
+* `.reset()` — clears styles, attributes, children, events on struct and live node
+
+#### componentBuilder
+
+```jsx
+/** @jsx elementBuilder */
+const Counter = componentBuilder((rerender) => (
+  <section className="card">
+    <p>Count: {count}</p>
+    <button onClick={() => rerender(() => { count += 1; })}>
+      Increment
+    </button>
+  </section>
+));
+
+elementBuilder(document.getElementById("app"), null, Counter.render());
+```
+
+* `componentBuilder((rerender) => tree)` — stateful render boundary
+* `.render()` — returns mounted node
+* `.rerender(callback)` — runs callback, then `_patchFrom()` full replacement
+
+Builder entry points:
+* Default: `@dimpandu/domplusplus` (installs DOMPP APIs; exposes `createDOMPP`)
+* Builders: `@dimpandu/domplusplus/builders`
+* Builders only (no prototype/reactive wrapper installation): `@dimpandu/domplusplus/builders-minimal`
+
+## Example Coverage
+
+The `examples/` directory contains 34 progressive examples:
+
+**Foundations (01-08)**
+* 01 Basic Text — `setText()`
+* 02 Basic Styles — `setStyles()`
+* 03 Basic Attributes — `setAttributes()`
+* 04 Basic Children — `setChildren()`
+* 05 Basic Events — `setEvents()`
+* 06 Mutation Consistency — unified setter patterns
+* 07 Children vs ChildNodes — structural vs raw node access
+* 08 Fragment Support — DocumentFragment usage
+
+**Reactive Runtime (09-20)**
+* 09 Reactive Counter — local `setState()` with reactive text/styles/attributes
+* 10 Reactive Children — dynamic child trees from state
+* 11 Reusable Stateful Elements — element reuse across parents
+* 12 Cross-Element State — coordinated mutations via `setState()`
+* 13 Existing DOM Enhancement — `setEnhancement()` progressive enhancement
+* 14 Fine-Grained Signals — `createSignal()`, `setFineGrained()`
+* 15 Enhancement + Signals — reactive progressive enhancement
+* 16 State Equality Behavior — reference vs value equality
+* 17 Nested Stateful Elements — independent nested state
+* 18 Keyed List Behavior — stable keys for list reconciliation
+* 19 DOM Identity Preservation — focus/selection preservation
+* 20 Reactive Feed — prepend/append feed patterns
+
+**JSX & Builders (21-34)**
+* 21 JSX Integration — Babel Standalone, custom factory, all reactive features
+* 22 Element Builder — descriptor API, direct setters, JSX factory
+* 23 Component Builder — `componentBuilder`, `render()`, `rerender(callback)`
+* 24 MVVM Component Builder — Model/ViewModel/View layering
+* 25 Conditional Rendering — `null` children, dynamic presence
+* 26 Keyed List — reconciliation with stable keys
+* 27 Fragments and Arrays — fragment boundaries, array components
+* 28 Server DOM Adoption — adoption of server-rendered HTML
+* 29 Reactive Server Messenger — component over adopted server root
+* 30 BigView Independent Updates — stable root, direct mutations, coordinated rerenders
+* 31 MVVM BigView Sections — topic-based selective rerenders
+* 32 Security Boundary — attribute validation, text rendering for untrusted content
+* 33 elementBuilder Outlet with reset() — clean slate route transitions
+* 34 componentBuilder Outlet with rerender() — `_patchFrom` route transitions
 
 ## Local Development
-
-Clone the repository and run the dev server:
 
 ```bash
 git clone https://github.com/dimaspandu/dompp.git
@@ -221,7 +231,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. Examples cover basic setters, mutation consistency, children vs childNodes, reactive state, signals, enhancement, JSX, and builders.
+Open `http://localhost:5173`. All 34 examples run live with source viewer.
 
 ## Testing
 
@@ -240,13 +250,17 @@ npm test
 * Predictable mutation flow
 * Optional reactivity
 
+## Architecture Documentation
+
+See `docs/architecture/README.md` for runtime flow diagrams, builder architecture, and design philosophy.
+
 ## Status
 
 DOMPP is experimental and under active iteration. Breaking changes may occur while APIs and runtime architecture continue evolving.
 
 ## Contributing
 
-Contributions are welcome. Please read [CONTRIBUTING.md](./CONTRIBUTING.md) before submitting large architectural changes.
+Contributions are welcome. Please read `CONTRIBUTING.md` before submitting large architectural changes.
 
 ## Live Documentation
 

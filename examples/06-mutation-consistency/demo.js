@@ -7,7 +7,7 @@ element.setText("Hello");
 element.setText(({ text }) => text + "!");
 
 // Same pattern for styles
-element.setStyles({ color: "white" });
+element.setStyles({ color: "#111111" });
 element.setStyles(({ styles }) => ({ ...styles, fontSize: "20px" }));
 
 // Same pattern for attributes
