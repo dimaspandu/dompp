@@ -57,6 +57,38 @@ export default function compileJSX(source, factory) {
     }
   }
 
+  function skipTrivia() {
+    while (i < source.length) {
+      skipWhitespace();
+
+      if (source.startsWith("//", i)) {
+        i += 2;
+
+        while (i < source.length && source[i] !== "\n") {
+          i++;
+        }
+
+        continue;
+      }
+
+      if (source.startsWith("/*", i)) {
+        i += 2;
+
+        const end = source.indexOf("*/", i);
+
+        if (end === -1) {
+          error("Unterminated comment");
+        }
+
+        i = end + 2;
+
+        continue;
+      }
+
+      break;
+    }
+  }
+
   function readIdentifier() {
     const start = i;
 
@@ -216,7 +248,7 @@ export default function compileJSX(source, factory) {
     const attributes = [];
 
     while (i < source.length) {
-      skipWhitespace();
+      skipTrivia();
 
       // End of opening tag
       if (source.startsWith("/>", i)) {
@@ -437,6 +469,28 @@ export default function compileJSX(source, factory) {
 
     while (cursor < source.length) {
       const char = source[cursor];
+
+      // Skip comments
+      if (source.startsWith("//", cursor)) {
+        let end = cursor + 2;
+
+        while (end < source.length && source[end] !== "\n") {
+          end++;
+        }
+
+        output += source.slice(cursor, end);
+        cursor = end;
+        continue;
+      }
+
+      if (source.startsWith("/*", cursor)) {
+        const close = source.indexOf("*/", cursor + 2);
+        const end = close === -1 ? source.length : close + 2;
+
+        output += source.slice(cursor, end);
+        cursor = end;
+        continue;
+      }
 
       // Skip strings
       if (

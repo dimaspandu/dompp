@@ -1,5 +1,6 @@
 /** @jsx elementBuilder */
 import { ElementBuilder, elementBuilder, componentBuilder } from "./engine.js";
+import LocalStatefulInStatelessExample from "./LocalStatefulInStatelessExample.jsx";
 
 /*
  * This page is an implementation notebook for the JSX builder experiments.
@@ -755,6 +756,14 @@ elementBuilder(
   null,
   <SecurityBoundaryExample />
 );
+
+/*
+ * Example 14: local stateful inside stateless view (ViewModel-driven).
+ * The stateless createView builds a container and embeds a componentBuilder
+ * instance. The ViewModel notifies listeners; the view's listener calls
+ * stateful.rerender() to update only the inner subtree.
+ */
+LocalStatefulInStatelessExample();
 
 /*
  * Mount all examples into one host. componentBuilder.render() returns its

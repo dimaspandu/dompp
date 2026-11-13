@@ -27,6 +27,19 @@ This project follows semantic versioning principles.
   - **SVG elements**: `<svg>`, `<circle>`, `<path>`, `<rect>`, `<line>`, `<polyline>`, `<polygon>`, `<ellipse>`, `<g>`, `<defs>`, `<use>`, `<symbol>`, `<text>`, `<tspan>`, `<textPath>`, `<image>`, `<foreignObject>`, `<mask>`, `<clipPath>`, `<pattern>`, `<linearGradient>`, `<radialGradient>`, `<stop>`, `<filter>`, `<feGaussianBlur>`, `<feColorMatrix>`, `<animate>`, `<animateTransform>`, `<animateMotion>`, `<marker>`, `<view>`, `<switch>`, `<a>`, `<script>`, `<style>`, `<title>`, `<desc>`, `<metadata>` create elements via `document.createElementNS("http://www.w3.org/2000/svg", tag)`
   - Updated `examples/21-jsx-integration/index.html` with enhanced factory
 
+## [1.6.7] - 2026-11-13
+
+### Added
+
+- Example 35: Local stateful inside stateless view (ViewModel-driven) — embed a `componentBuilder` subtree in a stateless container and rerender it from ViewModel notifications
+- Experiments: example 14 demonstrating local stateful inside stateless (ViewModel-driven) pattern
+
+### Changed
+
+- Updated example indexes and documentation to include 35 examples
+
+---
+
 ## [1.6.6] - 2026-11-09
 
 ### Added

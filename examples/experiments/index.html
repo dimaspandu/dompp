@@ -127,6 +127,15 @@
       <div id="router-outlet-component-controls"></div>
     </section>
 
+    <h3 class="case-title">14 · Local stateful inside stateless (ViewModel-driven)</h3>
+    <p>
+      A stateless view function creates an internal <code>componentBuilder</code> for its
+      reactive subtree, wires a ViewModel listener to <code>stateful.rerender()</code>,
+      and returns a plain container. The outer structure stays stateless while the inner
+      builder owns rerendering.
+    </p>
+    <section id="local-stateful-in-stateless" class="card"></section>
+
     <h2 class="section-title">Builder cases</h2>
     <div id="app"></div>
   </div>

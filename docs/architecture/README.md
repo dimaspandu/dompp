@@ -231,7 +231,7 @@ API summary:
 
 # Example Coverage
 
-The `examples/` directory contains 34 progressive examples demonstrating all features:
+The `examples/` directory contains 35 progressive examples demonstrating all features:
 
 **Foundations (01-08)**
 * 01 Basic Text — `setText()`
@@ -257,7 +257,7 @@ The `examples/` directory contains 34 progressive examples demonstrating all fea
 * 19 DOM Identity Preservation — focus/selection preservation
 * 20 Reactive Feed — prepend/append feed patterns
 
-**JSX & Builders (21-34)**
+**JSX & Builders (21-35)**
 * 21 JSX Integration — Babel Standalone, custom factory, all reactive features
 * 22 Element Builder — descriptor API, direct setters, JSX factory
 * 23 Component Builder — `componentBuilder`, `render()`, `rerender(callback)`
@@ -272,6 +272,7 @@ The `examples/` directory contains 34 progressive examples demonstrating all fea
 * 32 Security Boundary — attribute validation, text rendering for untrusted content
 * 33 elementBuilder Outlet with reset() — clean slate route transitions
 * 34 componentBuilder Outlet with rerender() — `_patchFrom` route transitions
+* 35 Local Stateful Inside Stateless (ViewModel) — local `componentBuilder` subtree rerendered by ViewModel notifications within a stateless container
 
 ---
 

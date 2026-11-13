@@ -260,8 +260,165 @@ runTest(
 );
 
 /**
+ * COMMENTS INSIDE OPENING TAGS
+ */
+
+runTest(
+  "JSX - line comment between attributes",
+  compileJSX(`<input
+  value={query}
+  // TODO: use onInput for live search
+  onInput={(e) => vm.search(e.target.value)}
+/>`),
+  `d("input", { "value": query, "onInput": (e) => vm.search(e.target.value) })`
+);
+
+runTest(
+  "JSX - block comment between attributes",
+  compileJSX(`<div /* layout */ className="x" />`),
+  `d("div", { "className": "x" })`
+);
+
+runTest(
+  "JSX - comment as first thing inside opening tag",
+  compileJSX(`<div /* first */ className="x" />`),
+  `d("div", { "className": "x" })`
+);
+
+runTest(
+  "JSX - line comment as first thing inside opening tag",
+  compileJSX(`<div // first
+  className="x" />`),
+  `d("div", { "className": "x" })`
+);
+
+runTest(
+  "JSX - comment immediately before closing bracket",
+  compileJSX(`<div className="x" /* end */>hi</div>`),
+  `d("div", { "className": "x" }, "hi")`
+);
+
+runTest(
+  "JSX - comment immediately before self-closing bracket",
+  compileJSX(`<div className="x" /* end */ />`),
+  `d("div", { "className": "x" })`
+);
+
+runTest(
+  "JSX - line comment immediately before self-closing bracket",
+  compileJSX(`<div className="x" // end
+/>`),
+  `d("div", { "className": "x" })`
+);
+
+runTest(
+  "JSX - multiple consecutive comments separated by newlines",
+  compileJSX(`<div
+  // one
+  // two
+  /* three */
+  className="x"
+/>`),
+  `d("div", { "className": "x" })`
+);
+
+runTest(
+  "JSX - comment between spread and normal attribute",
+  compileJSX(`<div {...props} /* spread */ className="x" />`),
+  `d("div", { ...(props), "className": "x" })`
+);
+
+runTest(
+  "JSX - line comment between spread and normal attribute",
+  compileJSX(`<div {...props}
+  // spread
+  className="x" />`),
+  `d("div", { ...(props), "className": "x" })`
+);
+
+runTest(
+  "JSX - comment before spread attribute",
+  compileJSX(`<div /* spread */ {...props} />`),
+  `d("div", { ...(props) })`
+);
+
+runTest(
+  "JSX - double slash in quoted attribute value is not a comment",
+  compileJSX(`<div title="// not a comment" />`),
+  `d("div", { "title": "// not a comment" })`
+);
+
+runTest(
+  "JSX - block comment marker in quoted attribute value is not a comment",
+  compileJSX(`<div title="/* not a comment */" />`),
+  `d("div", { "title": "/* not a comment */" })`
+);
+
+runTest(
+  "JSX - unterminated block comment raises SyntaxError",
+  (() => {
+    try {
+      compileJSX(`<div /* unterminated className="x" />`);
+      return "no error";
+    } catch (e) {
+      return e instanceof SyntaxError ? "SyntaxError" : "other error";
+    }
+  })(),
+  "SyntaxError"
+);
+
+runTest(
+  "JSX - comment expression child passes through unchanged",
+  compileJSX(`<div>{/* a comment */}</div>`),
+  `d("div", null, /* a comment */)`
+);
+
+/**
  * COMPLEX DEMO-LIKE
  */
+
+runTest(
+  "JSX - stateful component inside stateless view function",
+  compileJSX(`
+    function createView(viewModel) {
+      const stateful = componentBuilder(() => (
+        <div>
+          <h3>{viewModel.count}</h3>
+          <button onClick={() => viewModel.increment()}>
+            UPDATE
+          </button>
+        </div>
+      ));
+
+      const container = (
+        <div>
+          <h2>Local stateful inside stateless</h2>
+          <p>Outer container is static; inner subtree rerenders via componentBuilder.</p>
+          {stateful.render()}
+        </div>
+      );
+
+      viewModel.addListener(() => stateful.rerender());
+
+      return container;
+    }
+  `),
+  `
+    function createView(viewModel) {
+      const stateful = componentBuilder(() => (
+        d("div", null, d("h3", null, viewModel.count), d("button", { "onClick": () => viewModel.increment() }, "UPDATE"))
+      ));
+
+      const container = (
+        d("div", null, d("h2", null, "Local stateful inside stateless"), d("p", null, "Outer container is static; inner subtree rerenders via componentBuilder."), stateful.render())
+      );
+
+      viewModel.addListener(() => stateful.rerender());
+
+      return container;
+    }
+  `
+);
 
 runTest(
   "JSX - card-like component",
