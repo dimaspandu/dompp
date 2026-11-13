@@ -1,6 +1,5 @@
 /** @jsx elementBuilder */
 import { ElementBuilder, elementBuilder, componentBuilder } from "./engine.js";
-import LocalStatefulInStatelessExample from "./LocalStatefulInStatelessExample.jsx";
 
 /*
  * This page is an implementation notebook for the JSX builder experiments.
@@ -763,7 +762,63 @@ elementBuilder(
  * instance. The ViewModel notifies listeners; the view's listener calls
  * stateful.rerender() to update only the inner subtree.
  */
-LocalStatefulInStatelessExample();
+(function LocalStatefulInStatelessExample() {
+  function createViewModel() {
+    const listeners = new Set();
+    let count = 0;
+
+    return {
+      get count() {
+        return count;
+      },
+
+      increment() {
+        count++;
+        this.notifyListener();
+      },
+
+      addListener(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
+
+      notifyListener() {
+        listeners.forEach((listener) => listener(this));
+      },
+    };
+  }
+
+  function createView(viewModel) {
+    const stateful = componentBuilder(() => (
+      <div>
+        <h3>{viewModel.count}</h3>
+        <button onClick={() => viewModel.increment()}>
+          UPDATE
+        </button>
+      </div>
+    ));
+
+    const container = (
+      <div>
+        <h2>Local stateful inside stateless</h2>
+        <p>Outer container is static; inner subtree rerenders via componentBuilder.</p>
+        {stateful.render()}
+      </div>
+    );
+
+    viewModel.addListener(() => stateful.rerender());
+
+    return container;
+  }
+
+  const host = document.getElementById("local-stateful-in-stateless");
+  if (!host) return;
+
+  const viewModel = createViewModel();
+  const view = createView(viewModel);
+
+  elementBuilder(host, null, view);
+})();
 
 /*
  * Mount all examples into one host. componentBuilder.render() returns its
