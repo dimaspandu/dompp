@@ -1,6 +1,6 @@
 {
   "name": "@dimpandu/domplusplus",
-  "version": "1.6.7",
+  "version": "1.6.8",
   "description": "Lightweight native DOM enhancement library with deterministic mutation, chainable setters, optional reactivity, and JSX-compatible builders.",
   "type": "module",
   "license": "MIT",

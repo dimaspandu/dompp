@@ -27,6 +27,16 @@ This project follows semantic versioning principles.
   - **SVG elements**: `<svg>`, `<circle>`, `<path>`, `<rect>`, `<line>`, `<polyline>`, `<polygon>`, `<ellipse>`, `<g>`, `<defs>`, `<use>`, `<symbol>`, `<text>`, `<tspan>`, `<textPath>`, `<image>`, `<foreignObject>`, `<mask>`, `<clipPath>`, `<pattern>`, `<linearGradient>`, `<radialGradient>`, `<stop>`, `<filter>`, `<feGaussianBlur>`, `<feColorMatrix>`, `<animate>`, `<animateTransform>`, `<animateMotion>`, `<marker>`, `<view>`, `<switch>`, `<a>`, `<script>`, `<style>`, `<title>`, `<desc>`, `<metadata>` create elements via `document.createElementNS("http://www.w3.org/2000/svg", tag)`
   - Updated `examples/21-jsx-integration/index.html` with enhanced factory
 
+## [1.6.8] - 2026-11-14
+
+### Changed
+
+- Reorganized `examples/experiments/` into `infrastructure/` (builder engine experiments: creation, reconciliation, MVVM and component patterns) and `enhancement/` (enhanced Document API and JSX preview built on the engine)
+- Refreshed `README.md` with clearer value proposition, usage guidance, and marketing-focused overview of DOM++ features
+- Tidied `examples/experiments/enhancement/index.html` example markup, comments, and styles (including Example 05 local stateful in stateless view)
+
+---
+
 ## [1.6.7] - 2026-11-13
 
 ### Added

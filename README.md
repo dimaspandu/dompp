@@ -1,12 +1,19 @@
 # DOMPP (DOM++)
 
-DOMPP (DOM plus plus) is a lightweight native DOM enhancement library focused on deterministic mutation, chainable APIs, optional reactivity, and JSX-compatible builders.
-
-The name "DOM++" is inspired by C++ naming style:
+**Build fast, native UIs without leaving the DOM.** DOMPP (DOM plus plus) enhances real browser nodes with chainable setters, optional reactivity, and a lightweight JSX-compatible builder engine — no virtual DOM, no compiler requirement, no wrapper objects.
 
 > DOM extended with small, explicit, chainable methods.
 
-DOMPP does not use a virtual DOM. It does not wrap elements in custom objects and does not require a compiler. It extends native DOM APIs with ergonomic setters while preserving direct access to the browser platform.
+If you like the simplicity of vanilla DOM but want a better developer experience, DOMPP gives you predictable, direct mutation with modern ergonomics.
+
+## Why DOMPP
+
+- **Native-first**: works with real `Element`, `DocumentFragment`, and existing/server-rendered HTML.
+- **Deterministic updates**: you mutate exactly what you mean — no hidden diff/reconciliation layer.
+- **Progressive by design**: start with setters, add state/signals/builders only where needed.
+- **Tiny mental model**: chainable APIs, explicit behavior, minimal runtime surface.
+- **Flexible rendering**: direct DOM enhancement, `componentBuilder` boundaries, and optional JSX syntax.
+- **Adoption-friendly**: enhance existing markup, integrate incrementally, or build from scratch.
 
 ## Install
 
@@ -23,12 +30,12 @@ createDOMPP(); // Node/tests; in browsers the default entry also installs global
 
 const card = document
   .createElement("div")
-  .setStyles({ padding: "20px", background: "black", color: "white" })
+  .setStyles({ padding: "20px", background: "#111", color: "#fff", borderRadius: "12px" })
   .setChildren(
     document.createElement("h1").setText("Hello DOM++"),
-    document.createElement("button").setText("Click Me").setEvents({
+    document.createElement("button").setText("Click me").setEvents({
       click() {
-        alert("DOM++");
+        alert("Built with DOM++");
       },
     })
   );
@@ -36,24 +43,24 @@ const card = document
 document.body.append(card);
 ```
 
-## Features Overview
+## Core APIs
 
-### Chainable DOM Setters
+### Chainable DOM setters
 
-All setters return the element for chaining:
+All setters return the element for fluent composition:
 
 | Method | Purpose |
 |--------|---------|
-| `setText(text \| fn)` | Set text content, optionally reactive |
-| `setChildren(...nodes)` | Replace children with elements, fragments, arrays |
-| `setStyles(obj)` | Apply CSS styles object |
-| `setAttributes(obj)` | Set HTML attributes |
-| `setEvents(obj)` | Attach event listeners |
-| `setState(obj)` | Local reactive state, triggers reruns |
-| `setEnhancement(fn)` | Progressive enhancement on existing DOM |
-| `setFineGrained()` | Opt-in to fine-grained signal reactivity |
+| `setText(text \| fn)` | Set text content (static or reactive) |
+| `setChildren(...nodes)` | Replace children with nodes, fragments, or arrays |
+| `setStyles(obj)` | Apply inline style updates |
+| `setAttributes(obj)` | Set attributes on the element |
+| `setEvents(obj)` | Attach/replace event listeners |
+| `setState(obj)` | Attach local state and trigger reactive reruns |
+| `setEnhancement(fn)` | Progressively enhance existing DOM |
+| `setFineGrained()` | Opt-in to fine-grained signal updates |
 
-### Reactive State Runtime
+### Local reactive state
 
 ```js
 const counter = document
@@ -67,22 +74,22 @@ const counter = document
   }));
 ```
 
-State changes trigger microtask-flushed reruns of all reactive setters on that element.
+State changes schedule microtask-flushed reruns for reactive setters on that element.
 
-### Fine-Grained Signals
+### Fine-grained signals
 
 ```js
 const [count, setCount] = document.createSignal(0);
 
-const title = document
+document
   .createElement("h1")
   .setFineGrained()
   .setText(() => count());
 ```
 
-Only consumers of `count()` rerun. No global flush.
+Only signal consumers rerun.
 
-### Existing DOM Enhancement
+### Progressive enhancement
 
 ```js
 document.getElementById("counter-app").setEnhancement(({ childNodes }) => {
@@ -94,28 +101,68 @@ document.getElementById("counter-app").setEnhancement(({ childNodes }) => {
 });
 ```
 
-Attaches behavior to server-rendered or static HTML without recreation.
+Attach behavior to server-rendered or static HTML without rebuilding it.
 
-### JSX Integration
+## Builder Engine (JSX-compatible)
 
-DOMPP works with JSX via a custom factory. Use Babel Standalone with `/** @jsx d */` pragma:
+DOMPP includes `elementBuilder` and `componentBuilder` for descriptor-based construction and local reconciliation — a small render engine on top of native DOM nodes.
+
+```js
+import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
+```
+
+### elementBuilder
+
+```jsx
+/** @jsx elementBuilder */
+elementBuilder("div", { class: "card" },
+  elementBuilder("h1", {}, "Title"),
+  elementBuilder("button", { onClick: () => console.log("click") }, "Click")
+);
+```
+
+- `elementBuilder(tag, props, ...children)` — create or adopt an element
+- `elementBuilder(existingNode, props, ...children)` — adopt existing DOM
+- `.reset()` — clear struct and live DOM for clean-slate updates
+
+### componentBuilder
+
+```jsx
+/** @jsx elementBuilder */
+let count = 0;
+
+const Counter = componentBuilder((rerender) => (
+  <section className="card">
+    <p>Count: {count}</p>
+    <button onClick={() => rerender(() => { count += 1; })}>Increment</button>
+  </section>
+));
+
+elementBuilder(document.getElementById("app"), null, Counter.render());
+```
+
+- `componentBuilder((rerender) => tree)` — stateful render boundary
+- `.render()` — mount and return builder/node
+- `.rerender(callback)` — update state then patch from new tree
+
+Entry points:
+- `@dimpandu/domplusplus` — install DOMPP APIs + builders
+- `@dimpandu/domplusplus/builders` — builders
+- `@dimpandu/domplusplus/builders-minimal` — builders only (no prototype/reactive installation)
+
+## JSX (Optional)
+
+Use any JSX transform that targets a custom factory (e.g. `elementBuilder` for builders, or a DOM factory for enhanced elements).
 
 ```js
 /** @jsx d */
 function d(tag, props, ...children) {
-  const svgTags = new Set([
-    "svg", "circle", "path", "rect", "line", "polyline", "polygon", "ellipse",
-    "g", "defs", "use", "symbol", "text", "tspan", "image", "foreignObject",
-  ]);
-
-  let node;
-  if (tag === "fragment" || tag === "Fragment") {
-    node = document.createDocumentFragment();
-  } else if (svgTags.has(tag)) {
-    node = document.createElementNS("http://www.w3.org/2000/svg", tag);
-  } else {
-    node = document.createElement(tag);
-  }
+  const svgTags = new Set(["svg","circle","path","rect","line","polyline","polygon","ellipse","g","defs","use","symbol","text","tspan","image","foreignObject"]);
+  const node = tag === "fragment" || tag === "Fragment"
+    ? document.createDocumentFragment()
+    : svgTags.has(tag)
+      ? document.createElementNS("http://www.w3.org/2000/svg", tag)
+      : document.createElement(tag);
 
   if (props) {
     const { style, className, class: classAttr, on, ...attrs } = props;
@@ -129,99 +176,23 @@ function d(tag, props, ...children) {
 }
 ```
 
-See `examples/21-jsx-integration/` for a live JSX demo.
+## Examples (35)
 
-### Element & Component Builders (1.2.0)
+The `examples/` directory contains 35 progressive, runnable examples:
 
-Descriptor-based builders for direct, local DOM reconciliation. No virtual DOM diff engine, no separate renderer runtime.
+**Foundations (01-08):** basic setters, mutation consistency, children vs childNodes, fragments.
 
-```js
-import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
-```
+**Reactive Runtime (09-20):** `setState`, reactive children, reusable/nested state, cross-element updates, enhancement, signals, equality, keys, identity preservation, feeds.
 
-#### elementBuilder
+**JSX & Builders (21-35):** JSX integration, element/component builders, MVVM, conditionals, keyed lists, fragments/arrays, server adoption, reactive server messenger, independent BigView updates, MVVM sections, security boundary, outlet patterns (`reset()` / `rerender()`), and local stateful inside stateless (ViewModel-driven).
 
-```jsx
-/** @jsx elementBuilder */
-elementBuilder("div", { class: "card" },
-  elementBuilder("h1", {}, "Title"),
-  elementBuilder("button", { onClick: () => console.log("click") }, "Click")
-);
-```
+Browse: `examples/` or run locally and open `http://localhost:5173`.
 
-* `elementBuilder(tag, props, ...children)` — creates or adopts element
-* `elementBuilder(existingNode, props, ...children)` — adopts existing DOM node
-* `.reset()` — clears styles, attributes, children, events on struct and live node
+## Experiments
 
-#### componentBuilder
-
-```jsx
-/** @jsx elementBuilder */
-const Counter = componentBuilder((rerender) => (
-  <section className="card">
-    <p>Count: {count}</p>
-    <button onClick={() => rerender(() => { count += 1; })}>
-      Increment
-    </button>
-  </section>
-));
-
-elementBuilder(document.getElementById("app"), null, Counter.render());
-```
-
-* `componentBuilder((rerender) => tree)` — stateful render boundary
-* `.render()` — returns mounted node
-* `.rerender(callback)` — runs callback, then `_patchFrom()` full replacement
-
-Builder entry points:
-* Default: `@dimpandu/domplusplus` (installs DOMPP APIs; exposes `createDOMPP`)
-* Builders: `@dimpandu/domplusplus/builders`
-* Builders only (no prototype/reactive wrapper installation): `@dimpandu/domplusplus/builders-minimal`
-
-## Example Coverage
-
-The `examples/` directory contains 35 progressive examples:
-
-**Foundations (01-08)**
-* 01 Basic Text — `setText()`
-* 02 Basic Styles — `setStyles()`
-* 03 Basic Attributes — `setAttributes()`
-* 04 Basic Children — `setChildren()`
-* 05 Basic Events — `setEvents()`
-* 06 Mutation Consistency — unified setter patterns
-* 07 Children vs ChildNodes — structural vs raw node access
-* 08 Fragment Support — DocumentFragment usage
-
-**Reactive Runtime (09-20)**
-* 09 Reactive Counter — local `setState()` with reactive text/styles/attributes
-* 10 Reactive Children — dynamic child trees from state
-* 11 Reusable Stateful Elements — element reuse across parents
-* 12 Cross-Element State — coordinated mutations via `setState()`
-* 13 Existing DOM Enhancement — `setEnhancement()` progressive enhancement
-* 14 Fine-Grained Signals — `createSignal()`, `setFineGrained()`
-* 15 Enhancement + Signals — reactive progressive enhancement
-* 16 State Equality Behavior — reference vs value equality
-* 17 Nested Stateful Elements — independent nested state
-* 18 Keyed List Behavior — stable keys for list reconciliation
-* 19 DOM Identity Preservation — focus/selection preservation
-* 20 Reactive Feed — prepend/append feed patterns
-
-**JSX & Builders (21-35)**
-* 21 JSX Integration — Babel Standalone, custom factory, all reactive features
-* 22 Element Builder — descriptor API, direct setters, JSX factory
-* 23 Component Builder — `componentBuilder`, `render()`, `rerender(callback)`
-* 24 MVVM Component Builder — Model/ViewModel/View layering
-* 25 Conditional Rendering — `null` children, dynamic presence
-* 26 Keyed List — reconciliation with stable keys
-* 27 Fragments and Arrays — fragment boundaries, array components
-* 28 Server DOM Adoption — adoption of server-rendered HTML
-* 29 Reactive Server Messenger — component over adopted server root
-* 30 BigView Independent Updates — stable root, direct mutations, coordinated rerenders
-* 31 MVVM BigView Sections — topic-based selective rerenders
-* 32 Security Boundary — attribute validation, text rendering for untrusted content
-* 33 elementBuilder Outlet with reset() — clean slate route transitions
-* 34 componentBuilder Outlet with rerender() — `_patchFrom` route transitions
-* 35 Local Stateful Inside Stateless (ViewModel) — local `componentBuilder` subtree rerendered by ViewModel notifications within a stateless container
+`examples/experiments/` is organized into:
+- `infrastructure/` — builder engine experiments (creation, reconciliation, MVVM/component patterns).
+- `enhancement/` — enhanced Document API and JSX preview patterns built on the engine.
 
 ## Local Development
 
@@ -232,7 +203,7 @@ npm install
 npm run dev
 ```
 
-Open `http://localhost:5173`. All 35 examples run live with source viewer.
+Open `http://localhost:5173`. Examples run live with source viewers.
 
 ## Testing
 
@@ -242,30 +213,27 @@ npm test
 
 ## Design Principles
 
-* Explicit over magical behavior
-* Native platform first
-* No virtual DOM
-* No hidden reconciliation
-* No compiler required
-* Minimal runtime surface area
-* Predictable mutation flow
-* Optional reactivity
+- Explicit over magical behavior
+- Native platform first
+- No virtual DOM
+- No hidden reconciliation
+- No compiler required
+- Minimal runtime surface area
+- Predictable mutation flow
+- Optional reactivity
 
-## Architecture Documentation
+## Documentation
 
-See `docs/architecture/README.md` for runtime flow diagrams, builder architecture, and design philosophy.
+- Architecture and diagrams: `docs/architecture/README.md`
+- Live docs: https://dompp.digital/
 
 ## Status
 
-DOMPP is experimental and under active iteration. Breaking changes may occur while APIs and runtime architecture continue evolving.
+DOMPP is experimental and under active iteration. APIs may evolve.
 
 ## Contributing
 
 Contributions are welcome. Please read `CONTRIBUTING.md` before submitting large architectural changes.
-
-## Live Documentation
-
-https://dompp.digital/
 
 ## License
 
