@@ -22,7 +22,9 @@
     <span class="tag">01 · BASIC DOM</span>
     <h2>Direct element mutation</h2>
     <p>Create elements with the builder API, keep references, and update only the nodes that change. No component rerender is involved.</p>
-    <div id="basic-app"></div>
+    <div id="basic-app-01.0"></div>
+    <hr />
+    <div id="basic-app-01.1"></div>
   </article>
 
   <article>
@@ -930,6 +932,7 @@ function defineOn(
   //   }
   // );
 
+  // Install setters
   defineOn(
     Element.prototype,
     "setAttributes",
@@ -969,16 +972,33 @@ function defineOn(
       return new ElementBuilder(this).setText(text);
     }
   );
+
+  // Monkey Patching for createElement
+  // 1. Simpan fungsi bawaan asli browser agar tidak hilang
+  const originalCreateElement = Document.prototype.createElement;
+
+  // 2. Timpa fungsi bawaan dengan logika kustom
+  Document.prototype.createElement = function(tagName, options, ...rest) {
+    // TETAP teruskan options asli ke browser agar Custom Elements tidak rusak
+    const element = originalCreateElement.call(this, tagName, options, ...rest);
+
+    // Periksa apakah 'options' adalah objek kustom (bukan objek { is: "..." })
+    if (options && typeof options === 'object' && !('is' in options)) {
+      return elementBuilder(tagName, options, rest);
+    }
+
+    return element;
+  };
 })(window.document);
 </script>
 
-<!-- Example 01: Basic imperative DOM++ usage (direct element mutation). -->
+<!-- Example 01.0: Basic imperative DOM++ usage (direct element mutation). -->
 <script>
 (function({ document }) {
   let basicLikes = 0;
   let basicCount;
 
-  document.getElementById("basic-app")
+  document.getElementById("basic-app-01.0")
   .setAttributes({
     class: "demo-surface basic-surface"
   })
@@ -1006,42 +1026,82 @@ function defineOn(
 })(window);
 </script>
 
-<!-- Examples 02-05: JSX examples compiled by Babel using document.createElement. -->
-<script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
-/** @jsxRuntime classic */
-/** @jsx document.createElement */
-/** @jsxFrag document.createDocumentFragment */
-
-// Example 02: Basic DOM with JSX (direct element mutation, no component rerender).
+<!-- Example 01.1: Basic imperative DOM++ usage (direct element mutation - AUTO RERENDER OPTIMIZATION). -->
+<script>
 (function({ document }) {
   let basicLikes = 0;
+  let basicApp;
   let basicCount;
 
-  function BasicApp(_props, ...children) {
-    return document.getElementById(
-      "basic-jsx-app",
-      { class: "demo-surface jsx-surface" },
-      ...children
-    );
-  }
+  basicApp = document.getElementById("basic-app-01.1")
+  .setAttributes({
+    class: "demo-surface basic-surface"
+  })
+  .setStyles({
+    backgroundColor: "#fffebb"
+  })
+  .setChildren(renderChildren());
 
-  <BasicApp>
-    <div class="like-row">
-      {basicCount = <strong>{basicLikes}</strong>}
-      <span> likes</span>
-    </div>
-    <button
-      class="like-button"
-      type="button"
-      onClick={() => {
-        basicLikes++;
-        basicCount.setText(basicLikes);
-      }}
-    >
-      ♥ Like
-    </button>
-  </BasicApp>;
+  function renderChildren() {
+    const children = [
+      document.createElement("div", { class: "like-row" }, 
+        basicCount = document.createElement("strong").setText(basicLikes),
+        document.createElement("span").setText(" likes")
+      ),
+      document.createElement("button", {
+        class: "like-button",
+        type: "button",
+        onClick() {
+          basicLikes++;
+          basicApp.setChildren(renderChildren());
+        }
+      }, "♥ Like")
+    ];
+    console.log("THE CHEAP CHILDREN:", children);
+    console.log("BECAUSE APPART FROM THE RECONCILIATION PROCESS, THERE'S NO WASTED NODE:", children.map(child => ({
+      wastedNode: child.node,
+    })));
+    return children;
+  }
 })(window);
+</script>
+
+<!-- Examples 02-05: JSX examples compiled by Babel using document.createElement. -->
+<script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
+// /** @jsxRuntime classic */
+// /** @jsx document.createElement */
+// /** @jsxFrag document.createDocumentFragment */
+
+// // Example 02: Basic DOM with JSX (direct element mutation, no component rerender).
+// (function({ document }) {
+//   let basicLikes = 0;
+//   let basicCount;
+
+//   function BasicApp(_props, ...children) {
+//     return document.getElementById(
+//       "basic-jsx-app",
+//       { class: "demo-surface jsx-surface" },
+//       ...children
+//     );
+//   }
+
+//   <BasicApp>
+//     <div class="like-row">
+//       {basicCount = <strong>{basicLikes}</strong>}
+//       <span> likes</span>
+//     </div>
+//     <button
+//       class="like-button"
+//       type="button"
+//       onClick={() => {
+//         basicLikes++;
+//         basicCount.setText(basicLikes);
+//       }}
+//     >
+//       ♥ Like
+//     </button>
+//   </BasicApp>;
+// })(window);
 
 // // Example 03: Component with JSX (render + rerender patches the existing DOM).
 // document.enhance(({ document }) => {
