@@ -199,7 +199,6 @@ article > p {
   transform: translateY(0);
 }
 
-/* Modifikasi tombol like saat dalam kondisi disabled */
 .like-button:disabled {
   background: #cbd5e1;
   color: #64748b;
@@ -249,7 +248,7 @@ code {
     padding: 16px;
   }
   
-  demo-surface {
+  .demo-surface {
     padding: 14px;
   }
   
@@ -310,11 +309,12 @@ code {
 <footer>DOM++ preview · Engine embedded · Babel Standalone required for JSX examples</footer>
 </main>
 
-<!-- Existing DOM++ engine: intentionally kept intact. -->
+<!-- Engine: ElementBuilder and ComponentBuilder runtime (no JSX dependency). -->
 <script>
 /*
- * DOM++ builder experiments engine.
- * This file contains the non-JSX ElementBuilder and ComponentBuilder runtime.
+ * DOM++ builder engine.
+ * Provides the virtual element descriptor, DOM reconciliation, and component
+ * render/rerender primitives. Can be loaded and tested independently.
  */
 
 // SVG elements need their namespace when they are created.
@@ -1099,110 +1099,76 @@ function componentBuilder(builder) {
 // End of the existing ElementBuilder / ComponentBuilder engine.
 </script>
 
-<!-- Enhanced document adapter: separate from the existing builder engine. -->
+<!-- Enhanced document adapter: bridges the builder engine to the native DOM API. -->
 <script>
-(function installDocumentEnhancement({ Document, document }) {
-  function defineOn(
-    proto,
-    name,
-    fn
-  ) {
-
+(function installDocumentEnhancement(nativeDocument) {
+  function defineOn(proto, name, fn) {
     if (!proto[name]) {
-
-      Object.defineProperty(
-        proto,
-        name,
-        {
-          value: fn,
-          writable: false,
-          configurable: true
-        }
-      );
+      Object.defineProperty(proto, name, {
+        value: fn,
+        writable: false,
+        configurable: true,
+      });
     }
   }
 
-  // Install setters
-  defineOn(
-    Element.prototype,
-    "setAttributes",
-    function(attrs = {}) {
-      return new ElementBuilder(this).setAttributes(attrs);
-    }
-  );
+  defineOn(Element.prototype, "setAttributes", function(attrs = {}) {
+    return new ElementBuilder(this).setAttributes(attrs);
+  });
 
-  defineOn(
-    Element.prototype,
-    "setStyles",
-    function(styles = {}) {
-      return new ElementBuilder(this).setStyles(styles);
-    }
-  );
+  defineOn(Element.prototype, "setStyles", function(styles = {}) {
+    return new ElementBuilder(this).setStyles(styles);
+  });
 
-  defineOn(
-    Element.prototype,
-    "setEvents",
-    function(events = {}) {
-      return new ElementBuilder(this).setEvents(events);
-    }
-  );
+  defineOn(Element.prototype, "setEvents", function(events = {}) {
+    return new ElementBuilder(this).setEvents(events);
+  });
 
-  defineOn(
-    Element.prototype,
-    "setChildren",
-    function(children) {
-      return new ElementBuilder(this).setChildren(children);
-    }
-  );
+  defineOn(Element.prototype, "setChildren", function(children) {
+    return new ElementBuilder(this).setChildren(children);
+  });
 
-  defineOn(
-    Element.prototype,
-    "setText",
-    function(text) {
-      return new ElementBuilder(this).setText(text);
-    }
-  );
+  defineOn(Element.prototype, "setText", function(text) {
+    return new ElementBuilder(this).setText(text);
+  });
 
-  defineOn(
-    Document.prototype,
-    "createComponent",
-    function(builder) {
-      return componentBuilder(builder);
-    }
-  );
+  defineOn(Document.prototype, "createComponent", function(builder) {
+    return componentBuilder(builder);
+  });
 
-  // Monkey Patching for createElement
-  // 1. Simpan fungsi bawaan asli browser agar tidak hilang
+  defineOn(Document.prototype, "createDocumentFragment", function(...children) {
+    return elementBuilder.fragment(...children);
+  });
+
   const originalCreateElement = Document.prototype.createElement;
 
-  // 2. Timpa fungsi bawaan dengan logika kustom
   Document.prototype.createElement = function(tagName, options, ...rest) {
+    // Custom component function (used by JSX pragmas).
     if (typeof tagName === "function") {
       return elementBuilder(tagName, options, ...rest);
     }
 
+    // Adopt an existing element node.
     if (tagName && tagName.nodeType === 1) {
       return elementBuilder(tagName, options, ...rest);
     }
 
-    // Periksa apakah 'options' adalah objek kustom (bukan objek { is: "..." })
-    if (options && typeof options === 'object' && !('is' in options)) {
+    // Treat plain option objects as builder props, but preserve native { is: ... }.
+    if (options && typeof options === "object" && !("is" in options)) {
       return elementBuilder(tagName, options, ...rest);
     }
 
+    // JSX without props passes (tag, null, ...children).
     if (rest.length > 0) {
       return elementBuilder(tagName, options, ...rest);
     }
 
-    // TETAP teruskan options asli ke browser agar Custom Elements tidak rusak
     return originalCreateElement.call(this, tagName, options, ...rest);
   };
-
-  Document.prototype.componentBuilder = componentBuilder;
-})(window);
+})(window.document);
 </script>
 
-<!-- Example 01.0: Basic imperative DOM++ usage (direct element mutation). -->
+<!-- Example 01.0: Basic DOM (direct element mutation). -->
 <script>
 (function({ document }) {
   let basicLikes = 0;
@@ -1210,91 +1176,72 @@ function componentBuilder(builder) {
   let basicButton;
 
   document.getElementById("basic-app-01.0")
-  .setAttributes({
-    class: "demo-surface basic-surface",
-  })
-  .setStyles({
-    backgroundColor: "#fffebb",
-  })
-  .setChildren([
-    document.createElement("div")
-    .setAttributes({ class: "like-row" })
+    .setAttributes({ class: "demo-surface basic-surface" })
+    .setStyles({ backgroundColor: "#fffebb" })
     .setChildren([
-      basicCount = document.createElement("strong").setText(basicLikes),
-      document.createElement("span").setText(" likes")
-    ]),
-    basicButton = document.createElement("button")
-    .setAttributes({
-      class: "like-button",
-      type: "button",
-    })
-    .setText("♥ Like")
-    .setEvents({
-      click() {
-        basicLikes++;
-        if (basicLikes % 2 !== 0) {
-          basicButton.setStyles({
-            fontStyle: "italic",
-          });
-        } else {
-          basicButton.setStyles({
-            fontStyle: "normal",
-          });
-        }
-        basicCount.setText(basicLikes);
-        if (basicLikes === 10) {
-          basicButton.setAttributes({
-            disabled: true,
-          });
-        }
-      }
-    })
-  ]);
+      document.createElement("div")
+        .setAttributes({ class: "like-row" })
+        .setChildren([
+          (basicCount = document.createElement("strong").setText(basicLikes)),
+          document.createElement("span").setText(" likes"),
+        ]),
+      (basicButton = document.createElement("button")
+        .setAttributes({ class: "like-button", type: "button" })
+        .setText("♥ Like")
+        .setEvents({
+          click() {
+            basicLikes++;
+            basicButton.setStyles({
+              fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal",
+            });
+            basicCount.setText(basicLikes);
+            if (basicLikes === 10) {
+              basicButton.setAttributes({ disabled: true });
+            }
+          },
+        })),
+    ]);
 })(window);
 </script>
 
-<!-- Example 01.1: Basic imperative DOM++ usage (direct element mutation - AUTO RERENDER OPTIMIZATION). -->
+<!-- Example 01.1: Basic DOM (direct element mutation with child reconciliation). -->
 <script>
 (function({ document }) {
   let basicLikes = 0;
   let basicApp;
-  let basicCount;
 
   basicApp = document.createElement(
     document.getElementById("basic-app-01.1"),
     {
       className: "demo-surface basic-surface",
-      styles: {
-        backgroundColor: "#fffebb",
-      },
+      styles: { backgroundColor: "#fffebb" },
     },
     renderChildren()
   );
 
   function renderChildren() {
-    const children = [
-      document.createElement("div", { class: "like-row" }, 
-        basicCount = document.createElement("strong").setText(basicLikes),
+    return [
+      document.createElement(
+        "div",
+        { class: "like-row" },
+        document.createElement("strong").setText(basicLikes),
         document.createElement("span").setText(" likes")
       ),
-      document.createElement("button", {
-        class: "like-button",
-        styles: {
-          fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal",
+      document.createElement(
+        "button",
+        {
+          class: "like-button",
+          type: "button",
+          styles: { fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal" },
+          disabled: basicLikes === 10,
+          onClick() {
+            basicLikes++;
+            basicApp.setChildren(renderChildren());
+          },
         },
-        disabled: basicLikes === 10 ? true : false,
-        type: "button",
-        onClick() {
-          basicLikes++;
-          basicApp.setChildren(renderChildren());
-        }
-      }, "♥ Like")
+        "♥ Like"
+      ),
     ];
-    console.log("THE CHEAP CHILDREN:", children);
-    console.log("BECAUSE APPART FROM THE RECONCILIATION PROCESS, THERE'S NO WASTED NODE:", children.map(child => ({
-      wastedNode: child.node,
-    })));
-    return children;
   }
 })(window);
 </script>
@@ -1404,11 +1351,11 @@ function componentBuilder(builder) {
     </section>
   ));
 
-  // example without using setChildren
+  // Example without using setChildren.
   document.createElement(
     document.getElementById("mvvm-app"),
     null,
-    likeComponent.render(),
+    likeComponent.render()
   );
 
   viewModel.subscribe(() => likeComponent.rerender());
