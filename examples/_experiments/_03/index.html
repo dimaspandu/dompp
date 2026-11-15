@@ -5,7 +5,259 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DOM++ — Enhanced Document & JSX Preview</title>
 <style>
-:root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:#f8fafc;color:#172033}*{box-sizing:border-box}body{margin:0;padding:44px 20px 72px}main{width:min(960px,100%);margin:auto}header{margin-bottom:32px}.eyebrow{color:#64748b;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}h1{margin:8px 0 10px;font-size:clamp(30px,5vw,44px);letter-spacing:-.04em}header p{max-width:720px;margin:0;color:#64748b;line-height:1.65}.examples{display:grid;gap:18px}article{padding:22px;border:1px solid #e2e8f0;border-radius:18px;background:white;box-shadow:0 8px 28px #0f172a08}article h2{margin:0 0 6px;font-size:18px}article>p{margin:0 0 18px;color:#64748b;font-size:14px;line-height:1.55}.demo-surface{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:92px;padding:18px 20px;border-radius:14px}.basic-surface{background:#f3e8ff;color:#581c87}.jsx-surface{background:#ffedd5;color:#9a3412}.component-surface{background:#e0f2fe;color:#075985}.mvvm-surface{background:#dcfce7;color:#166534}.lsisv-surface{flex-direction:column;align-items:stretch;gap:12px;background:#fef3c7;color:#92400e}.stateful-card{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border-radius:12px;background:#fff;border:1px solid #fcd34d}.stateful-card h3{margin:0;font-size:24px;font-variant-numeric:tabular-nums}.lsisv-header h2{margin:0 0 4px;font-size:18px;color:#92400e}.lsisv-header p{margin:0;color:#b45309;font-size:14px;line-height:1.5}.action-button{border:0;border-radius:999px;padding:11px 18px;background:#d97706;color:white;font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:transform .15s,background .15s}.action-button:hover{background:#b45309;transform:translateY(-1px)}.action-button:active{transform:translateY(0)}.like-row{display:flex;align-items:baseline;gap:6px;font-size:15px}.like-row strong{font-size:30px;font-variant-numeric:tabular-nums}.like-button{border:0;border-radius:999px;padding:11px 18px;background:#e11d48;color:white;font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:transform .15s,background .15s}.like-button:hover{background:#be123c;transform:translateY(-1px)}.like-button:active{transform:translateY(0)}.tag{display:inline-block;margin-bottom:10px;padding:4px 8px;border-radius:6px;background:#f1f5f9;color:#475569;font-size:11px;font-weight:700;letter-spacing:.04em}footer{margin-top:28px;color:#94a3b8;font-size:12px;text-align:center}.source-note{margin-top:12px;padding:10px 12px;border-radius:9px;background:#f8fafc;color:#64748b;font-size:12px;line-height:1.5}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}@media(max-width:520px){body{padding:28px 14px 48px}article{padding:16px}.demo-surface{padding:14px}.stateful-card{flex-direction:column;align-items:flex-start}}
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f8fafc;
+  color: #172033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 44px 20px 72px;
+}
+
+main {
+  width: min(960px, 100%);
+  margin: auto;
+}
+
+header {
+  margin-bottom: 32px;
+}
+
+.eyebrow {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 8px 0 10px;
+  font-size: clamp(30px, 5vw, 44px);
+  letter-spacing: -.04em;
+}
+
+header p {
+  max-width: 720px;
+  margin: 0;
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.examples {
+  display: grid;
+  gap: 18px;
+}
+
+article {
+  padding: 22px;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: white;
+  box-shadow: 0 8px 28px #0f172a08;
+}
+
+article h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+}
+
+article > p {
+  margin: 0 0 18px;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.demo-surface {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 92px;
+  padding: 18px 20px;
+  border-radius: 14px;
+}
+
+.basic-surface {
+  background: #f3e8ff;
+  color: #581c87;
+}
+
+.jsx-surface {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.component-surface {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.mvvm-surface {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.lsisv-surface {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.stateful-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.stateful-card h3 {
+  margin: 0;
+  font-size: 24px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lsisv-header h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+  color: #92400e;
+}
+
+.lsisv-header p {
+  margin: 0;
+  color: #b45309;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.action-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 18px;
+  background: #d97706;
+  color: white;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s, background .15s;
+}
+
+.action-button:hover {
+  background: #b45309;
+  transform: translateY(-1px);
+}
+
+.action-button:active {
+  transform: translateY(0);
+}
+
+.like-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 15px;
+}
+
+.like-row strong {
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+}
+
+.like-button {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 18px;
+  background: #e11d48;
+  color: white;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform .15s, background .15s;
+}
+
+.like-button:hover {
+  background: #be123c;
+  transform: translateY(-1px);
+}
+
+.like-button:active {
+  transform: translateY(0);
+}
+
+/* Modifikasi tombol like saat dalam kondisi disabled */
+.like-button:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.tag {
+  display: inline-block;
+  margin-bottom: 10px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+footer {
+  margin-top: 28px;
+  color: #94a3b8;
+  font-size: 12px;
+  text-align: center;
+}
+
+.source-note {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+@media (max-width: 520px) {
+  body {
+    padding: 28px 14px 48px;
+  }
+  
+  article {
+    padding: 16px;
+  }
+  
+  demo-surface {
+    padding: 14px;
+  }
+  
+  .stateful-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
 </style>
 <!-- Babel is used only to compile the JSX examples in this preview. -->
 <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -979,15 +1231,17 @@ function defineOn(
 
   // 2. Timpa fungsi bawaan dengan logika kustom
   Document.prototype.createElement = function(tagName, options, ...rest) {
-    // TETAP teruskan options asli ke browser agar Custom Elements tidak rusak
-    const element = originalCreateElement.call(this, tagName, options, ...rest);
+    if (tagName.nodeType === 1) {
+      return elementBuilder(tagName, options, rest);
+    }
 
     // Periksa apakah 'options' adalah objek kustom (bukan objek { is: "..." })
     if (options && typeof options === 'object' && !('is' in options)) {
       return elementBuilder(tagName, options, rest);
     }
 
-    return element;
+    // TETAP teruskan options asli ke browser agar Custom Elements tidak rusak
+    return originalCreateElement.call(this, tagName, options, ...rest);
   };
 })(window.document);
 </script>
@@ -996,30 +1250,46 @@ function defineOn(
 <script>
 (function({ document }) {
   let basicLikes = 0;
+  let basicApp;
   let basicCount;
+  let basicButton;
 
-  document.getElementById("basic-app-01.0")
+  basicApp = document.getElementById("basic-app-01.0")
   .setAttributes({
-    class: "demo-surface basic-surface"
+    class: "demo-surface basic-surface",
   })
   .setStyles({
-    backgroundColor: "#fffebb"
+    backgroundColor: "#fffebb",
   })
   .setChildren([
     document.createElement("div").setAttributes({ class: "like-row" }).setChildren([
       basicCount = document.createElement("strong").setText(basicLikes),
       document.createElement("span").setText(" likes")
     ]),
-    document.createElement("button")
+    basicButton = document.createElement("button")
     .setAttributes({
       class: "like-button",
-      type: "button"
+      type: "button",
     })
     .setText("♥ Like")
     .setEvents({
       click() {
         basicLikes++;
+        if (basicLikes % 2 !== 0) {
+          basicApp.setStyles({
+            backgroundColor: "#c1ffe0",
+          });
+        } else {
+          basicApp.setStyles({
+            backgroundColor: "#fffebb",
+          });
+        }
         basicCount.setText(basicLikes);
+        if (basicLikes === 10) {
+          basicButton.setAttributes({
+            disabled: true,
+          });
+        }
       }
     })
   ]);
@@ -1033,14 +1303,16 @@ function defineOn(
   let basicApp;
   let basicCount;
 
-  basicApp = document.getElementById("basic-app-01.1")
-  .setAttributes({
-    class: "demo-surface basic-surface"
-  })
-  .setStyles({
-    backgroundColor: "#fffebb"
-  })
-  .setChildren(renderChildren());
+  basicApp = document.createElement(
+    document.getElementById("basic-app-01.1"),
+    {
+      className: "demo-surface basic-surface",
+      styles: {
+        backgroundColor: "#fffebb"
+      }
+    },
+    renderChildren()
+  );
 
   function renderChildren() {
     const children = [
@@ -1050,6 +1322,7 @@ function defineOn(
       ),
       document.createElement("button", {
         class: "like-button",
+        disabled: basicLikes === 10 ? true : false,
         type: "button",
         onClick() {
           basicLikes++;
