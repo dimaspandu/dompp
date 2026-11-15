@@ -1101,88 +1101,26 @@ function componentBuilder(builder) {
 
 <!-- Enhanced document adapter: separate from the existing builder engine. -->
 <script>
-function defineOn(
-  proto,
-  name,
-  fn
-) {
+(function installDocumentEnhancement({ Document, document }) {
+  function defineOn(
+    proto,
+    name,
+    fn
+  ) {
 
-  if (!proto[name]) {
+    if (!proto[name]) {
 
-    Object.defineProperty(
-      proto,
-      name,
-      {
-        value: fn,
-        writable: false,
-        configurable: true
-      }
-    );
+      Object.defineProperty(
+        proto,
+        name,
+        {
+          value: fn,
+          writable: false,
+          configurable: true
+        }
+      );
+    }
   }
-}
-
-(function installDocumentEnhancement(nativeDocument) {
-  const enhancedDocuments = new WeakMap();
-
-  function createEnhancedDocument() {
-    const facade = {
-      createElement(selector, attributes, ...children) {
-        return elementBuilder(selector, attributes, ...children);
-      },
-      createComponent(builder) {
-        return componentBuilder(builder);
-      },
-      getElementById(id, attributes, ...children) {
-        const element = nativeDocument.getElementById(id);
-        return element ? elementBuilder(element, attributes, ...children) : null;
-      },
-      querySelector(selector, attributes, ...children) {
-        const element = nativeDocument.querySelector(selector);
-        return element ? elementBuilder(element, attributes, ...children) : null;
-      },
-      querySelectorAll(selector) {
-        return Array.from(nativeDocument.querySelectorAll(selector), element => adoptElement(element));
-      },
-      getElementsByClassName(name) {
-        return Array.from(nativeDocument.getElementsByClassName(name), element => adoptElement(element));
-      },
-      getElementsByTagName(name) {
-        return Array.from(nativeDocument.getElementsByTagName(name), element => adoptElement(element));
-      }
-    };
-
-    return new Proxy(facade, {
-      get(target, property, receiver) {
-        if (Reflect.has(target, property)) return Reflect.get(target, property, receiver);
-        const value = Reflect.get(nativeDocument, property, nativeDocument);
-        return typeof value === "function" ? value.bind(nativeDocument) : value;
-      },
-      set(target, property, value, receiver) {
-        if (Reflect.has(target, property)) return Reflect.set(target, property, value, receiver);
-        nativeDocument[property] = value;
-        return true;
-      },
-      has(target, property) {
-        return Reflect.has(target, property) || property in nativeDocument;
-      }
-    });
-  }
-
-  // defineOn(
-  //   Document.prototype,
-  //   "enhance",
-  //   function(callback) {
-  //     if (typeof callback !== "function") {
-  //       throw new TypeError("document.enhance() expects a callback.");
-  //     }
-  //     let facade = enhancedDocuments.get(this);
-  //     if (!facade) {
-  //       facade = createEnhancedDocument();
-  //       enhancedDocuments.set(this, facade);
-  //     }
-  //     callback({ document: facade });
-  //   }
-  // );
 
   // Install setters
   defineOn(
@@ -1225,36 +1163,53 @@ function defineOn(
     }
   );
 
+  defineOn(
+    Document.prototype,
+    "createComponent",
+    function(builder) {
+      return componentBuilder(builder);
+    }
+  );
+
   // Monkey Patching for createElement
   // 1. Simpan fungsi bawaan asli browser agar tidak hilang
   const originalCreateElement = Document.prototype.createElement;
 
   // 2. Timpa fungsi bawaan dengan logika kustom
   Document.prototype.createElement = function(tagName, options, ...rest) {
-    if (tagName.nodeType === 1) {
-      return elementBuilder(tagName, options, rest);
+    if (typeof tagName === "function") {
+      return elementBuilder(tagName, options, ...rest);
+    }
+
+    if (tagName && tagName.nodeType === 1) {
+      return elementBuilder(tagName, options, ...rest);
     }
 
     // Periksa apakah 'options' adalah objek kustom (bukan objek { is: "..." })
     if (options && typeof options === 'object' && !('is' in options)) {
-      return elementBuilder(tagName, options, rest);
+      return elementBuilder(tagName, options, ...rest);
+    }
+
+    if (rest.length > 0) {
+      return elementBuilder(tagName, options, ...rest);
     }
 
     // TETAP teruskan options asli ke browser agar Custom Elements tidak rusak
     return originalCreateElement.call(this, tagName, options, ...rest);
   };
-})(window.document);
+
+  Document.prototype.componentBuilder = componentBuilder;
+})(window);
 </script>
 
 <!-- Example 01.0: Basic imperative DOM++ usage (direct element mutation). -->
 <script>
 (function({ document }) {
   let basicLikes = 0;
-  let basicApp;
   let basicCount;
   let basicButton;
 
-  basicApp = document.getElementById("basic-app-01.0")
+  document.getElementById("basic-app-01.0")
   .setAttributes({
     class: "demo-surface basic-surface",
   })
@@ -1262,7 +1217,9 @@ function defineOn(
     backgroundColor: "#fffebb",
   })
   .setChildren([
-    document.createElement("div").setAttributes({ class: "like-row" }).setChildren([
+    document.createElement("div")
+    .setAttributes({ class: "like-row" })
+    .setChildren([
       basicCount = document.createElement("strong").setText(basicLikes),
       document.createElement("span").setText(" likes")
     ]),
@@ -1276,12 +1233,12 @@ function defineOn(
       click() {
         basicLikes++;
         if (basicLikes % 2 !== 0) {
-          basicApp.setStyles({
-            backgroundColor: "#c1ffe0",
+          basicButton.setStyles({
+            fontStyle: "italic",
           });
         } else {
-          basicApp.setStyles({
-            backgroundColor: "#fffebb",
+          basicButton.setStyles({
+            fontStyle: "normal",
           });
         }
         basicCount.setText(basicLikes);
@@ -1308,8 +1265,8 @@ function defineOn(
     {
       className: "demo-surface basic-surface",
       styles: {
-        backgroundColor: "#fffebb"
-      }
+        backgroundColor: "#fffebb",
+      },
     },
     renderChildren()
   );
@@ -1322,6 +1279,9 @@ function defineOn(
       ),
       document.createElement("button", {
         class: "like-button",
+        styles: {
+          fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal",
+        },
         disabled: basicLikes === 10 ? true : false,
         type: "button",
         onClick() {
@@ -1341,171 +1301,183 @@ function defineOn(
 
 <!-- Examples 02-05: JSX examples compiled by Babel using document.createElement. -->
 <script type="text/babel" data-presets="env" data-plugins="transform-react-jsx">
-// /** @jsxRuntime classic */
-// /** @jsx document.createElement */
-// /** @jsxFrag document.createDocumentFragment */
+/** @jsxRuntime classic */
+/** @jsx document.createElement */
+/** @jsxFrag document.createDocumentFragment */
 
-// // Example 02: Basic DOM with JSX (direct element mutation, no component rerender).
-// (function({ document }) {
-//   let basicLikes = 0;
-//   let basicCount;
+// Example 02: Basic DOM with JSX (direct element mutation, no component rerender).
+(function({ document }) {
+  let basicLikes = 0;
+  let basicCount;
 
-//   function BasicApp(_props, ...children) {
-//     return document.getElementById(
-//       "basic-jsx-app",
-//       { class: "demo-surface jsx-surface" },
-//       ...children
-//     );
-//   }
+  function BasicApp(_props, ...children) {
+    return document.createElement(
+      document.getElementById("basic-jsx-app"),
+      _props,
+      ...children
+    );
+  }
 
-//   <BasicApp>
-//     <div class="like-row">
-//       {basicCount = <strong>{basicLikes}</strong>}
-//       <span> likes</span>
-//     </div>
-//     <button
-//       class="like-button"
-//       type="button"
-//       onClick={() => {
-//         basicLikes++;
-//         basicCount.setText(basicLikes);
-//       }}
-//     >
-//       ♥ Like
-//     </button>
-//   </BasicApp>;
-// })(window);
+  <BasicApp
+    className="demo-surface jsx-surface"
+    styles={{
+      backgroundColor: "#fffebb",
+    }}
+  >
+    <div class="like-row">
+      {basicCount = <strong>{basicLikes}</strong>}
+      <span> likes</span>
+    </div>
+    <button
+      class="like-button"
+      type="button"
+      onClick={() => {
+        basicLikes++;
+        basicCount.setText(basicLikes);
+      }}
+    >
+      ♥ Like
+    </button>
+  </BasicApp>
+})(window);
 
-// // Example 03: Component with JSX (render + rerender patches the existing DOM).
-// document.enhance(({ document }) => {
-//   let componentLikes = 0;
+// Example 03: Component with JSX (render + rerender patches the existing DOM).
+(function({ document }) {
+  let componentLikes = 0;
 
-//   const likeComponent = document.createComponent((rerender) => (
-//     <section class="demo-surface component-surface">
-//       <div class="like-row">
-//         <strong>{componentLikes}</strong>
-//         <span> likes</span>
-//       </div>
-//       <button
-//         class="like-button"
-//         type="button"
-//         onClick={() => rerender(() => componentLikes++)}
-//       >
-//         ♥ Like
-//       </button>
-//     </section>
-//   ));
+  const likeComponent = document.createComponent((rerender) => (
+    <section class="demo-surface component-surface">
+      <div class="like-row">
+        <strong>{componentLikes}</strong>
+        <span> likes</span>
+      </div>
+      <button
+        class="like-button"
+        type="button"
+        onClick={() => rerender(() => componentLikes++)}
+      >
+        ♥ Like
+      </button>
+    </section>
+  ));
 
-//   document.getElementById("component-app").setChildren([
-//     likeComponent.render()
-//   ]);
-// });
+  document.getElementById("component-app").setChildren([
+    likeComponent.render()
+  ]);
+})(window);
 
-// // Example 04: MVVM with JSX (ViewModel owns state and notifies subscribers).
-// document.enhance(({ document }) => {
-//   function LikeViewModel() {
-//     let likes = 0;
-//     const listeners = new Set();
+// Example 04: MVVM with JSX (ViewModel owns state and notifies subscribers).
+(function({ document }) {
+  function LikeViewModel() {
+    let likes = 0;
+    const listeners = new Set();
 
-//     return {
-//       get likes() {
-//         return likes;
-//       },
-//       like() {
-//         likes++;
-//         listeners.forEach(listener => listener(likes));
-//       },
-//       subscribe(listener) {
-//         listeners.add(listener);
-//         return () => listeners.delete(listener);
-//       }
-//     };
-//   }
+    return {
+      get likes() {
+        return likes;
+      },
+      like() {
+        likes++;
+        listeners.forEach(listener => listener(likes));
+      },
+      subscribe(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      }
+    };
+  }
 
-//   const viewModel = LikeViewModel();
-//   const likeComponent = document.createComponent(() => (
-//     <section class="demo-surface mvvm-surface">
-//       <div class="like-row">
-//         <strong>{viewModel.likes}</strong>
-//         <span> likes</span>
-//       </div>
-//       <button
-//         class="like-button"
-//         type="button"
-//         onClick={() => viewModel.like()}
-//       >
-//         ♥ Like
-//       </button>
-//     </section>
-//   ));
+  const viewModel = LikeViewModel();
+  const likeComponent = document.createComponent(() => (
+    <section class="demo-surface mvvm-surface">
+      <div class="like-row">
+        <strong>{viewModel.likes}</strong>
+        <span> likes</span>
+      </div>
+      <button
+        class="like-button"
+        type="button"
+        onClick={() => viewModel.like()}
+      >
+        ♥ Like
+      </button>
+    </section>
+  ));
 
-//   document.getElementById("mvvm-app").setChildren([
-//     likeComponent.render()
-//   ]);
+  // example without using setChildren
+  document.createElement(
+    document.getElementById("mvvm-app"),
+    null,
+    likeComponent.render(),
+  );
 
-//   viewModel.subscribe(() => likeComponent.rerender());
-// });
+  viewModel.subscribe(() => likeComponent.rerender());
+})(window);
 
-// // Example 05: Local stateful subtree inside a stateless view (ViewModel-driven).
-// document.enhance(({ document }) => {
-//   function createViewModel() {
-//     const listeners = new Set();
-//     let count = 0;
+// Example 05: Local stateful subtree inside a stateless view (ViewModel-driven).
+(function({ document }) {
+  function createViewModel() {
+    const listeners = new Set();
+    let count = 0;
 
-//     return {
-//       get count() {
-//         return count;
-//       },
+    return {
+      get count() {
+        return count;
+      },
 
-//       increment() {
-//         count++;
-//         this.notifyListener();
-//       },
+      increment() {
+        count++;
+        this.notifyListener();
+      },
 
-//       addListener(listener) {
-//         listeners.add(listener);
-//         return () => listeners.delete(listener);
-//       },
+      addListener(listener) {
+        listeners.add(listener);
+        return () => listeners.delete(listener);
+      },
 
-//       notifyListener() {
-//         listeners.forEach((listener) => listener(this));
-//       },
-//     };
-//   }
+      notifyListener() {
+        listeners.forEach((listener) => listener(this));
+      },
+    };
+  }
 
-//   function createView(viewModel) {
-//     const stateful = document.createComponent(() => (
-//       <div className="stateful-card">
-//         <h3>Count: {viewModel.count}</h3>
-//         <button class="action-button" type="button" onClick={() => viewModel.increment()}>
-//           UPDATE
-//         </button>
-//       </div>
-//     ));
+  function createView(viewModel) {
+    const stateful = document.createComponent(() => (
+      <div className="stateful-card">
+        <h3>Count: {viewModel.count}</h3>
+        <button class="action-button" type="button" onClick={() => viewModel.increment()}>
+          UPDATE
+        </button>
+      </div>
+    ));
 
-//     const container = (
-//       <div class="demo-surface lsisv-surface">
-//         <div class="lsisv-header">
-//           <h2>Local stateful inside stateless</h2>
-//           <p>
-//             The outer container stays static. Only the inner <code>createComponent</code> subtree
-//             rerenders when the ViewModel notifies listeners.
-//           </p>
-//         </div>
-//         {stateful.render()}
-//       </div>
-//     );
+    const container = (
+      <div class="demo-surface lsisv-surface">
+        <div class="lsisv-header">
+          <h2>Local stateful inside stateless</h2>
+          <p>
+            The outer container stays static. Only the inner <code>createComponent</code> subtree
+            rerenders when the ViewModel notifies listeners.
+          </p>
+        </div>
+        {stateful.render()}
+      </div>
+    );
 
-//     viewModel.addListener(() => stateful.rerender());
+    viewModel.addListener(() => stateful.rerender());
 
-//     return container;
-//   }
+    return container;
+  }
 
-//   const viewModel = createViewModel();
-//   const view = createView(viewModel);
+  const viewModel = createViewModel();
+  const view = createView(viewModel);
 
-//   document.getElementById("lsisv-app", null, view);
-// });
+  document.createElement(
+    document.getElementById("lsisv-app"),
+    null,
+    view
+  );
+})(window);
 </script>
 </body>
 </html>
