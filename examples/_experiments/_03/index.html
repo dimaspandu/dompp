@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>DOM++ — Enhanced Document & JSX Preview</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
 <style>
 :root {
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
@@ -73,6 +74,36 @@ article > p {
   color: #64748b;
   font-size: 14px;
   line-height: 1.55;
+}
+
+.snippet {
+  margin-top: 14px;
+}
+
+.snippet summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  user-select: none;
+}
+
+.snippet pre {
+  margin: 10px 0 0;
+  border-radius: 10px;
+  overflow: auto;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.snippet pre code.hljs {
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.snippet code {
+  font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: pre;
 }
 
 .demo-surface {
@@ -274,8 +305,80 @@ code {
     <h2>Direct element mutation</h2>
     <p>Create elements with the builder API, keep references, and update only the nodes that change. No component rerender is involved.</p>
     <div id="basic-app-01.0"></div>
+    <details class="snippet">
+      <summary>View code (01.0)</summary>
+      <pre><code class="language-javascript">let basicLikes = 0;
+let basicCount;
+let basicButton;
+
+document.getElementById("basic-app-01.0")
+  .setAttributes({ class: "demo-surface basic-surface" })
+  .setStyles({ backgroundColor: "#fffebb" })
+  .setChildren([
+    document.createElement("div")
+      .setAttributes({ class: "like-row" })
+      .setChildren([
+        (basicCount = document.createElement("strong").setText(basicLikes)),
+        document.createElement("span").setText(" likes"),
+      ]),
+    (basicButton = document.createElement("button")
+      .setAttributes({ class: "like-button", type: "button" })
+      .setText("♥ Like")
+      .setEvents({
+        click() {
+          basicLikes++;
+          basicButton.setStyles({
+            fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal",
+          });
+          basicCount.setText(basicLikes);
+          if (basicLikes === 10) {
+            basicButton.setAttributes({ disabled: true });
+          }
+        },
+      })),
+  ]);</code></pre>
+    </details>
     <hr />
     <div id="basic-app-01.1"></div>
+    <details class="snippet">
+      <summary>View code (01.1)</summary>
+      <pre><code class="language-javascript">let basicLikes = 0;
+let basicApp;
+
+basicApp = document.createElement(
+  document.getElementById("basic-app-01.1"),
+  {
+    className: "demo-surface basic-surface",
+    styles: { backgroundColor: "#fffebb" },
+  },
+  renderChildren()
+);
+
+function renderChildren() {
+  return [
+    document.createElement(
+      "div",
+      { class: "like-row" },
+      document.createElement("strong").setText(basicLikes),
+      document.createElement("span").setText(" likes")
+    ),
+    document.createElement(
+      "button",
+      {
+        class: "like-button",
+        type: "button",
+        styles: { fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal" },
+        disabled: basicLikes === 10,
+        onClick() {
+          basicLikes++;
+          basicApp.setChildren(renderChildren());
+        },
+      },
+      "♥ Like"
+    ),
+  ];
+}</code></pre>
+    </details>
   </article>
 
   <article>
@@ -283,6 +386,41 @@ code {
     <h2>Familiar JSX syntax</h2>
     <p>Same direct-mutation approach as Example 01. JSX is compiled to <code>document.createElement()</code> calls.</p>
     <div id="basic-jsx-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let basicLikes = 0;
+let basicCount;
+
+function BasicApp(_props, ...children) {
+  return document.createElement(
+    document.getElementById("basic-jsx-app"),
+    _props,
+    ...children
+  );
+}
+
+&lt;BasicApp
+  className="demo-surface jsx-surface"
+  styles={{
+    backgroundColor: "#fffebb",
+  }}
+&gt;
+  &lt;div class="like-row"&gt;
+    {basicCount = &lt;strong&gt;{basicLikes}&lt;/strong&gt;}
+    &lt;span&gt; likes&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;button
+    class="like-button"
+    type="button"
+    onClick={() =&gt; {
+      basicLikes++;
+      basicCount.setText(basicLikes);
+    }}
+  &gt;
+    ♥ Like
+  &lt;/button&gt;
+&lt;/BasicApp&gt;</code></pre>
+    </details>
   </article>
 
   <article>
@@ -290,6 +428,30 @@ code {
     <h2>Render and rerender</h2>
     <p><code>document.createComponent</code> rebuilds the element description and patches the existing DOM when the state changes.</p>
     <div id="component-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let componentLikes = 0;
+
+const likeComponent = document.createComponent((rerender) =&gt; (
+  &lt;section class="demo-surface component-surface"&gt;
+    &lt;div class="like-row"&gt;
+      &lt;strong&gt;{componentLikes}&lt;/strong&gt;
+      &lt;span&gt; likes&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;button
+      class="like-button"
+      type="button"
+      onClick={() =&gt; rerender(() =&gt; componentLikes++)}
+    &gt;
+      ♥ Like
+    &lt;/button&gt;
+  &lt;/section&gt;
+));
+
+document.getElementById("component-app").setChildren([
+  likeComponent.render()
+]);</code></pre>
+    </details>
   </article>
 
   <article>
@@ -297,6 +459,51 @@ code {
     <h2>ViewModel subscription</h2>
     <p>The ViewModel owns the count and notifies subscribers. The view rerenders its component in response to updates.</p>
     <div id="mvvm-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">function LikeViewModel() {
+  let likes = 0;
+  const listeners = new Set();
+
+  return {
+    get likes() { return likes; },
+    like() {
+      likes++;
+      listeners.forEach(listener =&gt; listener(likes));
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () =&gt; listeners.delete(listener);
+    }
+  };
+}
+
+const viewModel = LikeViewModel();
+const likeComponent = document.createComponent(() =&gt; (
+  &lt;section class="demo-surface mvvm-surface"&gt;
+    &lt;div class="like-row"&gt;
+      &lt;strong&gt;{viewModel.likes}&lt;/strong&gt;
+      &lt;span&gt; likes&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;button
+      class="like-button"
+      type="button"
+      onClick={() =&gt; viewModel.like()}
+    &gt;
+      ♥ Like
+    &lt;/button&gt;
+  &lt;/section&gt;
+));
+
+// Mount without using setChildren.
+document.createElement(
+  document.getElementById("mvvm-app"),
+  null,
+  likeComponent.render()
+);
+
+viewModel.subscribe(() =&gt; likeComponent.rerender());</code></pre>
+    </details>
   </article>
 
   <article>
@@ -304,6 +511,63 @@ code {
     <h2>Local stateful subtree inside a stateless view</h2>
     <p>A stateless view composes static structure and embeds a <code>document.createComponent</code> subtree. A ViewModel listener triggers rerender only for that local subtree.</p>
     <div id="lsisv-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">function createViewModel() {
+  const listeners = new Set();
+  let count = 0;
+
+  return {
+    get count() { return count; },
+    increment() {
+      count++;
+      this.notifyListener();
+    },
+    addListener(listener) {
+      listeners.add(listener);
+      return () =&gt; listeners.delete(listener);
+    },
+    notifyListener() {
+      listeners.forEach((listener) =&gt; listener(this));
+    },
+  };
+}
+
+function createView(viewModel) {
+  const stateful = document.createComponent(() =&gt; (
+    &lt;div className="stateful-card"&gt;
+      &lt;h3&gt;Count: {viewModel.count}&lt;/h3&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; viewModel.increment()}&gt;
+        UPDATE
+      &lt;/button&gt;
+    &lt;/div&gt;
+  ));
+
+  const container = (
+    &lt;div class="demo-surface lsisv-surface"&gt;
+      &lt;div class="lsisv-header"&gt;
+        &lt;h2&gt;Local stateful inside stateless&lt;/h2&gt;
+        &lt;p&gt;
+          The outer container stays static. Only the inner
+          &lt;code&gt;createComponent&lt;/code&gt; subtree rerenders when the
+          ViewModel notifies listeners.
+        &lt;/p&gt;
+      &lt;/div&gt;
+      {stateful.render()}
+    &lt;/div&gt;
+  );
+
+  viewModel.addListener(() =&gt; stateful.rerender());
+  return container;
+}
+
+const viewModel = createViewModel();
+document.createElement(
+  document.getElementById("lsisv-app"),
+  null,
+  createView(viewModel)
+);</code></pre>
+    </details>
   </article>
 </div>
 <footer>DOM++ preview · Engine embedded · Babel Standalone required for JSX examples</footer>
@@ -1426,5 +1690,7 @@ function componentBuilder(builder) {
   );
 })(window);
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
 </body>
 </html>
