@@ -247,3 +247,200 @@
     view
   );
 })(window);
+
+// Example 06: Conditional rendering with JSX (null removes the subtree).
+(function({ document }) {
+  let confirming = false;
+
+  const validator = document.createComponent((rerender) => (
+    <section className="demo-surface conditional-surface">
+      <h3>Conditional child reconciliation</h3>
+      <p>
+        The panel is added or removed by rerendering only this component.
+        A <code>null</code> branch leaves no node in the virtual tree.
+      </p>
+      <button
+        class="action-button"
+        type="button"
+        onClick={() => {
+          confirming = true;
+          rerender();
+        }}
+      >
+        OPEN
+      </button>
+      {confirming ? (
+        <div className="conditional-panel" role="dialog" aria-label="Confirm">
+          <h4>Are you sure?</h4>
+          <button
+            class="action-button"
+            type="button"
+            onClick={() => {
+              confirming = false;
+              rerender();
+            }}
+          >
+            CLOSE
+          </button>
+        </div>
+      ) : null}
+    </section>
+  ));
+
+  document.getElementById("conditional-app").setChildren([
+    validator.render(),
+  ]);
+})(window);
+
+// Example 07: Keyed list with JSX (stable keys preserve item nodes).
+(function({ document }) {
+  let nextId = 4;
+  let items = [
+    { id: 1, label: "Alpha", tag: "article" },
+    { id: 2, label: "Bravo", tag: "article" },
+    { id: 3, label: "Charlie", tag: "article" },
+  ];
+
+  const keyedList = document.createComponent((rerender) => (
+    <section className="demo-surface keyed-surface">
+      <h3>Keyed child reconciliation</h3>
+      <p>
+        Stable keys preserve item nodes when the list order changes.
+        Changing an item's tag intentionally replaces its node.
+      </p>
+      <div className="keyed-controls">
+        <button
+          class="keyed-button"
+          type="button"
+          onClick={() => {
+            const id = nextId++;
+            items = [...items, { id, label: `Item ${id}`, tag: "article" }];
+            rerender();
+          }}
+        >
+          APPEND
+        </button>
+        <button
+          class="keyed-button"
+          type="button"
+          onClick={() => {
+            const id = nextId++;
+            items = [{ id, label: `Item ${id}`, tag: "article" }, ...items];
+            rerender();
+          }}
+        >
+          PREPEND
+        </button>
+        <button
+          class="keyed-button"
+          type="button"
+          onClick={() => {
+            items = [...items].reverse();
+            rerender();
+          }}
+        >
+          REVERSE
+        </button>
+        <button
+          class="keyed-button"
+          type="button"
+          onClick={() => {
+            items = items.slice(1);
+            rerender();
+          }}
+        >
+          REMOVE FIRST
+        </button>
+        <button
+          class="keyed-button"
+          type="button"
+          onClick={() => {
+            if (items.length) {
+              const [first, ...remaining] = items;
+              items = [{
+                ...first,
+                tag: first.tag === "article" ? "p" : "article",
+              }, ...remaining];
+              rerender();
+            }
+          }}
+        >
+          CHANGE FIRST TAG
+        </button>
+      </div>
+      <div className="keyed-list">
+        {items.map((item) => {
+          const Tag = item.tag;
+          return (
+            <Tag key={item.id} className="keyed-item">
+              {item.label} (key: {item.id})
+            </Tag>
+          );
+        })}
+      </div>
+    </section>
+  ));
+
+  document.getElementById("keyed-list-app").setChildren([
+    keyedList.render(),
+  ]);
+})(window);
+
+// Example 08: Fragments and arrays with JSX.
+(function({ document }) {
+  function ArrayChildComponent() {
+    return [
+      <div key="array-first" className="fragment-child fragment-child-a">
+        Array child one
+      </div>,
+      <div key="array-second" className="fragment-child fragment-child-b">
+        Array child two
+      </div>,
+      <button key="array-action" class="action-button" type="button">
+        Array child button
+      </button>,
+    ];
+  }
+
+  const fragmentsExample = document.createComponent(() => (
+    <section className="demo-surface fragment-surface">
+      <h3>Fragments and array components</h3>
+      <p>
+        A fragment is one wrapper node. An array-returning component contributes
+        each returned node directly to its parent child list.
+      </p>
+
+      <h4>Literal fragment wrapper</h4>
+      <p>
+        The bordered parent has two direct children: its label and one literal
+        fragment node. That fragment node owns the two nested div children.
+      </p>
+      <div className="fragment-box">
+        <strong>Fragment parent</strong>
+        <>
+          <div className="fragment-child fragment-child-a">
+            Nested fragment child one
+          </div>
+          <div className="fragment-child fragment-child-b">
+            Nested fragment child two
+          </div>
+        </>
+      </div>
+
+      <h4>Array-returning component</h4>
+      <p>
+        The component returns three nodes. The parent receives its label,
+        paragraph, and the three returned nodes.
+      </p>
+      <div className="fragment-box">
+        <strong>Array parent heading</strong>
+        <p>Array parent paragraph</p>
+        <ArrayChildComponent />
+      </div>
+    </section>
+  ));
+
+  document.getElementById("fragment-array-app").setChildren([
+    fragmentsExample.render(),
+  ]);
+})(window);
