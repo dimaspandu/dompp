@@ -135,6 +135,89 @@
     }
   }
 
+  // Normalize children into a flat list consumable by reconciliation.
+  function normalizeChildren(children) {
+    return (Array.isArray(children) ? children : [children])
+      .flat(Infinity)
+      .filter((child) => child != null && typeof child !== "boolean");
+  }
+
+  function isFragmentTag(tag) {
+    return tag === "fragment" || tag === "#document-fragment";
+  }
+
+  // Enhance a child array so fragment-producing APIs can be updated fluently.
+  function asFragmentChildren(children) {
+    const list = normalizeChildren(children);
+    if (!list.setChildren) {
+      Object.defineProperty(list, "setChildren", {
+        value(nextChildren) {
+          const next = normalizeChildren(nextChildren);
+          list.splice(0, list.length, ...next);
+          return list;
+        },
+        configurable: true,
+      });
+    }
+    if (!list.setText) {
+      Object.defineProperty(list, "setText", {
+        value(text) {
+          list.splice(0, list.length, text);
+          return list;
+        },
+        configurable: true,
+      });
+    }
+    return list;
+  }
+
+  // Compare and patch a child slot in place when possible.
+  function reconcileSlot(previous, next, node) {
+    if (previous instanceof ElementBuilder && next instanceof ElementBuilder) {
+      if (previous.struct.tag === next.struct.tag && node) {
+        previous.node = node;
+        previous._patchFrom(next);
+        return { child: previous, node: previous.node };
+      }
+      const nextNode = next._createNode();
+      if (node && node.parentNode) {
+        node.parentNode.replaceChild(nextNode, node);
+      }
+      return { child: next, node: nextNode };
+    }
+
+    if (previous === next) {
+      return { child: next, node };
+    }
+
+    if (
+      node &&
+      node.nodeType === Node.TEXT_NODE &&
+      (typeof next === "string" || typeof next === "number")
+    ) {
+      const text = String(next);
+      if (node.nodeValue !== text) {
+        node.nodeValue = text;
+      }
+      return { child: next, node };
+    }
+
+    if (next instanceof ElementBuilder) {
+      const nextNode = next._createNode();
+      if (node && node.parentNode) {
+        node.parentNode.replaceChild(nextNode, node);
+      }
+      return { child: next, node: nextNode };
+    }
+
+    const nextNode =
+      next && next.nodeType ? next : document.createTextNode(String(next));
+    if (node && node.parentNode && node !== nextNode) {
+      node.parentNode.replaceChild(nextNode, node);
+    }
+    return { child: next, node: nextNode };
+  }
+
   // Store the old and new virtual fields needed by the reconciliation pass.
   const descriptorsByNode = new WeakMap();
   function adoptElement(node) {
@@ -324,12 +407,7 @@
 
   // Flatten arrays and discard null/boolean children before diffing the tree.
   ElementBuilder.prototype.setChildren = function(children) {
-    if (!Array.isArray(children)) {
-      throw new TypeError("setChildren() expects an array. Use setText() for a single text value.");
-    }
-    const nextChildren = children
-      .flat(Infinity)
-      .filter((child) => child != null && typeof child !== "boolean");
+    const nextChildren = normalizeChildren(children);
 
     if (this.node) {
       this._reconcileChildren(nextChildren);
@@ -536,9 +614,7 @@
   * children as deletions. Existing child nodes stay in the initial struct.
   */
   ElementBuilder.prototype._attachChildren = function(children) {
-    const nextChildren = (Array.isArray(children) ? children : [children])
-      .flat(Infinity)
-      .filter((child) => child != null && typeof child !== "boolean");
+    const nextChildren = normalizeChildren(children);
     const previousChildren = this.struct.children;
     if (nextChildren.length === 0) {
       return this;
@@ -723,9 +799,9 @@
     return element;
   }
 
-  // JSX fragment syntax return as is children.
+  // JSX fragment syntax returns a flat child array.
   elementBuilder.fragment = function(...children) {
-    return children.flat(Infinity);
+    return asFragmentChildren(children);
   };
 
   /*
@@ -735,11 +811,89 @@
   */
   function ComponentBuilder(builder) {
     let component = null;
+    let isArrayComponent = false;
+    let nodes = [];
+
+    const materializeArray = (items) => {
+      const nextItems = (Array.isArray(items) ? items : [items]).flat(Infinity);
+      const oldNodes = nodes.slice();
+      const nextNodes = [];
+
+      let parent = null;
+      let anchorAfter = null;
+      for (let i = oldNodes.length - 1; i >= 0; i--) {
+        const oldNode = oldNodes[i];
+        if (oldNode && oldNode.parentNode) {
+          parent = oldNode.parentNode;
+          anchorAfter = oldNode.nextSibling;
+          break;
+        }
+      }
+
+      for (let i = 0; i < nextItems.length; i++) {
+        const raw = nextItems[i];
+        const nextChild =
+          raw == null || typeof raw === "boolean" ? null : raw;
+        const prev = Array.isArray(component) ? component[i] : undefined;
+        const prevNode = oldNodes[i] || null;
+
+        if (nextChild == null) {
+          if (prevNode && prevNode.parentNode) {
+            prevNode.parentNode.removeChild(prevNode);
+          }
+          nextItems[i] = null;
+          nextNodes[i] = null;
+          continue;
+        }
+
+        const slot = reconcileSlot(prev, nextChild, prevNode);
+        nextItems[i] = slot.child;
+        nextNodes[i] = slot.node;
+      }
+
+      for (let i = nextItems.length; i < oldNodes.length; i++) {
+        const oldNode = oldNodes[i];
+        if (oldNode && oldNode.parentNode) {
+          oldNode.parentNode.removeChild(oldNode);
+        }
+      }
+
+      if (parent) {
+        let anchor = anchorAfter;
+        for (let i = nextNodes.length - 1; i >= 0; i--) {
+          const node = nextNodes[i];
+          if (!node) {
+            continue;
+          }
+          if (node.parentNode !== parent || node.nextSibling !== anchor) {
+            parent.insertBefore(node, anchor);
+          }
+          anchor = node;
+        }
+      }
+
+      // Keep a stable array identity so embedded references stay valid.
+      if (Array.isArray(component)) {
+        component.length = 0;
+        component.push(...nextItems);
+      } else {
+        component = nextItems;
+      }
+      nodes = nextNodes;
+      return component;
+    };
 
     const instance = {
       render() {
         if (!component) {
-          component = builder((callback) => instance.rerender(callback));
+          const result = builder((callback) => instance.rerender(callback));
+          if (Array.isArray(result)) {
+            isArrayComponent = true;
+            component = [];
+            materializeArray(result);
+          } else {
+            component = result;
+          }
         }
 
         return component;
@@ -756,6 +910,13 @@
         }
 
         const next = builder((nextCallback) => instance.rerender(nextCallback));
+
+        if (isArrayComponent || Array.isArray(next) || Array.isArray(component)) {
+          isArrayComponent = true;
+          materializeArray(next);
+          return instance;
+        }
+
         if (component.node && component.node === next.node) {
           // elementBuilder already synchronized this existing root in place.
           component.struct = next.struct;
@@ -799,11 +960,11 @@
   }
 
   defineOn(DocumentFragment.prototype, "setChildren", function(children) {
-    return children;
+    return asFragmentChildren(children);
   });
 
   defineOn(DocumentFragment.prototype, "setText", function(text) {
-    return text;
+    return asFragmentChildren([text]);
   });
 
   defineOn(Element.prototype, "setAttributes", function(attrs = {}) {
@@ -830,18 +991,20 @@
     return new ComponentBuilder(builder);
   });
 
-  // JSX fragments call this with (null, ...children). Override the native
-  // method for those calls so the fragment becomes a builder descriptor
-  // instead of an empty DocumentFragment. Native no-argument calls keep the
-  // original DocumentFragment behavior.
-  const nativeCreateDocumentFragment = Document.prototype.createDocumentFragment;
-
+  // Fragment-producing APIs (JSX <></>, .fragment, createDocumentFragment with
+  // children) return a flat child array. Use <fragment> or
+  // document.createElement("fragment") for a wrapper element.
   Document.prototype.createDocumentFragment = function(...children) {
     if (children.length === 0) {
-      return nativeCreateDocumentFragment.call(this);
+      return asFragmentChildren([]);
     }
 
-    return children.flat(Infinity);
+    // Support JSX pragma form: (props/null, ...children)
+    if (children.length > 1 && (children[0] == null || typeof children[0] === "object") && !Array.isArray(children[0]) && !(children[0] instanceof ElementBuilder) && children[0]?.nodeType == null) {
+      return asFragmentChildren(children.slice(1));
+    }
+
+    return asFragmentChildren(children);
   };
 
   const originalCreateElement = Document.prototype.createElement;

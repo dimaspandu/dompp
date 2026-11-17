@@ -441,66 +441,248 @@ document.getElementById("keyed-list-app").setChildren([
 
   <article>
     <span class="tag">08 · FRAGMENTS AND ARRAYS</span>
-    <h2>Fragments and array components</h2>
-    <p>A JSX fragment is one wrapper node that owns its nested children. A component that returns an array contributes each returned node directly to its parent child list, with no extra wrapper.</p>
+    <h2>Fragments and arrays</h2>
+    <p>Fragment-producing forms (<code>&lt;&gt;...&lt;/&gt;</code>, <code>elementBuilder.fragment</code>, <code>document.createDocumentFragment(...)</code>) return a flat child array that is inlined into the parent. Use <code>&lt;fragment&gt;</code> or <code>document.createElement("fragment")</code> for an explicit wrapper element. Array-returning components are reconciled per slot on rerender.</p>
     <div id="fragment-array-app"></div>
     <details class="snippet">
       <summary>View code</summary>
-      <pre><code class="language-javascript">function ArrayChildComponent() {
+      <pre><code class="language-javascript">let showPanel = false;
+let renderCount = 0;
+
+// Array-returning component: reconciled per slot on rerender.
+function ArrayChildList({ rerender }) {
   return [
-    &lt;div key="array-first" className="fragment-child fragment-child-a"&gt;
-      Array child one
+    &lt;div key="a" className="fragment-child fragment-child-a"&gt;Array child A&lt;/div&gt;,
+    &lt;div key="b" className="fragment-child fragment-child-b"&gt;
+      Array child B (renders: {renderCount})
     &lt;/div&gt;,
-    &lt;div key="array-second" className="fragment-child fragment-child-b"&gt;
-      Array child two
-    &lt;/div&gt;,
-    &lt;button key="array-action" class="action-button" type="button"&gt;
-      Array child button
+    &lt;button key="action" class="action-button" type="button"
+      onClick={() =&gt; rerender(() =&gt; renderCount++)}&gt;
+      Rerender array slots
     &lt;/button&gt;,
   ];
 }
 
-const fragmentsExample = document.createComponent(() =&gt; (
-  &lt;section className="demo-surface fragment-surface"&gt;
-    &lt;h3&gt;Fragments and array components&lt;/h3&gt;
-    &lt;p&gt;
-      A fragment is one wrapper node. An array-returning component contributes
-      each returned node directly to its parent child list.
-    &lt;/p&gt;
+// createDocumentFragment(...) returns an inlined child array; as a component
+// result its slots are reconciled (null removes a slot).
+const inlineFragmentPanel = document.createComponent((rerender) =&gt;
+  document.createDocumentFragment(
+    &lt;strong&gt;Inline fragment array&lt;/strong&gt;,
+    &lt;p&gt;Time: {new Date().toLocaleTimeString()}&lt;/p&gt;,
+    &lt;button class="action-button" type="button"
+      onClick={() =&gt; rerender(() =&gt; (showPanel = true))}&gt;Open panel&lt;/button&gt;,
+    showPanel ? (
+      &lt;div className="conditional-panel" style={{ marginTop: "10px" }}&gt;
+        &lt;h4&gt;Conditional slot&lt;/h4&gt;
+        &lt;button class="action-button" type="button"
+          onClick={() =&gt; rerender(() =&gt; (showPanel = false))}&gt;Close&lt;/button&gt;
+      &lt;/div&gt;
+    ) : null
+  )
+);
 
-    &lt;h4&gt;Literal fragment wrapper&lt;/h4&gt;
-    &lt;p&gt;
-      The bordered parent has two direct children: its label and one literal
-      fragment node. That fragment node owns the two nested div children.
-    &lt;/p&gt;
+const view = document.createComponent((rerender) =&gt; (
+  &lt;section className="demo-surface fragment-surface"&gt;
+    {/* &lt;fragment&gt;: explicit wrapper element node */}
     &lt;div className="fragment-box"&gt;
-      &lt;strong&gt;Fragment parent&lt;/strong&gt;
+      &lt;strong&gt;Parent&lt;/strong&gt;
+      &lt;fragment&gt;
+        &lt;div className="fragment-child fragment-child-a"&gt;Wrapped child one&lt;/div&gt;
+        &lt;div className="fragment-child fragment-child-b"&gt;Wrapped child two&lt;/div&gt;
+      &lt;/fragment&gt;
+    &lt;/div&gt;
+
+    {/* &lt;&gt;...&lt;/&gt;: inlined child array, no wrapper */}
+    &lt;div className="fragment-box"&gt;
+      &lt;strong&gt;Parent label&lt;/strong&gt;
       &lt;&gt;
-        &lt;div className="fragment-child fragment-child-a"&gt;
-          Nested fragment child one
-        &lt;/div&gt;
-        &lt;div className="fragment-child fragment-child-b"&gt;
-          Nested fragment child two
-        &lt;/div&gt;
+        &lt;div className="fragment-child fragment-child-a"&gt;Inlined child one&lt;/div&gt;
+        &lt;div className="fragment-child fragment-child-b"&gt;Inlined child two&lt;/div&gt;
       &lt;/&gt;
     &lt;/div&gt;
 
-    &lt;h4&gt;Array-returning component&lt;/h4&gt;
-    &lt;p&gt;
-      The component returns three nodes. The parent receives its label,
-      paragraph, and the three returned nodes.
-    &lt;/p&gt;
+    {/* Array-returning component, per-slot rerender */}
     &lt;div className="fragment-box"&gt;
-      &lt;strong&gt;Array parent heading&lt;/strong&gt;
-      &lt;p&gt;Array parent paragraph&lt;/p&gt;
-      &lt;ArrayChildComponent /&gt;
+      &lt;strong&gt;Parent label&lt;/strong&gt;
+      &lt;ArrayChildList rerender={rerender} /&gt;
+    &lt;/div&gt;
+
+    {/* document.createDocumentFragment(...) child arrays */}
+    &lt;div className="fragment-box"&gt;
+      {document.createDocumentFragment(
+        &lt;strong&gt;Static fragment array&lt;/strong&gt;,
+        &lt;p&gt;Two nodes inlined with no wrapper.&lt;/p&gt;
+      )}
+      {document.createDocumentFragment().setChildren([
+        &lt;em key="set-children"&gt;Built via .setChildren([...])&lt;/em&gt;,
+      ])}
+      {inlineFragmentPanel.render()}
     &lt;/div&gt;
   &lt;/section&gt;
 ));
 
-document.getElementById("fragment-array-app").setChildren([
-  fragmentsExample.render(),
-]);</code></pre>
+document.getElementById("fragment-array-app").setChildren([view.render()]);</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">09 · KEYED LIST IN FRAGMENT</span>
+    <h2>Keyed list inside a real fragment</h2>
+    <p>The list items live inside a real fragment array produced by <code>document.createDocumentFragment(...)</code> (not the <code>&lt;fragment&gt;</code> wrapper element). The fragment inlines its children while stable keys preserve item identity across reorder, insert, and remove.</p>
+    <div id="keyed-fragment-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let nextId = 4;
+let items = [
+  { id: 1, label: "Alpha" },
+  { id: 2, label: "Bravo" },
+  { id: 3, label: "Charlie" },
+];
+
+const keyedFragment = document.createComponent((rerender) =&gt; (
+  &lt;section className="demo-surface keyed-surface"&gt;
+    &lt;h3&gt;Keyed list inside a fragment&lt;/h3&gt;
+    &lt;p&gt;
+      Items are produced inside a real fragment array via
+      &lt;code&gt;document.createDocumentFragment(...)&lt;/code&gt; (not the
+      &lt;code&gt;&amp;lt;fragment&amp;gt;&lt;/code&gt; wrapper). The fragment inlines
+      its children while stable keys preserve item identity.
+    &lt;/p&gt;
+    &lt;div className="keyed-controls"&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { const id = nextId++; items = [...items, { id, label: `Item ${id}` }]; rerender(); }}&gt;
+        APPEND
+      &lt;/button&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { const id = nextId++; items = [{ id, label: `Item ${id}` }, ...items]; rerender(); }}&gt;
+        PREPEND
+      &lt;/button&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { items = [...items].reverse(); rerender(); }}&gt;
+        REVERSE
+      &lt;/button&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { if (items.length) { items = items.slice(1); rerender(); } }}&gt;
+        REMOVE FIRST
+      &lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div className="keyed-list"&gt;
+      {document.createDocumentFragment(
+        ...items.map((item) =&gt; (
+          &lt;div key={item.id} className="keyed-item"&gt;
+            {item.label} (key: {item.id})
+          &lt;/div&gt;
+        ))
+      )}
+    &lt;/div&gt;
+  &lt;/section&gt;
+));
+
+document.getElementById("keyed-fragment-app").setChildren([keyedFragment.render()]);</code></pre>
+    </details>
+  </article>
+  <article>
+    <span class="tag">10 · SERVER DOM ADOPTION</span>
+    <h2>Attach to existing (server-rendered) markup</h2>
+    <p>The <code>&lt;ul&gt;</code> below is present in the HTML before any script runs (as server-rendered output would be). The engine adopts that existing node and reconciles a keyed descriptor tree against it, preserving node identity instead of recreating the DOM.</p>
+    <div id="adoption-app" class="demo-surface adoption-surface">
+      <h3>Server-rendered list</h3>
+      <p>This list is plain HTML in the document. Adoption attaches a virtual tree to it.</p>
+      <ul id="adoption-list" class="server-list">
+        <li>JavaScript will adopt it</li>
+        <li>This list was rendered as HTML</li>
+        <li>Hello from the server</li>
+      </ul>
+      <script id="adoption-data" type="application/json">[{"id":1,"text":"Hello from the server"},{"id":2,"text":"This list was rendered as HTML"},{"id":3,"text":"JavaScript will adopt it"}]</script>
+      <p id="adoption-status" class="status-note">Waiting for adoption...</p>
+    </div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">// Data embedded by the server alongside the rendered HTML.
+const serverMessages = JSON.parse(
+  document.getElementById("adoption-data").textContent
+);
+
+const listNode = document.getElementById("adoption-list");
+
+// Adopt the existing &lt;ul&gt; and reconcile a keyed descriptor tree
+// against its current children instead of recreating them.
+const listBuilder = document.createElement(
+  listNode,
+  null,
+  ...[...serverMessages]
+    .reverse()
+    .map((msg) =&gt; &lt;li key={msg.id}&gt;{msg.text}&lt;/li&gt;)
+);
+
+// listBuilder.node === listNode &amp;&amp; node identity is preserved
+document.getElementById("adoption-status").setText(
+  "Adopted existing &lt;ul&gt;: " + (listBuilder.node === listNode) +
+  " · reconciled items: " + listBuilder.struct.children.length
+);</code></pre>
+    </details>
+  </article>
+  <article>
+    <span class="tag">11 · REACTIVE SERVER MESSENGER</span>
+    <h2>Adopt server markup, then rerender reactively</h2>
+    <p>The container is rendered in HTML up front. A component adopts that existing root with <code>document.createElement(existingNode, ...)</code> and rerenders a keyed message list on Send, keeping the same root node attached.</p>
+    <div id="messenger-app" class="demo-surface messenger-surface">
+      <h3>Reactive server messenger</h3>
+      <p>Server-rendered placeholder. The component will adopt and control this root.</p>
+      <ul class="server-list">
+        <li>Welcome! This came from the server.</li>
+        <li>Type below and press Send.</li>
+      </ul>
+      <div class="message-form">
+        <textarea class="message-input" aria-label="New message" placeholder="Write a message..."></textarea>
+        <button class="action-button" type="button">Send</button>
+      </div>
+      <p id="messenger-status" class="status-note">Waiting for component to attach...</p>
+    </div>
+    <script id="messenger-data" type="json">
+[
+  { "id": 1, "text": "Welcome! This came from the server." },
+  { "id": 2, "text": "Type below and press Send." }
+]
+    </script>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">// Data embedded by the server alongside the rendered HTML.
+const messages = JSON.parse(
+  document.getElementById("messenger-data").textContent
+);
+let nextId = Math.max(...messages.map((m) =&gt; m.id)) + 1;
+const rootNode = document.getElementById("messenger-app");
+
+const messenger = document.createComponent((rerender) =&gt;
+  document.createElement(
+    rootNode,
+    { class: "demo-surface messenger-surface" },
+    &lt;h3&gt;Reactive server messenger&lt;/h3&gt;,
+    &lt;p&gt;Adopts the pre-rendered root and rerenders a keyed list.&lt;/p&gt;,
+    &lt;ul class="server-list"&gt;
+      {[...messages].reverse().map((msg) =&gt; (
+        &lt;li key={msg.id}&gt;{msg.text}&lt;/li&gt;
+      ))}
+    &lt;/ul&gt;,
+    &lt;div class="message-form"&gt;
+      &lt;textarea class="message-input" placeholder="Write a message..."&gt;&lt;/textarea&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; {
+        const input = rootNode.querySelector("textarea");
+        const text = input.value.trim();
+        if (!text) return;
+        messages.push({ id: nextId++, text });
+        input.value = "";
+        rerender();
+      }}&gt;Send&lt;/button&gt;
+    &lt;/div&gt;,
+    &lt;p id="messenger-status" class="status-note"&gt;
+      {"Adopted root node · messages: " + messages.length}
+    &lt;/p&gt;
+  )
+);
+
+messenger.render();</code></pre>
     </details>
   </article>
 </div>

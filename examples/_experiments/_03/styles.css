@@ -416,3 +416,88 @@ code {
     align-items: flex-start;
   }
 }
+
+.adoption-surface,
+.messenger-surface {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 12px;
+}
+
+.adoption-surface {
+  background: #ede9fe;
+  color: #5b21b6;
+}
+
+.messenger-surface {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.adoption-surface > h3,
+.messenger-surface > h3 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.adoption-surface > p,
+.messenger-surface > p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.adoption-surface > p {
+  color: #6d28d9;
+}
+
+.messenger-surface > p {
+  color: #0369a1;
+}
+
+.server-list {
+  margin: 0;
+  background: #fff;
+  border: 1px solid #c4b5fd;
+  border-radius: 10px;
+  padding: 12px 12px 12px 32px;
+}
+
+.messenger-surface .server-list {
+  border-color: #7dd3fc;
+}
+
+.server-list li {
+  padding: 4px 0;
+}
+
+.status-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.5;
+  border: 1px dashed #c4b5fd;
+}
+
+.messenger-surface .status-note {
+  border-color: #7dd3fc;
+}
+
+.message-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message-input {
+  width: 100%;
+  min-height: 64px;
+  padding: 10px;
+  border: 1px solid #7dd3fc;
+  border-radius: 10px;
+  font: inherit;
+  resize: vertical;
+}
