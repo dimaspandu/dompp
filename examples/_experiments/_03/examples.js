@@ -1,3 +1,21 @@
+/*
+ * DOM++ interaction examples — a guided tour.
+ *
+ * The examples build on each other:
+ * 1. Foundations: direct DOM control (imperative updates, then reconciliation).
+ * 2. Syntax & components: express the same ideas with JSX and createComponent.
+ * 3. State patterns: separate state, subscribe, and localize rerenders.
+ * 4. Dynamic structure: control what renders (conditions) and how lists keep identity.
+ * 5. Composition: wrappers vs inlined fragment/array children and per-slot updates.
+ * 6. Adoption: attach to existing (server-rendered) markup and make it reactive.
+ */
+
+// -----------------------------------------------------------------------------
+// Chapter 1 — Foundations: direct DOM control
+// -----------------------------------------------------------------------------
+
+// Example 01.0: Basic DOM (direct element mutation).
+// Hold references to nodes and update only what changes. No rerender pass.
 (function({ document }) {
   let basicLikes = 0;
   let basicCount;
@@ -31,6 +49,8 @@
     ]);
 })(window);
 
+// Example 01.1: Basic DOM (direct element mutation with child reconciliation).
+// Step up from 01.0: re-render by replacing children and let reconciliation patch the tree.
 (function({ document }) {
   let basicLikes = 0;
   let basicApp;
@@ -70,11 +90,16 @@
   }
 })(window);
 
+// -----------------------------------------------------------------------------
+// Chapter 2 — Syntax & components: JSX and the render/rerender model
+// -----------------------------------------------------------------------------
+
 /** @jsxRuntime classic */
 /** @jsx document.createElement */
 /** @jsxFrag document.createDocumentFragment */
 
 // Example 02: Basic DOM with JSX (direct element mutation, no component rerender).
+// Same direct-mutation idea as 01, written with familiar JSX syntax.
 (function({ document }) {
   let basicLikes = 0;
   let basicCount;
@@ -111,6 +136,7 @@
 })(window);
 
 // Example 03: Component with JSX (render + rerender patches the existing DOM).
+// Move from manual updates to a component: render once, then rerender to patch.
 (function({ document }) {
   let componentLikes = 0;
 
@@ -135,7 +161,12 @@
   ]);
 })(window);
 
+// -----------------------------------------------------------------------------
+// Chapter 3 — State patterns: separate, subscribe, and localize rerenders
+// -----------------------------------------------------------------------------
+
 // Example 04: MVVM with JSX (ViewModel owns state and notifies subscribers).
+// Separate state (ViewModel) from the view: the view subscribes and rerenders.
 (function({ document }) {
   function LikeViewModel() {
     let likes = 0;
@@ -184,6 +215,7 @@
 })(window);
 
 // Example 05: Local stateful subtree inside a stateless view (ViewModel-driven).
+// Localize rerenders: only the embedded stateful subtree updates, not the whole view.
 (function({ document }) {
   function createViewModel() {
     const listeners = new Set();
@@ -248,7 +280,13 @@
   );
 })(window);
 
+// -----------------------------------------------------------------------------
+// Chapter 4 — Dynamic structure: what renders and how lists keep identity
+// -----------------------------------------------------------------------------
+
 // Example 06: Conditional rendering with JSX (null removes the subtree).
+// After controlling where rerenders happen (05), control what renders:
+// a null branch removes the subtree from the tree.
 (function({ document }) {
   let confirming = false;
 
@@ -293,6 +331,7 @@
 })(window);
 
 // Example 07: Keyed list with JSX (stable keys preserve item nodes).
+// Give dynamic lists identity: stable keys preserve nodes across reorder/insert/remove.
 (function({ document }) {
   let nextId = 4;
   let items = [
@@ -386,7 +425,14 @@
   ]);
 })(window);
 
-// Example 08: Fragments and arrays with JSX.
+// -----------------------------------------------------------------------------
+// Chapter 5 — Composition: wrappers, inlined fragment/array children, per-slot updates
+// -----------------------------------------------------------------------------
+
+// Example 08: Fragments and arrays with JSX (a composition catalog).
+// Compare forms: a wrapper element (<fragment>) vs inlined child arrays
+// (<>...</>, elementBuilder.fragment, document.createDocumentFragment(...)),
+// plus array-returning components reconciled per slot.
 (function({ document }) {
   let showPanel = false;
   let renderCount = 0;
@@ -517,6 +563,8 @@
 })(window);
 
 // Example 09: Keyed list inside a real fragment (createDocumentFragment array).
+// Combine 07 and 08: keys still preserve item identity when the list is produced
+// inside an inlined fragment (child array), not a wrapper element.
 (function({ document }) {
   let nextId = 4;
   let items = [
@@ -596,7 +644,13 @@
   document.getElementById("keyed-fragment-app").setChildren([keyedFragment.render()]);
 })(window);
 
+// -----------------------------------------------------------------------------
+// Chapter 6 — Adoption: attach to existing markup and make it reactive
+// -----------------------------------------------------------------------------
+
 // Example 10: Server DOM adoption (attach to existing markup).
+// Bring it to real pages: adopt server-rendered nodes and reconcile against them,
+// preserving DOM identity instead of recreating it.
 (function({ document }) {
   // Data embedded by the server alongside the rendered HTML.
   const serverMessages = JSON.parse(
@@ -625,6 +679,8 @@
 })(window);
 
 // Example 11: Reactive server messenger (adoption + rerender).
+// Combine adoption (10) with components and state (03-04): keep the adopted root,
+// then rerender a keyed list reactively on user input.
 (function({ document }) {
   // Data embedded by the server alongside the rendered HTML.
   const messages = JSON.parse(

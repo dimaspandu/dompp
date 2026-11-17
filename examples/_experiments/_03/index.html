@@ -16,13 +16,13 @@
 <header>
   <div class="eyebrow">DOM++ · Enhanced Document API</div>
   <h1>Interaction Patterns</h1>
-  <p>A set of patterns for building reactive interactions. The original ElementBuilder and ComponentBuilder engine remains the foundation; document enhancement is an adapter, while JSX is only an alternative syntax.</p>
+  <p>A guided tour from direct DOM control to reactive components, dynamic structure, composition, and adopting existing markup. The original ElementBuilder and ComponentBuilder engine remains the foundation; document enhancement is an adapter, while JSX is only an alternative syntax.</p>
 </header>
 <div class="examples">
   <article>
     <span class="tag">01 · BASIC DOM</span>
     <h2>Direct element mutation</h2>
-    <p>Create elements with the builder API, keep references, and update only the nodes that change. No component rerender is involved.</p>
+    <p>Foundation: create elements with the builder API, keep references, and update only the nodes that change (01.0). Step up by replacing children and letting reconciliation patch the tree (01.1).</p>
     <div id="basic-app-01.0"></div>
     <details class="snippet">
       <summary>View code (01.0)</summary>
@@ -103,7 +103,7 @@ function renderChildren() {
   <article>
     <span class="tag">02 · BASIC DOM + JSX</span>
     <h2>Familiar JSX syntax</h2>
-    <p>Same direct-mutation approach as Example 01. JSX is compiled to <code>document.createElement()</code> calls.</p>
+    <p>Same direct-mutation foundation as 01, expressed with JSX (compiled to <code>document.createElement()</code> calls).</p>
     <div id="basic-jsx-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -145,7 +145,7 @@ function BasicApp(_props, ...children) {
   <article>
     <span class="tag">03 · COMPONENT</span>
     <h2>Render and rerender</h2>
-    <p><code>document.createComponent</code> rebuilds the element description and patches the existing DOM when the state changes.</p>
+    <p>Move from manual updates to a component: <code>document.createComponent</code> renders once, then rerenders to patch the existing DOM when state changes.</p>
     <div id="component-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -176,7 +176,7 @@ document.getElementById("component-app").setChildren([
   <article>
     <span class="tag">04 · MVVM</span>
     <h2>ViewModel subscription</h2>
-    <p>The ViewModel owns the count and notifies subscribers. The view rerenders its component in response to updates.</p>
+    <p>Separate state from the view: a ViewModel owns the count and notifies subscribers, and the view rerenders in response.</p>
     <div id="mvvm-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -228,7 +228,7 @@ viewModel.subscribe(() =&gt; likeComponent.rerender());</code></pre>
   <article>
     <span class="tag">05 · LOCAL STATEFUL IN STATELESS</span>
     <h2>Local stateful subtree inside a stateless view</h2>
-    <p>A stateless view composes static structure and embeds a <code>document.createComponent</code> subtree. A ViewModel listener triggers rerender only for that local subtree.</p>
+    <p>Localize rerenders: a stateless view embeds a <code>document.createComponent</code> subtree, and a ViewModel listener rerenders only that local subtree.</p>
     <div id="lsisv-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -292,7 +292,7 @@ document.createElement(
   <article>
     <span class="tag">06 · CONDITIONAL RENDERING</span>
     <h2>Add and remove a subtree</h2>
-    <p>The component renders a panel only while <code>confirming</code> is true. Returning <code>null</code> removes the panel on the next rerender.</p>
+    <p>After localizing rerenders, control what renders: the panel exists only while <code>confirming</code> is true, and returning <code>null</code> removes it on the next rerender.</p>
     <div id="conditional-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -342,7 +342,7 @@ document.getElementById("conditional-app").setChildren([
   <article>
     <span class="tag">07 · KEYED LIST</span>
     <h2>Stable keys across list changes</h2>
-    <p>Each item passes a stable <code>key</code> to the builder. Reconciliation matches keyed children by key and tag, so append, prepend, reorder, and removal preserve item nodes. Changing an item's tag replaces that node.</p>
+    <p>Give dynamic lists identity: each item passes a stable <code>key</code>, so append, prepend, reorder, and removal preserve item nodes (changing a tag replaces that node).</p>
     <div id="keyed-list-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -442,7 +442,7 @@ document.getElementById("keyed-list-app").setChildren([
   <article>
     <span class="tag">08 · FRAGMENTS AND ARRAYS</span>
     <h2>Fragments and arrays</h2>
-    <p>Fragment-producing forms (<code>&lt;&gt;...&lt;/&gt;</code>, <code>elementBuilder.fragment</code>, <code>document.createDocumentFragment(...)</code>) return a flat child array that is inlined into the parent. Use <code>&lt;fragment&gt;</code> or <code>document.createElement("fragment")</code> for an explicit wrapper element. Array-returning components are reconciled per slot on rerender.</p>
+    <p>Composition catalog: compare a wrapper element (<code>&lt;fragment&gt;</code>) with inlined child arrays from fragment-producing forms (<code>&lt;&gt;...&lt;/&gt;</code>, <code>elementBuilder.fragment</code>, <code>document.createDocumentFragment(...)</code>), plus array-returning components reconciled per slot on rerender.</p>
     <div id="fragment-array-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -528,7 +528,7 @@ document.getElementById("fragment-array-app").setChildren([view.render()]);</cod
   <article>
     <span class="tag">09 · KEYED LIST IN FRAGMENT</span>
     <h2>Keyed list inside a real fragment</h2>
-    <p>The list items live inside a real fragment array produced by <code>document.createDocumentFragment(...)</code> (not the <code>&lt;fragment&gt;</code> wrapper element). The fragment inlines its children while stable keys preserve item identity across reorder, insert, and remove.</p>
+    <p>Combine 07 and 08: the keyed list lives inside a real fragment array produced by <code>document.createDocumentFragment(...)</code> (inlined, not a <code>&lt;fragment&gt;</code> wrapper) and stable keys still preserve item identity across updates.</p>
     <div id="keyed-fragment-app"></div>
     <details class="snippet">
       <summary>View code</summary>
@@ -584,7 +584,7 @@ document.getElementById("keyed-fragment-app").setChildren([keyedFragment.render(
   <article>
     <span class="tag">10 · SERVER DOM ADOPTION</span>
     <h2>Attach to existing (server-rendered) markup</h2>
-    <p>The <code>&lt;ul&gt;</code> below is present in the HTML before any script runs (as server-rendered output would be). The engine adopts that existing node and reconciles a keyed descriptor tree against it, preserving node identity instead of recreating the DOM.</p>
+    <p>Bring it to existing pages: the <code>&lt;ul&gt;</code> is present in the HTML before any script runs (server-rendered). The engine adopts that node and reconciles a keyed descriptor tree against it, preserving DOM identity.</p>
     <div id="adoption-app" class="demo-surface adoption-surface">
       <h3>Server-rendered list</h3>
       <p>This list is plain HTML in the document. Adoption attaches a virtual tree to it.</p>
@@ -625,7 +625,7 @@ document.getElementById("adoption-status").setText(
   <article>
     <span class="tag">11 · REACTIVE SERVER MESSENGER</span>
     <h2>Adopt server markup, then rerender reactively</h2>
-    <p>The container is rendered in HTML up front. A component adopts that existing root with <code>document.createElement(existingNode, ...)</code> and rerenders a keyed message list on Send, keeping the same root node attached.</p>
+    <p>Combine adoption with components and state: the container is rendered in HTML up front, a component adopts that root with <code>document.createElement(existingNode, ...)</code>, then rerenders a keyed message list on Send while keeping the same root attached.</p>
     <div id="messenger-app" class="demo-surface messenger-surface">
       <h3>Reactive server messenger</h3>
       <p>Server-rendered placeholder. The component will adopt and control this root.</p>
