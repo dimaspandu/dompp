@@ -402,7 +402,7 @@
     ];
   }
 
-  const fragmentsExample = document.createComponent(() => (
+  const fragmentsExample = (
     <section className="demo-surface fragment-surface">
       <h3>Fragments and array components</h3>
       <p>
@@ -417,14 +417,14 @@
       </p>
       <div className="fragment-box">
         <strong>Fragment parent</strong>
-        <>
+        <fragment>
           <div className="fragment-child fragment-child-a">
             Nested fragment child one
           </div>
           <div className="fragment-child fragment-child-b">
             Nested fragment child two
           </div>
-        </>
+        </fragment>
       </div>
 
       <h4>Array-returning component</h4>
@@ -437,10 +437,43 @@
         <p>Array parent paragraph</p>
         <ArrayChildComponent />
       </div>
+
+      <h4>The usage of document.createDocumentFragment()</h4>
+      <p>
+        How does the new document.createDocumentFragment work.
+      </p>
+      <div className="fragment-box">
+        {document.createDocumentFragment().setChildren([
+          <strong>Array parent heading</strong>,
+          <p>Array parent paragraph</p>,
+        ])}
+        <h5 styles={{ marginTop: "0.5rem" }}>
+          {document.createDocumentFragment().setText("OR")}
+        </h5>
+        {document.createDocumentFragment(
+          <strong>Array parent heading</strong>,
+          <p>Array parent paragraph</p>,
+        )}
+        <h5 styles={{ marginTop: "0.5rem" }}>
+          {document.createDocumentFragment("OR")}
+        </h5>
+        {document.createComponent((rerender) =>
+          document.createDocumentFragment(
+            <strong>Array parent heading</strong>,
+            <p>Array parent paragraph</p>,
+            <button
+              class="action-button"
+              type="button"
+            >
+              Array child button
+            </button>,
+          )
+        )}
+      </div>
     </section>
-  ));
+  );
 
   document.getElementById("fragment-array-app").setChildren([
-    fragmentsExample.render(),
+    fragmentsExample,
   ]);
 })(window);

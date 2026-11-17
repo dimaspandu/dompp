@@ -723,9 +723,9 @@
     return element;
   }
 
-  // JSX fragment syntax uses a real wrapper to preserve one-to-one child counts.
+  // JSX fragment syntax return as is children.
   elementBuilder.fragment = function(...children) {
-    return new ElementBuilder("fragment").setChildren(children.flat(Infinity));
+    return children.flat(Infinity);
   };
 
   /*
@@ -781,7 +781,7 @@
     return Object.freeze(instance);
   }
 
-  // Public helper for creating a stateful component instance.
+  // Public helper for creating a stateful component instance. (use for later as a library)
   function componentBuilder(builder) {
     return new ComponentBuilder(builder);
   }
@@ -797,6 +797,14 @@
       });
     }
   }
+
+  defineOn(DocumentFragment.prototype, "setChildren", function(children) {
+    return children;
+  });
+
+  defineOn(DocumentFragment.prototype, "setText", function(text) {
+    return text;
+  });
 
   defineOn(Element.prototype, "setAttributes", function(attrs = {}) {
     return new ElementBuilder(this).setAttributes(attrs);
@@ -833,7 +841,7 @@
       return nativeCreateDocumentFragment.call(this);
     }
 
-    return elementBuilder.fragment(...children);
+    return children.flat(Infinity);
   };
 
   const originalCreateElement = Document.prototype.createElement;
@@ -861,4 +869,4 @@
 
     return originalCreateElement.call(this, tagName, options, ...rest);
   };
-})(Document, document);
+})(Document, document, DocumentFragment);
