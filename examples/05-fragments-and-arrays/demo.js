@@ -1,16 +1,15 @@
-﻿/** @jsxRuntime classic */
-/** @jsx document.createElement */
-/** @jsxFrag document.createDocumentFragment */
+﻿let showExtra = false;
 
-let showExtra = false;
-
-const fragmentComponent = document.createComponent((rerender) => (
-  <>
-    <strong>Item A</strong>
-    <strong>Item B</strong>
-    {showExtra ? <strong>Item C</strong> : null}
-  </>
-));
+const fragmentComponent = document.createComponent((rerender) => {
+  const children = [
+    document.createElement("strong").setText("Item A"),
+    document.createElement("strong").setText("Item B"),
+  ];
+  if (showExtra) {
+    children.push(document.createElement("strong").setText("Item C"));
+  }
+  return document.createDocumentFragment(...children);
+});
 
 const arrayComponent = document.createComponent((rerender) => [
   document.createElement("em").setText("X"),

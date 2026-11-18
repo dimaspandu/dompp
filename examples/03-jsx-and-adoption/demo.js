@@ -1,31 +1,29 @@
-﻿/** @jsxRuntime classic */
-/** @jsx document.createElement */
-/** @jsxFrag document.createDocumentFragment */
-
-let likes = 0;
+﻿let likes = 0;
 let count;
 
-function Counter(_props, ...children) {
+function Counter(props, ...children) {
   return document.createElement(
     document.getElementById("app"),
-    _props,
+    props,
     ...children
   );
 }
 
-<Counter className="surface" styles={{ backgroundColor: "#fffebb" }}>
-  <div className="like-row">
-    {count = <strong>{likes}</strong>}
-    <span> likes</span>
-  </div>
-  <button
-    className="like-button"
-    type="button"
-    onClick={() => {
-      likes++;
-      count.setText(likes);
-    }}
-  >
-    Like
-  </button>
-</Counter>
+count = document.createElement("strong").setText(likes);
+
+Counter(
+  { className: "surface", styles: { backgroundColor: "#fffebb" } },
+  document.createElement("div").setChildren(
+    count,
+    document.createElement("span").setText(" likes")
+  ),
+  document.createElement("button")
+    .setText("Like")
+    .setAttributes({ type: "button" })
+    .setEvents({
+      click() {
+        likes++;
+        count.setText(likes);
+      },
+    })
+);

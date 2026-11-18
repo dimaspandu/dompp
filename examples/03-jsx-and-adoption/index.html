@@ -31,7 +31,7 @@
     <pre><code id="source" class="language-javascript"></code></pre>
   </div>
   <script type="module" src="../../src/index.js"></script>
-  <script type="module">const isLocal = location.hostname === "localhost" || location.hostname === "127.0.0.1"; await import(isLocal ? "./demo.js" : "./demo.compiled.js");</script>
+  <script type="module">await import("./demo.js");</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script type="module">const js = await fetch("./demo.js", { headers: { Accept: "text/plain" } }).then((r) => r.text()).catch(() => fetch("./demo.compiled.js").then((r) => r.text()).catch(() => "// Source unavailable")); const block = document.getElementById("source"); block.textContent = js.trim(); hljs.highlightElement(block);</script>
 </body>
