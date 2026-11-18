@@ -1,4 +1,4 @@
-﻿const INSTALLED = Symbol.for("dompp.fragment.enhancements");
+const INSTALLED = Symbol.for("dompp.fragment.enhancements");
 
 function getBuilders(target) {
   const doc = target && target.ownerDocument;
@@ -19,7 +19,7 @@ export function installFragmentEnhancements(builders) {
   }
 
   Object.defineProperty(DocumentFragment.prototype, "setChildren", {
-    value: function(children) {
+    value: function(...children) {
       const b = getBuilders(this);
       if (!b) throw new Error("DOM++ builders are not installed for this document.");
       return b.asFragmentChildren(children);

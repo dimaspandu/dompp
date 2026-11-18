@@ -406,7 +406,7 @@
   };
 
   // Flatten arrays and discard null/boolean children before diffing the tree.
-  ElementBuilder.prototype.setChildren = function(children) {
+  ElementBuilder.prototype.setChildren = function(...children) {
     const nextChildren = normalizeChildren(children);
 
     if (this.node) {
@@ -973,7 +973,7 @@
     }
   }
 
-  defineOn(DocumentFragment.prototype, "setChildren", function(children) {
+  defineOn(DocumentFragment.prototype, "setChildren", function(...children) {
     return asFragmentChildren(children);
   });
 
@@ -993,8 +993,8 @@
     return new ElementBuilder(this).setEvents(events);
   });
 
-  defineOn(Element.prototype, "setChildren", function(children) {
-    return new ElementBuilder(this).setChildren(children);
+  defineOn(Element.prototype, "setChildren", function(...children) {
+    return new ElementBuilder(this).setChildren(...children);
   });
 
   defineOn(Element.prototype, "setText", function(text) {

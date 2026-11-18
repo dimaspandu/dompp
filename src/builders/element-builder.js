@@ -415,7 +415,7 @@ ElementBuilder.prototype.reset = function() {
 };
 
 // Flatten arrays and discard null/boolean children before diffing the tree.
-ElementBuilder.prototype.setChildren = function(children) {
+ElementBuilder.prototype.setChildren = function(...children) {
   const nextChildren = normalizeChildren(children);
 
   if (this.node) {

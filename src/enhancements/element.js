@@ -1,4 +1,4 @@
-﻿import { installFragmentEnhancements } from "./fragment.js";
+import { installFragmentEnhancements } from "./fragment.js";
 
 const INSTALLED = Symbol.for("dompp.element.enhancements");
 
@@ -46,10 +46,10 @@ export function installElementEnhancements(builders) {
     return new b.ElementBuilder(this).setEvents(events);
   });
 
-  define("setChildren", function(children) {
+  define("setChildren", function(...children) {
     const b = getBuilders(this);
     if (!b) throw new Error("DOM++ builders are not installed for this document.");
-    return new b.ElementBuilder(this).setChildren(children);
+    return new b.ElementBuilder(this).setChildren(...children);
   });
 
   define("setText", function(text) {
