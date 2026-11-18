@@ -148,7 +148,6 @@ elementBuilder(document.getElementById("app"), null, Counter.render());
 Entry points:
 - `@dimpandu/domplusplus` — install DOMPP APIs + builders
 - `@dimpandu/domplusplus/builders` — builders
-- `@dimpandu/domplusplus/builders-minimal` — builders only (no prototype/reactive installation)
 
 ## JSX (Optional)
 
@@ -176,23 +175,23 @@ function d(tag, props, ...children) {
 }
 ```
 
-## Examples (35)
+## Examples (7)
 
-The `examples/` directory contains 35 progressive, runnable examples:
+The `examples/` directory contains 7 progressive, runnable examples:
 
-**Foundations (01-08):** basic setters, mutation consistency, children vs childNodes, fragments.
-
-**Reactive Runtime (09-20):** `setState`, reactive children, reusable/nested state, cross-element updates, enhancement, signals, equality, keys, identity preservation, feeds.
-
-**JSX & Builders (21-35):** JSX integration, element/component builders, MVVM, conditionals, keyed lists, fragments/arrays, server adoption, reactive server messenger, independent BigView updates, MVVM sections, security boundary, outlet patterns (`reset()` / `rerender()`), and local stateful inside stateless (ViewModel-driven).
+1. **01-direct-dom** — native DOM nodes with chainable setters (`setText`, `setAttributes`, `setStyles`, `setEvents`, `setChildren`).
+2. **02-components-mvvm** — components with explicit `.rerender()` and ViewModel-driven state.
+3. **03-jsx-and-adoption** — JSX syntax and adopting existing markup in place.
+4. **04-dynamic-lists** — conditional rendering and keyed lists with identity preservation.
+5. **05-fragments-and-arrays** — multi-root fragments and array-returning components.
+6. **06-safe-by-default** — built-in guards against dangerous attributes and protocols.
+7. **07-capstone-mini-app** — combining components, state, lists, and fragments in one app.
 
 Browse: `examples/` or run locally and open `http://localhost:5173`.
 
 ## Experiments
 
-`examples/experiments/` is organized into:
-- `infrastructure/` — builder engine experiments (creation, reconciliation, MVVM/component patterns).
-- `enhancement/` — enhanced Document API and JSX preview patterns built on the engine.
+`examples/_experiments/` contains experimental engine and adapter work (JSX, fragments, components, adoption, and guided tours). It is not part of the stable example set.
 
 ## Local Development
 
@@ -209,6 +208,7 @@ Open `http://localhost:5173`. Examples run live with source viewers.
 
 ```bash
 npm test
+npm run test:browser
 ```
 
 ## Design Principles
