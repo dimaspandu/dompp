@@ -1,21 +1,13 @@
-import { installDOMPP }
-from "./install/install-dompp.js";
+﻿import { installDOMPP } from "./install/install-dompp.js";
 
 // Node.js / unit tests
 
-export const createDOMPP =
-  () => installDOMPP();
+export const createDOMPP = () => installDOMPP();
 
 // Browser globals
 
-if (
-  typeof window !==
-  "undefined"
-) {
+if (typeof window !== "undefined") {
+  const dompp = installDOMPP();
 
-  const dompp =
-    installDOMPP();
-
-  window.DOMPP =
-    dompp;
+  window.DOMPP = dompp;
 }

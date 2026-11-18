@@ -1,0 +1,78 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOM++ Browser Tests</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 20px; color: #0f172a; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .summary { margin: 8px 0 16px; font-weight: 600; }
+    .pass { color: #166534; }
+    .fail { color: #991b1b; }
+    .spec { border: 1px solid #cbd5e1; border-radius: 8px; padding: 12px; margin: 10px 0; }
+    .spec h2 { margin: 0 0 6px; font-size: 16px; }
+    pre { background: #f8fafc; padding: 10px; border-radius: 6px; overflow: auto; white-space: pre-wrap; }
+    iframe { width: 100%; height: 120px; border: 1px solid #e2e8f0; border-radius: 6px; }
+  </style>
+</head>
+<body>
+  <h1>DOM++ Browser Tests</h1>
+  <p>Runs each spec in an isolated iframe against real browser <code>window</code>/<code>document</code>.</p>
+  <div id="summary" class="summary">Running...</div>
+  <div id="specs"></div>
+  <script>
+    const specs = [
+      "element-builder",
+      "component-builder",
+      "enhancements",
+      "install",
+    ];
+    const container = document.getElementById("specs");
+    const summaryEl = document.getElementById("summary");
+    const resultsBySpec = new Map();
+
+    function render() {
+      let total = 0, passed = 0, failed = 0, done = 0;
+      for (const name of specs) {
+        const r = resultsBySpec.get(name);
+        if (r) {
+          done++;
+          total += r.total || 0;
+          passed += r.passed || 0;
+          failed += r.failed || 0;
+        }
+      }
+      summaryEl.textContent = done === specs.length
+        ? `Done: ${passed}/${total} passed, ${failed} failed (${specs.length} specs)`
+        : `Running: ${done}/${specs.length} specs complete...`;
+      summaryEl.className = "summary " + (done === specs.length ? (failed ? "fail" : "pass") : "");
+    }
+
+    window.addEventListener("message", (event) => {
+      const data = event.data || {};
+      if (data.type !== "dompp-test-results") return;
+      const frame = Array.from(document.querySelectorAll("iframe")).find(f => f.contentWindow === event.source);
+      if (!frame) return;
+      const name = frame.dataset.spec;
+      resultsBySpec.set(name, data.summary);
+      const block = frame.closest(".spec");
+      const pre = block.querySelector("pre");
+      const h2 = block.querySelector("h2");
+      const s = data.summary;
+      h2.textContent = `${name}: ${s.passed}/${s.total} passed`;
+      h2.className = s.failed ? "fail" : "pass";
+      pre.textContent = JSON.stringify(s, null, 2);
+      render();
+    });
+
+    for (const name of specs) {
+      const block = document.createElement("div");
+      block.className = "spec";
+      block.innerHTML = `<h2>${name}: running...</h2><iframe data-spec="${name}" src="./run.html?spec=${encodeURIComponent(name)}"></iframe><pre></pre>`;
+      container.appendChild(block);
+    }
+    render();
+  </script>
+</body>
+</html>

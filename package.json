@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "@dimpandu/domplusplus",
   "version": "1.6.8",
   "description": "Lightweight native DOM enhancement library with deterministic mutation, chainable setters, optional reactivity, and JSX-compatible builders.",
@@ -30,7 +30,6 @@
   "exports": {
     ".": "./src/index.js",
     "./builders": "./src/builders/index.js",
-    "./builders-minimal": "./src/builders-minimal.js",
     "./package.json": "./package.json"
   },
   "files": [

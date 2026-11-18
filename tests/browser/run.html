@@ -1,0 +1,33 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DOM++ Spec Runner</title>
+</head>
+<body>
+  <h1 id="status">Running...</h1>
+  <script src="./harness.js"></script>
+  <script type="module">
+    const params = new URLSearchParams(location.search);
+    const spec = params.get("spec");
+    const status = document.getElementById("status");
+    if (!spec) {
+      status.textContent = "Missing ?spec=";
+      harness.record(false, "spec param", "No spec provided");
+      await harness.done();
+    } else {
+      status.textContent = "Running " + spec;
+      try {
+        await import("./specs/" + spec + ".spec.js");
+        await harness.done();
+        status.textContent = document.title;
+      } catch (err) {
+        harness.record(false, "load " + spec, err && (err.stack || err.message || String(err)));
+        await harness.done();
+        status.textContent = "FAIL load";
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,40 +1,12 @@
-import { installSetters }
-from "./install-setters.js";
+﻿import { createBuilders } from "../builders/index.js";
+import { installEnhancements } from "../enhancements/index.js";
 
-import { installFragment }
-from "./install-fragment.js";
-
-import { installDocumentApi }
-from "./install-document-api.js";
-
-import { installReactiveWrappers }
-from "./install-reactive-wrappers.js";
-
-import { createSignal }
-from "../runtime/signals.js";
-
-import { createSignalEffect }
-from "../runtime/signals.js";
-import { installBuilders } from "./install-builders.js";
-
-export function installDOMPP() {
-
-  installSetters();
-
-  installFragment();
-
-  installDocumentApi();
-
-  installReactiveWrappers();
-
-  installBuilders();
+export function installDOMPP(doc = globalThis.document) {
+  const builders = createBuilders(doc);
+  installEnhancements(builders);
 
   return {
-
     version: "1.6.8",
-
-    createSignal,
-
-    createSignalEffect
+    ...builders,
   };
 }
