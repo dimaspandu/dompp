@@ -20,7 +20,7 @@ If you like the simplicity of vanilla DOM but want a better developer experience
 - **Deterministic updates**: you mutate exactly what you mean — no hidden diff/reconciliation layer.
 - **Progressive by design**: start with setters, add state/signals/builders only where needed.
 - **Tiny mental model**: chainable APIs, explicit behavior, minimal runtime surface.
-- **Flexible rendering**: direct DOM enhancement, `componentBuilder` boundaries, and optional JSX syntax.
+- **Flexible rendering**: direct DOM enhancement, component boundaries via `createComponent`, and optional JSX syntax.
 - **Adoption-friendly**: enhance existing markup, integrate incrementally, or build from scratch.
 
 ## Install
@@ -81,47 +81,26 @@ card.setChildren(
 
 Attach behavior to server-rendered or static HTML without rebuilding it.
 
-## Builder Engine (JSX-compatible)
+## Builder Layer (Infrastructure)
 
-DOMPP includes `elementBuilder` and `componentBuilder` for descriptor-based construction and local reconciliation — a small render engine on top of native DOM nodes.
+DOM++ is built on top of a small builder layer (`elementBuilder`, `componentBuilder`) that handles descriptor-based construction and local reconciliation. This layer is infrastructure used internally by the enhanced `document` APIs — it is not the primary public API.
 
 ```js
-import { elementBuilder, componentBuilder } from "@dimpandu/domplusplus/builders";
+import { createBuilders } from "@dimpandu/domplusplus/builders";
+const builders = createBuilders(document);
 ```
 
-### elementBuilder
+The public API surface is the enhanced `document`:
 
-```jsx
-/** @jsx elementBuilder */
-elementBuilder("div", { class: "card" },
-  elementBuilder("h1", {}, "Title"),
-  elementBuilder("button", { onClick: () => console.log("click") }, "Click")
-);
-```
+- `document.createElement(tag, props, ...children)` — create or adopt an element (with builders under the hood)
+- `document.createComponent((rerender) => tree)` — stateful component boundary with `.rerender()`
+- `document.createDocumentFragment(...children)` — flat child array (fragment)
+- `document.createElement("fragment")` — wrapper fragment element
 
-- `elementBuilder(tag, props, ...children)` — create or adopt an element
-- `elementBuilder(existingNode, props, ...children)` — adopt existing DOM
-- `.reset()` — clear struct and live DOM for clean-slate updates
+Entry points:
 
-### componentBuilder
-
-```jsx
-/** @jsx elementBuilder */
-let count = 0;
-
-const Counter = componentBuilder((rerender) => (
-  <section className="card">
-    <p>Count: {count}</p>
-    <button onClick={() => rerender(() => { count += 1; })}>Increment</button>
-  </section>
-));
-
-elementBuilder(document.getElementById("app"), null, Counter.render());
-```
-
-- `componentBuilder((rerender) => tree)` — stateful render boundary
-- `.render()` — mount and return builder/node
-- `.rerender(callback)` — update state then patch from new tree
+- `@dimpandu/domplusplus` — installs DOM++ APIs + builders (browser auto-installs `window.DOMPP`)
+- `@dimpandu/domplusplus/builders` — builders only
 
 Entry points:
 - `@dimpandu/domplusplus` — install DOMPP APIs + builders
