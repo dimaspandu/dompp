@@ -64,49 +64,19 @@ All setters return the element for fluent composition:
 | `setStyles(obj)` | Apply inline style updates |
 | `setAttributes(obj)` | Set attributes on the element |
 | `setEvents(obj)` | Attach/replace event listeners |
-| `setState(obj)` | Attach local state and trigger reactive reruns |
-| `setEnhancement(fn)` | Progressively enhance existing DOM |
-| `setFineGrained()` | Opt-in to fine-grained signal updates |
-
-### Local reactive state
-
-```js
-const counter = document
-  .createElement("button")
-  .setState({ count: 0 })
-  .setText(({ state }) => `Count: ${state.count}`)
-  .setEvents(({ state, setState }) => ({
-    click() {
-      setState({ count: state.count + 1 });
-    },
-  }));
-```
-
-State changes schedule microtask-flushed reruns for reactive setters on that element.
-
-### Fine-grained signals
-
-```js
-const [count, setCount] = document.createSignal(0);
-
-document
-  .createElement("h1")
-  .setFineGrained()
-  .setText(() => count());
-```
-
-Only signal consumers rerun.
 
 ### Progressive enhancement
 
+Adopt and enhance existing (server-rendered or static) markup in place:
+
 ```js
-document.getElementById("counter-app").setEnhancement(({ childNodes }) => {
-  childNodes[1].setEvents({
-    click() {
-      childNodes[0].setText("1");
-    },
-  });
-});
+const card = document.createElement(document.getElementById("server-card"));
+card.setChildren(
+  document.createElement("h3").setText("Adopted title"),
+  document.createElement("button")
+    .setText("Increment")
+    .setEvents({ click() { count++; card.rerender(); } })
+);
 ```
 
 Attach behavior to server-rendered or static HTML without rebuilding it.
