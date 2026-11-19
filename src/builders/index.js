@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Foundation builders (ElementBuilder, ComponentBuilder).
  * Exposed for tests and advanced usage. Application code should use src/index.js.
  */
@@ -12,7 +12,6 @@ import { createComponentBuilder } from "./component-builder.js";
 export function createBuilders(doc = globalThis.document) {
   const element = createElementBuilder(doc);
   const component = createComponentBuilder({
-    ElementBuilder: element.ElementBuilder,
     reconcileSlot: element.reconcileSlot,
     attachedEventsByNode: element.attachedEventsByNode,
   });

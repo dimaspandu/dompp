@@ -151,10 +151,6 @@ function normalizeChildren(children) {
     .filter((child) => child != null && typeof child !== "boolean");
 }
 
-function isFragmentTag(tag) {
-  return tag === "fragment" || tag === "#document-fragment";
-}
-
 // Enhance a child array so fragment-producing APIs can be updated fluently.
 function asFragmentChildren(children) {
   const list = normalizeChildren(children);

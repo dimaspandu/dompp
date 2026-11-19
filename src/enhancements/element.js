@@ -1,4 +1,3 @@
-import { installFragmentEnhancements } from "./fragment.js";
 
 const INSTALLED = Symbol.for("dompp.element.enhancements");
 

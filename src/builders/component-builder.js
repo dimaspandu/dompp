@@ -4,7 +4,6 @@
  */
 
 export function createComponentBuilder({
-  ElementBuilder,
   reconcileSlot,
   attachedEventsByNode,
 }) {
