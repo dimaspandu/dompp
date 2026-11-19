@@ -4,6 +4,14 @@
 
 > DOM extended with small, explicit, chainable methods.
 
+## Background
+
+DOM++ is a slice of a larger effort: **the-future-of-the-browser**, a browser runtime exploration (Rust, V8, and more) that aims to enhance the DOM itself so capabilities like reactive components, chainable setters, and fragments become native. It is meant to answer two questions:
+
+- What if the DOM was already reactive?
+- What DOM API do we actually need?
+
+The hope is that this work can also serve as a proposal to MDN and the web platform. DOM++ itself is a preview of how those new APIs might be used.
 If you like the simplicity of vanilla DOM but want a better developer experience, DOMPP gives you predictable, direct mutation with modern ergonomics.
 
 ## Why DOMPP

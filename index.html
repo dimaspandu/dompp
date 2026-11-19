@@ -1,1372 +1,177 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-
   <meta charset="UTF-8" />
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-
-  <!-- ================================= -->
-  <!-- TITLE -->
-  <!-- ================================= -->
-
-  <title>
-    DOMPP (DOM++)
-  </title>
-
-  <!-- ================================= -->
-  <!-- FAVICON -->
-  <!-- ================================= -->
-
-  <link
-    rel="icon"
-    type="image/svg+xml"
-    href="./assets/favicon.svg"
-  />
-
-  <!-- ================================= -->
-  <!-- PRIMARY META -->
-  <!-- ================================= -->
-
-  <meta
-    name="title"
-    content="DOMPP (DOM++)"
-  />
-
-  <meta
-    name="description"
-    content="A browser-native mutation runtime exploring deterministic DOM updates, optional reactivity, fine-grained signals, and progressive enhancement without virtual DOM reconciliation."
-  />
-
-  <meta
-    name="keywords"
-    content="
-      DOM,
-      JavaScript,
-      runtime,
-      reactivity,
-      signals,
-      enhancement,
-      progressive enhancement,
-      browser runtime,
-      mutation runtime,
-      fine-grained reactivity
-    "
-  />
-
-  <meta
-    name="author"
-    content="DOMPP Team"
-  />
-
-  <meta
-    name="theme-color"
-    content="#111111"
-  />
-
-  <!-- ================================= -->
-  <!-- CANONICAL -->
-  <!-- ================================= -->
-
-  <link
-    rel="canonical"
-    href="https://dimaspandu.github.io/dompp/"
-  />
-
-  <!-- ================================= -->
-  <!-- OPEN GRAPH -->
-  <!-- ================================= -->
-
-  <meta
-    property="og:type"
-    content="website"
-  />
-
-  <meta
-    property="og:url"
-    content="https://dimaspandu.github.io/dompp/"
-  />
-
-  <meta
-    property="og:title"
-    content="DOMPP (DOM++)"
-  />
-
-  <meta
-    property="og:description"
-    content="A browser-native mutation runtime exploring deterministic DOM updates, optional reactivity, fine-grained signals, and progressive enhancement without virtual DOM reconciliation."
-  />
-
-  <meta
-    property="og:image"
-    content="https://dimaspandu.github.io/dompp/assets/featured-image.png"
-  />
-
-  <meta
-    property="og:site_name"
-    content="DOMPP"
-  />
-
-  <!-- ================================= -->
-  <!-- TWITTER -->
-  <!-- ================================= -->
-
-  <meta
-    property="twitter:card"
-    content="summary_large_image"
-  />
-
-  <meta
-    property="twitter:url"
-    content="https://dimaspandu.github.io/dompp/"
-  />
-
-  <meta
-    property="twitter:title"
-    content="DOMPP (DOM++)"
-  />
-
-  <meta
-    property="twitter:description"
-    content="A browser-native mutation runtime exploring deterministic DOM updates, optional reactivity, fine-grained signals, and progressive enhancement without virtual DOM reconciliation."
-  />
-
-  <meta
-    property="twitter:image"
-    content="https://dimaspandu.github.io/dompp/assets/featured-image.png"
-  />
-
-  <!-- ================================= -->
-  <!-- OPTIONAL -->
-  <!-- ================================= -->
-
-  <meta
-    name="robots"
-    content="index, follow"
-  />
-
-  <meta
-    http-equiv="X-UA-Compatible"
-    content="IE=edge"
-  />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DOMPP (DOM++)</title>
+  <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css" />
   <style>
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-
-      margin: 0;
-
-      font-family:
-        Inter,
-        system-ui,
-        sans-serif;
-
-      background:
-        #f5f5f5;
-
-      color:
-        #111;
-    }
-
-    a {
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* ===================================
-       HERO
-    =================================== */
-
-    .hero {
-
-      padding:
-        96px 32px;
-
-      background:
-        linear-gradient(
-          135deg,
-          #111,
-          #222
-        );
-
-      color:
-        white;
-    }
-
-    .hero-inner {
-
-      max-width:
-        1100px;
-
-      margin:
-        0 auto;
-    }
-
-    .badge {
-
-      display:
-        inline-block;
-
-      background:
-        rgba(255,255,255,0.12);
-
-      border:
-        1px solid rgba(255,255,255,0.18);
-
-      padding:
-        8px 14px;
-
-      border-radius:
-        999px;
-
-      font-size:
-        14px;
-
-      margin-bottom:
-        24px;
-    }
-
-    h1 {
-
-      font-size:
-        clamp(48px, 8vw, 96px);
-
-      margin:
-        0 0 24px 0;
-
-      line-height:
-        0.95;
-    }
-
-    .hero p {
-
-      max-width:
-        820px;
-
-      font-size:
-        20px;
-
-      line-height:
-        1.8;
-
-      color:
-        rgba(255,255,255,0.82);
-    }
-
-    .buttons {
-
-      display:
-        flex;
-
-      gap:
-        16px;
-
-      flex-wrap:
-        wrap;
-
-      margin-top:
-        40px;
-    }
-
-    .button {
-
-      padding:
-        14px 20px;
-
-      border-radius:
-        12px;
-
-      font-weight:
-        600;
-
-      transition:
-        transform 0.15s ease;
-    }
-
-    .button:hover {
-      transform: translateY(-2px);
-    }
-
-    .button-primary {
-
-      background:
-        white;
-
-      color:
-        black;
-    }
-
-    .button-secondary {
-
-      border:
-        1px solid rgba(255,255,255,0.18);
-
-      color:
-        white;
-    }
-
-    /* ===================================
-       SECTIONS
-    =================================== */
-
-    .section {
-
-      max-width:
-        1100px;
-
-      margin:
-        0 auto;
-
-      padding:
-        96px 32px;
-    }
-
-    .section-title {
-
-      font-size:
-        42px;
-
-      margin-bottom:
-        16px;
-    }
-
-    .section-description {
-
-      color:
-        #666;
-
-      line-height:
-        1.8;
-
-      margin-bottom:
-        48px;
-
-      max-width:
-        820px;
-    }
-
-    .grid {
-
-      display:
-        grid;
-
-      grid-template-columns:
-        repeat(auto-fit, minmax(260px, 1fr));
-
-      gap:
-        24px;
-    }
-
-    .card {
-
-      background:
-        white;
-
-      border-radius:
-        20px;
-
-      padding:
-        28px;
-
-      box-shadow:
-        0 8px 24px rgba(0,0,0,0.06);
-    }
-
-    .card h3 {
-
-      margin-top:
-        0;
-
-      font-size:
-        22px;
-    }
-
-    .card p {
-
-      color:
-        #666;
-
-      line-height:
-        1.7;
-    }
-
-    /* ===================================
-       ARCHITECTURE
-    =================================== */
-
-    .architecture-preview {
-
-      width:
-        100%;
-
-      border-radius:
-        20px;
-
-      box-shadow:
-        0 10px 32px rgba(0,0,0,0.08);
-    }
-
-    /* ===================================
-       EXAMPLES
-    =================================== */
-
-    .examples-group {
-
-      margin-bottom:
-        56px;
-    }
-
-    .examples-group h3 {
-
-      font-size:
-        28px;
-
-      margin-bottom:
-        20px;
-    }
-
-    .examples {
-
-      display:
-        grid;
-
-      grid-template-columns:
-        repeat(auto-fit, minmax(320px, 1fr));
-
-      gap:
-        20px;
-    }
-
-    .example-link {
-
-      background:
-        white;
-
-      padding:
-        20px;
-
-      border-radius:
-        16px;
-
-      box-shadow:
-        0 6px 18px rgba(0,0,0,0.05);
-
-      transition:
-        transform 0.15s ease;
-    }
-
-    .example-link:hover {
-      transform: translateY(-2px);
-    }
-
-    .example-link strong {
-
-      display:
-        block;
-
-      margin-bottom:
-        8px;
-    }
-
-    /* ===================================
-       FOOTER
-    =================================== */
-
-    footer {
-
-      padding:
-        64px 32px;
-
-      text-align:
-        center;
-
-      color:
-        #777;
-    }
-
-    code {
-
-      background:
-        #eee;
-
-      padding:
-        2px 8px;
-
-      border-radius:
-        8px;
-    }
-
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #050816; color: #e5e7eb; line-height: 1.75; }
+    .container { max-width: 960px; margin: 0 auto; padding: 72px 24px 120px; }
+    h1 { font-size: 56px; margin: 0 0 8px; letter-spacing: -1px; }
+    h2 { font-size: 30px; margin: 64px 0 16px; color: #93c5fd; }
+    h3 { font-size: 20px; margin: 32px 0 8px; color: #fbbf24; }
+    p { color: #cbd5e1; margin: 0 0 18px; font-size: 17px; }
+    .subtitle { color: #94a3b8; font-size: 20px; margin-bottom: 40px; }
+    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; margin: 20px 0; }
+    pre { background: #0b1220; border: 1px solid #1e293b; border-radius: 12px; padding: 18px; overflow: auto; font-size: 13px; line-height: 1.55; margin: 16px 0; }
+    code { font-family: "Fira Code", Consolas, monospace; }
+    .cta { display: inline-block; margin-top: 16px; padding: 12px 22px; background: #2563eb; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-right: 10px; }
+    .cta:hover { background: #1d4ed8; }
+    .cta.secondary { background: #1f2937; }
+    .cta.secondary:hover { background: #374151; }
+    .muted { color: #64748b; font-size: 14px; }
+    ul { color: #cbd5e1; }
+    a { color: #60a5fa; }
+    .quote { font-style: italic; color: #94a3b8; border-left: 3px solid #2563eb; padding-left: 16px; margin: 24px 0; }
+    .divider { height: 1px; background: #1e293b; margin: 48px 0; }
   </style>
-
 </head>
 <body>
-
-  <!-- ================================= -->
-  <!-- HERO -->
-  <!-- ================================= -->
-
-  <section class="hero">
-
-    <div class="hero-inner">
-
-      <div class="badge">
-        EXPERIMENTAL RUNTIME PROPOSAL
-      </div>
-
-      <h1>
-        DOM++
-      </h1>
-
-      <p>
-
-        A browser-native mutation runtime
-        exploring deterministic DOM updates,
-        optional reactivity,
-        fine-grained signals,
-        and progressive enhancement
-        without virtual DOM reconciliation.
-
-      </p>
-
-      <div class="buttons">
-
-        <a
-          href="./examples/"
-          class="
-            button
-            button-primary
-          "
-        >
-          Explore Examples
-        </a>
-
-        <a
-          href="./docs/architecture/"
-          class="
-            button
-            button-secondary
-          "
-        >
-          Architecture Docs
-        </a>
-
-        <a
-          href="https://github.com/dimaspandu/dompp"
-          class="
-            button
-            button-secondary
-          "
-        >
-          GitHub
-        </a>
-
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- ================================= -->
-  <!-- PHILOSOPHY -->
-  <!-- ================================= -->
-
-  <section class="section">
-
-    <h2 class="section-title">
-      Philosophy
-    </h2>
-
-    <p class="section-description">
-
-      DOMPP extends native DOM prototypes
-      with small chainable setters while
-      preserving direct access to browser APIs.
-
-      <br /><br />
-
-      No virtual DOM.
-      No hidden reconciliation.
-      No compiler required.
-
-    </p>
-
-    <div class="grid">
-
-      <div class="card">
-
-        <h3>
-          Direct DOM Mutation
-        </h3>
-
-        <p>
-
-          DOMPP mutates native DOM nodes
-          directly without virtual DOM
-          diffing or reconciliation layers.
-
-        </p>
-
-      </div>
-
-      <div class="card">
-
-        <h3>
-          Optional Reactivity
-        </h3>
-
-        <p>
-
-          Choose between local stateful
-          runtime or optional fine-grained
-          signals.
-
-        </p>
-
-      </div>
-
-      <div class="card">
-
-        <h3>
-          Existing DOM Enhancement
-        </h3>
-
-        <p>
-
-          Enhance existing server-rendered
-          HTML without subtree recreation
-          or hydration engines.
-
-        </p>
-
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- ================================= -->
-  <!-- WHAT DOMPP IS NOT -->
-  <!-- ================================= -->
-
-  <section class="section">
-
-    <h2 class="section-title">
-      What DOMPP Is Not
-    </h2>
-
-    <p class="section-description">
-
-      DOMPP intentionally avoids several
-      common framework abstractions.
-
-    </p>
-
-    <div class="grid">
-
-      <div class="card">
-
-        <h3>
-          No Virtual DOM
-        </h3>
-
-        <p>
-
-          DOMPP mutates native DOM nodes
-          directly without tree diffing
-          or reconciliation passes.
-
-        </p>
-
-      </div>
-
-      <div class="card">
-
-        <h3>
-          No Compiler
-        </h3>
-
-        <p>
-
-          DOMPP does not require JSX,
-          template compilation,
-          or build-time transforms.
-
-        </p>
-
-      </div>
-
-      <div class="card">
-
-        <h3>
-          No Hidden Runtime Ownership
-        </h3>
-
-        <p>
-
-          State remains attached directly
-          to DOM elements and follows
-          explicit mutation flow.
-
-        </p>
-
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- ================================= -->
-  <!-- ARCHITECTURE -->
-  <!-- ================================= -->
-
-  <section class="section">
-
-    <h2 class="section-title">
-      Runtime Architecture
-    </h2>
-
-    <p class="section-description">
-
-      DOMPP is designed around explicit
-      mutation flow and native DOM
-      mental models.
-
-    </p>
-
-    <img
-      src="./docs/architecture/runtime-flow.png"
-      alt="Runtime Architecture"
-      class="architecture-preview"
-    />
-
-  </section>
-
-  <!-- ================================= -->
-  <!-- RUNTIME SEMANTICS -->
-  <!-- ================================= -->
-
-  <section class="section">
-
-    <h2 class="section-title">
-      Runtime Semantics
-    </h2>
-
-    <p class="section-description">
-
-      DOMPP examples also document
-      runtime behavior and mutation semantics.
-
-    </p>
-
-    <div class="grid">
-
-      <div class="card">
-
-        <h3>
-          Stateful Mutation
-        </h3>
-
-        <p>
-
-          Explore how local state reruns
-          reactive setters and propagates
-          mutation through the DOM.
-
-        </p>
-
-      </div>
-
-      <div class="card">
-
-        <h3>
-          Fine-Grained Signals
-        </h3>
-
-        <p>
-
-          Understand direct signal
-          subscriptions and isolated
-          setter-level reactivity.
-
-        </p>
-
-      </div>
-
-      <div class="card">
-
-        <h3>
-          Identity Preservation
-        </h3>
-
-        <p>
-
-          Learn how DOMPP handles
-          node reuse,
-          child replacement,
-          and runtime ownership.
-
-        </p>
-
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- ================================= -->
-  <!-- EXAMPLES -->
-  <!-- ================================= -->
-
-  <section class="section">
-
-    <h2 class="section-title">
-      Examples
-    </h2>
-
-    <p class="section-description">
-
-      DOMPP examples are designed as
-      runtime learning blocks.
-
-      <br /><br />
-
-      Each example progressively explores:
-      deterministic mutation,
-      reactive ownership,
-      DOM identity preservation,
-      fine-grained updates,
-      and browser-native runtime semantics.
-
-    </p>
-
-    <!-- ================================= -->
-    <!-- FOUNDATIONS -->
-    <!-- ================================= -->
-
-    <div class="examples-group">
-
-      <h3>
-        Foundations
-      </h3>
-
-      <div class="examples">
-
-        <a
-          href="./examples/01-basic-text/"
-          class="example-link"
-        >
-
-          <strong>
-            01 — Basic Text
-          </strong>
-
-          Simplest chainable text mutation
-          using native DOM nodes.
-
-        </a>
-
-        <a
-          href="./examples/02-basic-styles/"
-          class="example-link"
-        >
-
-          <strong>
-            02 — Basic Styles
-          </strong>
-
-          Inline style mutation
-          using partial style updates.
-
-        </a>
-
-        <a
-          href="./examples/03-basic-attributes/"
-          class="example-link"
-        >
-
-          <strong>
-            03 — Basic Attributes
-          </strong>
-
-          Unified attribute mutation
-          including boolean attributes.
-
-        </a>
-
-        <a
-          href="./examples/04-basic-children/"
-          class="example-link"
-        >
-
-          <strong>
-            04 — Basic Children
-          </strong>
-
-          Declarative child tree composition
-          without virtual DOM diffing.
-
-        </a>
-
-        <a
-          href="./examples/05-basic-events/"
-          class="example-link"
-        >
-
-          <strong>
-            05 — Basic Events
-          </strong>
-
-          Chainable event listeners
-          with deterministic replacement.
-
-        </a>
-
-      </div>
-
-    </div>
-
-    <!-- ================================= -->
-    <!-- MUTATION SEMANTICS -->
-    <!-- ================================= -->
-
-    <div class="examples-group">
-
-      <h3>
-        Mutation Semantics
-      </h3>
-
-      <div class="examples">
-
-        <a
-          href="./examples/06-mutation-consistency/"
-          class="example-link"
-        >
-
-          <strong>
-            06 — Mutation Consistency
-          </strong>
-
-          Deterministic setter behavior
-          and predictable mutation flow.
-
-        </a>
-
-        <a
-          href="./examples/07-children-vs-childnodes/"
-          class="example-link"
-        >
-
-          <strong>
-            07 — children vs childNodes
-          </strong>
-
-          Structural differences between
-          element-only and full node traversal.
-
-        </a>
-
-        <a
-          href="./examples/08-fragment-support/"
-          class="example-link"
-        >
-
-          <strong>
-            08 — Fragment Support
-          </strong>
-
-          Native DocumentFragment support
-          without unnecessary wrappers.
-
-        </a>
-
-      </div>
-
-    </div>
-
-    <!-- ================================= -->
-    <!-- REACTIVE RUNTIME -->
-    <!-- ================================= -->
-
-    <div class="examples-group">
-
-      <h3>
-        Reactive Runtime
-      </h3>
-
-      <div class="examples">
-
-        <a
-          href="./examples/09-reactive-counter/"
-          class="example-link"
-        >
-
-          <strong>
-            09 — Reactive Counter
-          </strong>
-
-          Reactive setters driven by
-          local element state.
-
-        </a>
-
-        <a
-          href="./examples/10-reactive-children/"
-          class="example-link"
-        >
-
-          <strong>
-            10 — Reactive Children
-          </strong>
-
-          Declarative reactive child trees
-          rebuilt from state.
-
-        </a>
-
-        <a
-          href="./examples/11-reusable-stateful-elements/"
-          class="example-link"
-        >
-
-          <strong>
-            11 — Reusable Stateful Elements
-          </strong>
-
-          Component-like reusable factories
-          using native DOM nodes.
-
-        </a>
-
-        <a
-          href="./examples/12-cross-element-state/"
-          class="example-link"
-        >
-
-          <strong>
-            12 — Cross Element State
-          </strong>
-
-          External mutation of element state
-          through DOM references.
-
-        </a>
-
-        <a
-          href="./examples/13-existing-dom-enhancement/"
-          class="example-link"
-        >
-
-          <strong>
-            13 — Existing DOM Enhancement
-          </strong>
-
-          Enhance server-rendered DOM
-          without subtree recreation.
-
-        </a>
-
-        <a
-          href="./examples/14-fine-grained-signals/"
-          class="example-link"
-        >
-
-          <strong>
-            14 — Fine-Grained Signals
-          </strong>
-
-          Optional signal-based reactivity
-          with isolated setter reruns.
-
-        </a>
-
-        <a
-          href="./examples/15-existing-dom-enhancement-signals/"
-          class="example-link"
-        >
-
-          <strong>
-            15 — Enhancement + Signals
-          </strong>
-
-          Combine existing DOM enhancement
-          with fine-grained subscriptions.
-
-        </a>
-
-      </div>
-
-    </div>
-
-    <!-- ================================= -->
-    <!-- RUNTIME SEMANTICS -->
-    <!-- ================================= -->
-
-    <div class="examples-group">
-
-      <h3>
-        Runtime Semantics
-      </h3>
-
-      <div class="examples">
-
-        <a
-          href="./examples/16-state-equality-behavior/"
-          class="example-link"
-        >
-
-          <strong>
-            16 — State Equality Behavior
-          </strong>
-
-          Explore rerender behavior when
-          mutating identical state values.
-
-        </a>
-
-        <a
-          href="./examples/17-nested-stateful-elements/"
-          class="example-link"
-        >
-
-          <strong>
-            17 — Nested Stateful Elements
-          </strong>
-
-          Parent-child runtime ownership
-          and nested state behavior.
-
-        </a>
-
-        <a
-          href="./examples/18-keyed-list-behavior/"
-          class="example-link"
-        >
-
-          <strong>
-            18 — Keyed List Behavior
-          </strong>
-
-          DOM identity preservation
-          through reused node references.
-
-        </a>
-
-        <a
-          href="./examples/19-dom-identity-preservation/"
-          class="example-link"
-        >
-
-          <strong>
-            19 — DOM Identity Preservation
-          </strong>
-
-          Runtime ownership attached
-          directly to DOM node identity.
-
-        </a>
-
-         <a
-           href="./examples/20-reactive-feed/"
-           class="example-link"
-         >
-
-           <strong>
-             20 — Reactive Feed
-           </strong>
-
-           Prepend and append feed mutation
-           with editable stateful posts.
-
-         </a>
-
-         <a
-           href="./examples/21-jsx-integration/"
-           class="example-link"
-         >
-
-           <strong>
-             21 — JSX Integration
-           </strong>
-
-           Use JSX syntax with a tiny custom pragma factory
-           powered by Babel (or your bundler).
-
-         </a>
-
-       </div>
-
-    </div>
-
-    <!-- ================================= -->
-    <!-- BUILDERS (1.2.0) -->
-    <!-- ================================= -->
-
-    <div class="examples-group">
-
-      <h3>Builders (1.2.0)</h3>
-
-      <div class="examples">
-
-        <a href="./examples/22-element-builder/" class="example-link">
-          <strong>22 — Element Builder</strong>
-          Descriptor-based <code>elementBuilder</code> with direct setters, struct inspection, and JSX factory usage.
-        </a>
-
-        <a href="./examples/23-component-builder/" class="example-link">
-          <strong>23 — Component Builder</strong>
-          Stateful render boundary with <code>componentBuilder</code>, <code>render()</code>, and <code>rerender(callback)</code>.
-        </a>
-
-        <a href="./examples/24-mvvm-component-builder/" class="example-link">
-          <strong>24 — MVVM (Component Builder)</strong>
-          Layered Model/ViewModel/View pattern using <code>elementBuilder</code> and <code>componentBuilder</code>.
-        </a>
-
-        <a href="./examples/25-conditional-rendering/" class="example-link">
-          <strong>25 — Conditional Rendering</strong>
-          Add or remove children during rerender; <code>null</code> means no node in the current virtual tree.
-        </a>
-
-        <a href="./examples/26-keyed-list/" class="example-link">
-          <strong>26 — Keyed List</strong>
-          Stable keys preserve item identity across append, prepend, reorder, removal, and tag replacement.
-        </a>
-
-        <a href="./examples/27-fragments-and-arrays/" class="example-link">
-          <strong>27 — Fragments and Arrays</strong>
-          Fragment boundaries and array-returning components contributing sibling child descriptors.
-        </a>
-
-        <a href="./examples/28-server-dom-adoption/" class="example-link">
-          <strong>28 — Server DOM Adoption</strong>
-          Adopt existing server-rendered HTML with <code>elementBuilder</code> and synchronize descriptor children.
-        </a>
-
-        <a href="./examples/29-reactive-server-messenger/" class="example-link">
-          <strong>29 — Reactive Server Messenger</strong>
-          Component rerender over an adopted server root with keyed message list updates.
-        </a>
-
-        <a href="./examples/30-bigview-independent-updates/" class="example-link">
-          <strong>30 — BigView Independent Updates</strong>
-          Stable adopted root, direct builder mutations, and independent/coordinated component rerenders.
-        </a>
-
-        <a href="./examples/31-mvvm-bigview-sections/" class="example-link">
-          <strong>31 — MVVM BigView Sections</strong>
-          Focused sections subscribe to ViewModel topics and rerender only when relevant data changes.
-        </a>
-
-        <a href="./examples/32-security-boundary/" class="example-link">
-          <strong>32 — Security Boundary</strong>
-          Builder validation for unsafe attributes/protocols and text rendering for untrusted content.
-        </a>
-
-        <a href="./examples/33-element-builder-reset/" class="example-link">
-          <strong>33 — elementBuilder Outlet with reset()</strong>
-          Route outlet pattern using <code>elementBuilder</code> + <code>.reset()</code> for clean slate on each navigation.
-        </a>
-
-        <a href="./examples/34-component-builder-rerender/" class="example-link">
-          <strong>34 — componentBuilder Outlet with rerender()</strong>
-          Route outlet pattern using <code>componentBuilder</code> + <code>rerender()</code>; <code>_patchFrom</code> fully replaces attributes/styles/children.
-        </a>
-
-        <a href="./examples/35-local-stateful-in-stateless-view/" class="example-link">
-          <strong>35 — Local Stateful Inside Stateless (ViewModel)</strong>
-          Stateless view embeds a local <code>componentBuilder</code> subtree; ViewModel notifications rerender only the inner stateful region.
-        </a>
-
-      </div>
-
-    </div>
-
-    <!-- ================================= -->
-    <!-- ARCHITECTURE -->
-    <!-- ================================= -->
-
-      <h3>
-        Native Runtime Exploration
-      </h3>
-
-      <div class="examples">
-
-        <a
-          href="./docs/architecture/"
-          class="example-link"
-        >
-
-          <strong>
-            Architecture & Builders Docs
-          </strong>
-
-          Explore runtime flow,
-          mutation architecture,
-          signals,
-          enhancement semantics,
-          and browser-native runtime proposals.
-
-        </a>
-
-      </div>
-
-    </div>
-
-  </section>
-
-  <!-- ================================= -->
-  <!-- EXPERIMENTAL -->
-  <!-- ================================= -->
-
-  <section class="section">
-
-    <h2 class="section-title">
-      Experimental Runtime Proposal
-    </h2>
-
-    <p class="section-description">
-
-      DOMPP explores the idea that
-      browser-native mutation APIs
-      could evolve into a richer runtime layer
-      capable of supporting higher-level
-      frameworks and compilers.
-
-      <br /><br />
-
-      Rather than replacing the DOM,
-      DOMPP investigates how the DOM itself
-      might become the runtime infrastructure.
-
-    </p>
-
-  </section>
-
-  <!-- ================================= -->
-  <!-- FOOTER -->
-  <!-- ================================= -->
-
-  <footer>
-
-    Built on top of native browser APIs
-    and deterministic mutation flow.
-
-    <br /><br />
-
-    <code>
-      No virtual DOM.
-      No compiler.
-      No reconciliation.
-    </code>
-
-  </footer>
-
+  <div class="container">
+    <h1>DOMPP (DOM++)</h1>
+    <p class="subtitle">What if the DOM was already reactive? The DOM API we might actually need.</p>
+
+    <h2>Chapter 1 — The Beginning</h2>
+    <p>In the beginning, there was the DOM. And the DOM was verbose.</p>
+    <p>Every UI was assembled by hand. Create a node. Set a property. Append a child. Repeat. It worked, but the code grew like vines.</p>
+    <pre><code class="language-javascript">const card = document.createElement("div");
+card.classList.add("card");
+
+const title = document.createElement("h2");
+title.textContent = "DOMPP";
+
+const description = document.createElement("p");
+description.textContent = "Browser-native runtime exploration";
+
+card.appendChild(title);
+card.appendChild(description);</code></pre>
+    <p>Twenty lines to make a card. And every update meant touching the same nodes again, carefully, by hand.</p>
+
+    <h2>Chapter 2 — The Library Era</h2>
+    <p>So we invented libraries. jQuery made selection and mutation feel effortless. Backbone and AngularJS gave us structure and data binding. The web got faster to build.</p>
+    <p>But the DOM was still the same DOM underneath. The libraries just hid it.</p>
+
+    <h2>Chapter 3 — The React Revolution</h2>
+    <p>Then React arrived and changed everything. Declarative components. A virtual DOM. Diff and patch. Suddenly developers could think in terms of UI trees instead of mutation steps.</p>
+    <p>The developer experience won. React became the default mental model for a generation.</p>
+    <p class="quote">But the cost was a layer between you and the platform. A runtime. A reconciliation engine. A bundle.</p>
+
+    <h2>Chapter 4 — The Performance Wars</h2>
+    <p>Vue, Svelte, SolidJS, and others entered the arena. Each offered a different answer to the same question: how do we make UI fast and reactive?</p>
+    <p>Signals. Fine-grained updates. Compilers. Each framework optimized harder, shipped smarter, and fought for milliseconds.</p>
+    <p>Meanwhile, the platform itself stayed still.</p>
+
+    <h2>Chapter 5 — The AI Shift</h2>
+    <p>Now AI can generate vanilla code from a single prompt. The output runs fast. No framework. No bundle. Just the browser.</p>
+    <p>But open the generated source and you find imperative mutation scattered everywhere. Create this. Set that. Append here. Remove there. Fast to run, hard to read, harder to maintain.</p>
+    <p class="quote">The speed is real. The maintainability is not.</p>
+
+    <h2>Chapter 6 — What We Actually Need</h2>
+    <p>Strip away the hype and the question is simple. We need to assemble UI easily. We need it to stay maintainable. We need performance that is stable, not fragile.</p>
+    <p>So why not let the browser provide the APIs directly?</p>
+    <p>Why not make the DOM itself reactive, composable, and safe — so that the platform carries the weight, not a library?</p>
+
+    <div class="divider"></div>
+
+    <h2>DOM++ — A Preview</h2>
+    <p>DOM++ is a slice of a larger effort: <strong>the-future-of-the-browser</strong>, a browser runtime exploration (Rust, V8, and more) that aims to enhance the DOM itself. The hope is that this work can also serve as a proposal to MDN and the web platform.</p>
+    <p>DOM++ itself is a preview of how those new APIs might be used. Native-first. Explicit. No virtual DOM.</p>
+
+    <h3>Chainable Setters on Real Nodes</h3>
+    <pre><code class="language-javascript">const card =
+  document
+    .createElement("div")
+    .setAttributes({ class: "card" })
+    .setStyles({ color: "tomato" })
+    .setChildren(
+      document
+        .createElement("h2")
+        .setText("DOMPP"),
+      document
+        .createElement("p")
+        .setText("Browser-native runtime exploration")
+    );</code></pre>
+
+    <h3>Components with Explicit Rerender</h3>
+    <pre><code class="language-javascript">let count = 0;
+
+const counter = document.createComponent((rerender) => (
+  document.createElement("section").setChildren(
+    document.createElement("strong").setText(count),
+    document.createElement("button")
+      .setText("Increment")
+      .setEvents({ click() { rerender(() => count++); } })
+  )
+));
+
+document.getElementById("app").setChildren(counter);</code></pre>
+
+    <h3>MVVM — State Separate from View</h3>
+    <pre><code class="language-javascript">function createViewModel() {
+  let likes = 0;
+  const listeners = new Set();
+  return {
+    get likes() { return likes; },
+    like() { likes++; listeners.forEach((l) => l()); },
+    subscribe(l) { listeners.add(l); return () => listeners.delete(l); },
+  };
+}
+
+const vm = createViewModel();
+const view = document.createComponent(() => (
+  document.createElement("div").setChildren(
+    document.createElement("strong").setText(vm.likes),
+    document.createElement("button")
+      .setText("Like")
+      .setEvents({ click() { vm.like(); } })
+  )
+));
+
+vm.subscribe(() => view.rerender());
+document.getElementById("app").setChildren(view);</code></pre>
+
+    <h3>Fragments and Array Components</h3>
+    <pre><code class="language-javascript">const items = document.createComponent((rerender) => (
+  document.createDocumentFragment(
+    document.createElement("strong").setText("Item A"),
+    document.createElement("strong").setText("Item B"),
+    showExtra ? document.createElement("strong").setText("Item C") : null
+  )
+));
+
+const list = document.createComponent((rerender) => [
+  document.createElement("em").setText("X"),
+  document.createElement("em").setText("Y"),
+]);</code></pre>
+
+    <h3>Safe by Default</h3>
+    <pre><code class="language-javascript">// Rejected: inline events, srcdoc, style attribute, unsafe protocols
+// document.createElement("button").setAttributes({ onClick: "alert(1)" });
+// document.createElement("iframe").setAttributes({ srcdoc: "&lt;script&gt;..." });
+// document.createElement("div").setAttributes({ style: "color:red" });
+// document.createElement("a").setAttributes({ href: "javascript:alert(1)" });
+
+// Use dedicated setters instead
+const safe = document.createElement("a")
+  .setText("Safe link")
+  .setAttributes({ href: "https://example.com" })
+  .setStyles({ color: "blue" })
+  .setEvents({ click(e) { e.preventDefault(); } });</code></pre>
+
+    <h2>Explore</h2>
+    <ul>
+      <li><a href="examples/index.html">Examples (10 progressive demos)</a></li>
+      <li><a href="docs/README.md">Documentation (architecture diagrams)</a></li>
+      <li><a href="https://github.com/dimaspandu/dompp">GitHub</a></li>
+    </ul>
+
+    <p class="muted">DOM++ — native-first, explicit, no virtual DOM, no compiler required.</p>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
 </body>
 </html>

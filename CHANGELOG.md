@@ -6,6 +6,27 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.7.0] - 2026-11-19
+
+### Added
+
+- Refactored src/ into ESM foundation builders and enhancements with installDOMPP/window.DOMPP.
+- Added Node test suites and browser specs with headless browser runner (npm run test:browser).
+- Added setChildren support for both rest params and arrays.
+- Rewrote examples/ into 10 focused examples.
+- Added docs/ with mermaid diagrams.
+- Added storytelling landing page (index.html) with syntax-highlighted snippets.
+
+### Changed
+
+- Removed legacy modules/tests.
+- Updated README examples section and testing commands.
+
+### Fixed
+
+- Per-document builder resolution in enhancements.
+- Fragment/array component reconciliation per slot.
+
 ## [1.5.1] - 2026-10-27
 
 ### Added
