@@ -132,7 +132,7 @@ function d(tag, props, ...children) {
 }
 ```
 
-## Examples (10)
+## Examples (11)
 
 The `examples/` directory contains 7 progressive, runnable examples:
 
@@ -143,6 +143,7 @@ The `examples/` directory contains 7 progressive, runnable examples:
 5. **05-fragments-and-arrays** — multi-root fragments and array-returning components.
 6. **06-safe-by-default** — built-in guards against dangerous attributes and protocols.
 7. **07-capstone-mini-app** — combining components, state, lists, and fragments in one app.\n8. **08-local-stateful-subtree** — a stateless outer view with an embedded stateful component.\n9. **09-add-remove-subtree** — dynamically mount and unmount subtrees.\n10. **10-adopt-server-markup** — adopt existing server-rendered markup, then rerender reactively.
+11. **11-guided-tour** — a guided tour from direct DOM control to reactive components, dynamic structure, composition, and adoption.
 
 Browse: `examples/` or run locally and open `http://localhost:5173`.
 

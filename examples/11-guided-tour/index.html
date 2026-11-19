@@ -1,0 +1,740 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DOM++ — Enhanced Document & JSX Preview</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="styles.css">
+<!-- Babel is used only to compile the JSX examples. -->
+</head>
+<body>
+</head>
+<body>
+<main>
+<header>
+  <div class="eyebrow">DOM++ · Enhanced Document API</div>
+  <h1>Interaction Patterns</h1>
+  <p>A guided tour from direct DOM control to reactive components, dynamic structure, composition, and adopting existing markup. The original ElementBuilder and ComponentBuilder engine remains the foundation; document enhancement is an adapter, while JSX is only an alternative syntax.</p>
+</header>
+<div class="examples">
+  <article>
+    <span class="tag">01 · BASIC DOM</span>
+    <h2>Direct element mutation</h2>
+    <p>Foundation: create elements with the builder API, keep references, and update only the nodes that change (01.0). Step up by replacing children and letting reconciliation patch the tree (01.1).</p>
+    <div id="basic-app-01.0"></div>
+    <details class="snippet">
+      <summary>View code (01.0)</summary>
+      <pre><code class="language-javascript">let basicLikes = 0;
+let basicCount;
+let basicButton;
+
+document.getElementById("basic-app-01.0")
+  .setAttributes({ class: "demo-surface basic-surface" })
+  .setStyles({ backgroundColor: "#fffebb" })
+  .setChildren([
+    document.createElement("div")
+      .setAttributes({ class: "like-row" })
+      .setChildren([
+        (basicCount = document.createElement("strong").setText(basicLikes)),
+        document.createElement("span").setText(" likes"),
+      ]),
+    (basicButton = document.createElement("button")
+      .setAttributes({ class: "like-button", type: "button" })
+      .setText("♥ Like")
+      .setEvents({
+        click() {
+          basicLikes++;
+          basicButton.setStyles({
+            fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal",
+          });
+          basicCount.setText(basicLikes);
+          if (basicLikes === 10) {
+            basicButton.setAttributes({ disabled: true });
+          }
+        },
+      })),
+  ]);</code></pre>
+    </details>
+    <hr />
+    <div id="basic-app-01.1"></div>
+    <details class="snippet">
+      <summary>View code (01.1)</summary>
+      <pre><code class="language-javascript">let basicLikes = 0;
+let basicApp;
+
+basicApp = document.createElement(
+  document.getElementById("basic-app-01.1"),
+  {
+    className: "demo-surface basic-surface",
+    styles: { backgroundColor: "#fffebb" },
+  },
+  renderChildren()
+);
+
+function renderChildren() {
+  return [
+    document.createElement(
+      "div",
+      { class: "like-row" },
+      document.createElement("strong").setText(basicLikes),
+      document.createElement("span").setText(" likes")
+    ),
+    document.createElement(
+      "button",
+      {
+        class: "like-button",
+        type: "button",
+        styles: { fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal" },
+        disabled: basicLikes === 10,
+        onClick() {
+          basicLikes++;
+          basicApp.setChildren(renderChildren());
+        },
+      },
+      "♥ Like"
+    ),
+  ];
+}</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">02 · BASIC DOM + JSX</span>
+    <h2>Familiar JSX syntax</h2>
+    <p>Same direct-mutation foundation as 01, expressed with JSX (compiled to <code>document.createElement()</code> calls).</p>
+    <div id="basic-jsx-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let basicLikes = 0;
+let basicCount;
+
+function BasicApp(_props, ...children) {
+  return document.createElement(
+    document.getElementById("basic-jsx-app"),
+    _props,
+    ...children
+  );
+}
+
+&lt;BasicApp
+  className="demo-surface jsx-surface"
+  styles={{
+    backgroundColor: "#fffebb",
+  }}
+&gt;
+  &lt;div class="like-row"&gt;
+    {basicCount = &lt;strong&gt;{basicLikes}&lt;/strong&gt;}
+    &lt;span&gt; likes&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;button
+    class="like-button"
+    type="button"
+    onClick={() =&gt; {
+      basicLikes++;
+      basicCount.setText(basicLikes);
+    }}
+  &gt;
+    ♥ Like
+  &lt;/button&gt;
+&lt;/BasicApp&gt;</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">03 · COMPONENT</span>
+    <h2>Render and rerender</h2>
+    <p>Move from manual updates to a component: <code>document.createComponent</code> renders immediately and returns the element (with <code>.rerender()</code>) so it can be used directly as a child; rerender patches the existing DOM.</p>
+    <div id="component-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let componentLikes = 0;
+
+const likeComponent = document.createComponent((rerender) =&gt; (
+  &lt;section class="demo-surface component-surface"&gt;
+    &lt;div class="like-row"&gt;
+      &lt;strong&gt;{componentLikes}&lt;/strong&gt;
+      &lt;span&gt; likes&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;button
+      class="like-button"
+      type="button"
+      onClick={() =&gt; rerender(() =&gt; componentLikes++)}
+    &gt;
+      ♥ Like
+    &lt;/button&gt;
+  &lt;/section&gt;
+));
+
+document.getElementById("component-app").setChildren([
+  likeComponent
+]);</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">04 · MVVM</span>
+    <h2>ViewModel subscription</h2>
+    <p>Separate state from the view: a ViewModel owns the count and notifies subscribers, and the view rerenders in response.</p>
+    <div id="mvvm-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">function LikeViewModel() {
+  let likes = 0;
+  const listeners = new Set();
+
+  return {
+    get likes() { return likes; },
+    like() {
+      likes++;
+      listeners.forEach(listener =&gt; listener(likes));
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () =&gt; listeners.delete(listener);
+    }
+  };
+}
+
+const viewModel = LikeViewModel();
+const likeComponent = document.createComponent(() =&gt; (
+  &lt;section class="demo-surface mvvm-surface"&gt;
+    &lt;div class="like-row"&gt;
+      &lt;strong&gt;{viewModel.likes}&lt;/strong&gt;
+      &lt;span&gt; likes&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;button
+      class="like-button"
+      type="button"
+      onClick={() =&gt; viewModel.like()}
+    &gt;
+      ♥ Like
+    &lt;/button&gt;
+  &lt;/section&gt;
+));
+
+// Mount without using setChildren (.render() no longer needed).
+document.createElement(
+  document.getElementById("mvvm-app"),
+  null,
+  likeComponent
+);
+
+viewModel.subscribe(() =&gt; likeComponent.rerender());</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">05 · LOCAL STATEFUL IN STATELESS</span>
+    <h2>Local stateful subtree inside a stateless view</h2>
+    <p>Localize rerenders: a stateless view embeds a <code>document.createComponent</code> subtree, and a ViewModel listener rerenders only that local subtree.</p>
+    <div id="lsisv-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">function createViewModel() {
+  const listeners = new Set();
+  let count = 0;
+
+  return {
+    get count() { return count; },
+    increment() {
+      count++;
+      this.notifyListener();
+    },
+    addListener(listener) {
+      listeners.add(listener);
+      return () =&gt; listeners.delete(listener);
+    },
+    notifyListener() {
+      listeners.forEach((listener) =&gt; listener(this));
+    },
+  };
+}
+
+function createView(viewModel) {
+  const stateful = document.createComponent(() =&gt; (
+    &lt;div className="stateful-card"&gt;
+      &lt;h3&gt;Count: {viewModel.count}&lt;/h3&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; viewModel.increment()}&gt;
+        UPDATE
+      &lt;/button&gt;
+    &lt;/div&gt;
+  ));
+
+  const container = (
+    &lt;div class="demo-surface lsisv-surface"&gt;
+      &lt;div class="lsisv-header"&gt;
+        &lt;h2&gt;Local stateful inside stateless&lt;/h2&gt;
+        &lt;p&gt;
+          The outer container stays static. Only the inner
+          &lt;code&gt;createComponent&lt;/code&gt; subtree rerenders when the
+          ViewModel notifies listeners.
+        &lt;/p&gt;
+      &lt;/div&gt;
+      {stateful}
+    &lt;/div&gt;
+  );
+
+  viewModel.addListener(() =&gt; stateful.rerender());
+  return container;
+}
+
+const viewModel = createViewModel();
+document.createElement(
+  document.getElementById("lsisv-app"),
+  null,
+  createView(viewModel)
+);</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">06 · CONDITIONAL RENDERING</span>
+    <h2>Add and remove a subtree</h2>
+    <p>After localizing rerenders, control what renders: the panel exists only while <code>confirming</code> is true, and returning <code>null</code> removes it on the next rerender.</p>
+    <div id="conditional-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let confirming = false;
+
+const validator = document.createComponent((rerender) =&gt; (
+  &lt;section className="demo-surface conditional-surface"&gt;
+    &lt;h3&gt;Conditional child reconciliation&lt;/h3&gt;
+    &lt;p&gt;
+      The panel is added or removed by rerendering only this component.
+      A &lt;code&gt;null&lt;/code&gt; branch leaves no node in the virtual tree.
+    &lt;/p&gt;
+    &lt;button
+      class="action-button"
+      type="button"
+      onClick={() =&gt; {
+        confirming = true;
+        rerender();
+      }}
+    &gt;
+      OPEN
+    &lt;/button&gt;
+    {confirming ? (
+      &lt;div className="conditional-panel" role="dialog" aria-label="Confirm"&gt;
+        &lt;h4&gt;Are you sure?&lt;/h4&gt;
+        &lt;button
+          class="action-button"
+          type="button"
+          onClick={() =&gt; {
+            confirming = false;
+            rerender();
+          }}
+        &gt;
+          CLOSE
+        &lt;/button&gt;
+      &lt;/div&gt;
+    ) : null}
+  &lt;/section&gt;
+));
+
+document.getElementById("conditional-app").setChildren([
+  validator,
+]);</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">07 · KEYED LIST</span>
+    <h2>Stable keys across list changes</h2>
+    <p>Give dynamic lists identity: each item passes a stable <code>key</code>, so append, prepend, reorder, and removal preserve item nodes (changing a tag replaces that node).</p>
+    <div id="keyed-list-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let nextId = 4;
+let items = [
+  { id: 1, label: "Alpha", tag: "article" },
+  { id: 2, label: "Bravo", tag: "article" },
+  { id: 3, label: "Charlie", tag: "article" },
+];
+
+const keyedList = document.createComponent((rerender) =&gt; (
+  &lt;section className="demo-surface keyed-surface"&gt;
+    &lt;h3&gt;Keyed child reconciliation&lt;/h3&gt;
+    &lt;p&gt;
+      Stable keys preserve item nodes when the list order changes.
+      Changing an item's tag intentionally replaces its node.
+    &lt;/p&gt;
+    &lt;div className="keyed-controls"&gt;
+      &lt;button
+        class="keyed-button"
+        type="button"
+        onClick={() =&gt; {
+          const id = nextId++;
+          items = [...items, { id, label: `Item ${id}`, tag: "article" }];
+          rerender();
+        }}
+      &gt;
+        APPEND
+      &lt;/button&gt;
+      &lt;button
+        class="keyed-button"
+        type="button"
+        onClick={() =&gt; {
+          const id = nextId++;
+          items = [{ id, label: `Item ${id}`, tag: "article" }, ...items];
+          rerender();
+        }}
+      &gt;
+        PREPEND
+      &lt;/button&gt;
+      &lt;button
+        class="keyed-button"
+        type="button"
+        onClick={() =&gt; {
+          items = [...items].reverse();
+          rerender();
+        }}
+      &gt;
+        REVERSE
+      &lt;/button&gt;
+      &lt;button
+        class="keyed-button"
+        type="button"
+        onClick={() =&gt; {
+          items = items.slice(1);
+          rerender();
+        }}
+      &gt;
+        REMOVE FIRST
+      &lt;/button&gt;
+      &lt;button
+        class="keyed-button"
+        type="button"
+        onClick={() =&gt; {
+          if (items.length) {
+            const [first, ...remaining] = items;
+            items = [{
+              ...first,
+              tag: first.tag === "article" ? "p" : "article",
+            }, ...remaining];
+            rerender();
+          }
+        }}
+      &gt;
+        CHANGE FIRST TAG
+      &lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div className="keyed-list"&gt;
+      {items.map((item) =&gt; {
+        const Tag = item.tag;
+        return (
+          &lt;Tag key={item.id} className="keyed-item"&gt;
+            {item.label} (key: {item.id})
+          &lt;/Tag&gt;
+        );
+      })}
+    &lt;/div&gt;
+  &lt;/section&gt;
+));
+
+document.getElementById("keyed-list-app").setChildren([
+  keyedList,
+]);</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">08 · FRAGMENTS AND ARRAYS</span>
+    <h2>Fragments and arrays</h2>
+    <p>Composition catalog: compare a wrapper element (<code>&lt;fragment&gt;</code>) with inlined child arrays from fragment-producing forms (<code>&lt;&gt;...&lt;/&gt;</code>, <code>elementBuilder.fragment</code>, <code>document.createDocumentFragment(...)</code>), plus array-returning components reconciled per slot on rerender.</p>
+    <div id="fragment-array-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let showPanel = false;
+let renderCount = 0;
+
+// Array-returning component: reconciled per slot on rerender.
+function ArrayChildList({ rerender }) {
+  return [
+    &lt;div key="a" className="fragment-child fragment-child-a"&gt;Array child A&lt;/div&gt;,
+    &lt;div key="b" className="fragment-child fragment-child-b"&gt;
+      Array child B (renders: {renderCount})
+    &lt;/div&gt;,
+    &lt;button key="action" class="action-button" type="button"
+      onClick={() =&gt; rerender(() =&gt; renderCount++)}&gt;
+      Rerender array slots
+    &lt;/button&gt;,
+  ];
+}
+
+// createDocumentFragment(...) returns an inlined child array; as a component
+// result its slots are reconciled (null removes a slot).
+const inlineFragmentPanel = document.createComponent((rerender) =&gt;
+  document.createDocumentFragment(
+    &lt;strong&gt;Inline fragment array&lt;/strong&gt;,
+    &lt;p&gt;Time: {new Date().toLocaleTimeString()}&lt;/p&gt;,
+    &lt;button class="action-button" type="button"
+      onClick={() =&gt; rerender(() =&gt; (showPanel = true))}&gt;Open panel&lt;/button&gt;,
+    showPanel ? (
+      &lt;div className="conditional-panel" style={{ marginTop: "10px" }}&gt;
+        &lt;h4&gt;Conditional slot&lt;/h4&gt;
+        &lt;button class="action-button" type="button"
+          onClick={() =&gt; rerender(() =&gt; (showPanel = false))}&gt;Close&lt;/button&gt;
+      &lt;/div&gt;
+    ) : null
+  )
+);
+
+const view = document.createComponent((rerender) =&gt; (
+  &lt;section className="demo-surface fragment-surface"&gt;
+    {/* &lt;fragment&gt;: explicit wrapper element node */}
+    &lt;div className="fragment-box"&gt;
+      &lt;strong&gt;Parent&lt;/strong&gt;
+      &lt;fragment&gt;
+        &lt;div className="fragment-child fragment-child-a"&gt;Wrapped child one&lt;/div&gt;
+        &lt;div className="fragment-child fragment-child-b"&gt;Wrapped child two&lt;/div&gt;
+      &lt;/fragment&gt;
+    &lt;/div&gt;
+
+    {/* &lt;&gt;...&lt;/&gt;: inlined child array, no wrapper */}
+    &lt;div className="fragment-box"&gt;
+      &lt;strong&gt;Parent label&lt;/strong&gt;
+      &lt;&gt;
+        &lt;div className="fragment-child fragment-child-a"&gt;Inlined child one&lt;/div&gt;
+        &lt;div className="fragment-child fragment-child-b"&gt;Inlined child two&lt;/div&gt;
+      &lt;/&gt;
+    &lt;/div&gt;
+
+    {/* Array-returning component, per-slot rerender */}
+    &lt;div className="fragment-box"&gt;
+      &lt;strong&gt;Parent label&lt;/strong&gt;
+      &lt;ArrayChildList rerender={rerender} /&gt;
+    &lt;/div&gt;
+
+    {/* document.createDocumentFragment(...) child arrays */}
+    &lt;div className="fragment-box"&gt;
+      {document.createDocumentFragment(
+        &lt;strong&gt;Static fragment array&lt;/strong&gt;,
+        &lt;p&gt;Two nodes inlined with no wrapper.&lt;/p&gt;
+      )}
+      {document.createDocumentFragment().setChildren([
+        &lt;em key="set-children"&gt;Built via .setChildren([...])&lt;/em&gt;,
+      ])}
+      {inlineFragmentPanel}
+    &lt;/div&gt;
+  &lt;/section&gt;
+));
+
+document.getElementById("fragment-array-app").setChildren([view]);</code></pre>
+    </details>
+  </article>
+
+  <article>
+    <span class="tag">09 · KEYED LIST IN FRAGMENT</span>
+    <h2>Keyed list inside a real fragment</h2>
+    <p>Combine 07 and 08: the keyed list lives inside a real fragment array produced by <code>document.createDocumentFragment(...)</code> (inlined, not a <code>&lt;fragment&gt;</code> wrapper) and stable keys still preserve item identity across updates.</p>
+    <div id="keyed-fragment-app"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let nextId = 4;
+let items = [
+  { id: 1, label: "Alpha" },
+  { id: 2, label: "Bravo" },
+  { id: 3, label: "Charlie" },
+];
+
+const keyedFragment = document.createComponent((rerender) =&gt; (
+  &lt;section className="demo-surface keyed-surface"&gt;
+    &lt;h3&gt;Keyed list inside a fragment&lt;/h3&gt;
+    &lt;p&gt;
+      Items are produced inside a real fragment array via
+      &lt;code&gt;document.createDocumentFragment(...)&lt;/code&gt; (not the
+      &lt;code&gt;&amp;lt;fragment&amp;gt;&lt;/code&gt; wrapper). The fragment inlines
+      its children while stable keys preserve item identity.
+    &lt;/p&gt;
+    &lt;div className="keyed-controls"&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { const id = nextId++; items = [...items, { id, label: `Item ${id}` }]; rerender(); }}&gt;
+        APPEND
+      &lt;/button&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { const id = nextId++; items = [{ id, label: `Item ${id}` }, ...items]; rerender(); }}&gt;
+        PREPEND
+      &lt;/button&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { items = [...items].reverse(); rerender(); }}&gt;
+        REVERSE
+      &lt;/button&gt;
+      &lt;button class="keyed-button" type="button"
+        onClick={() =&gt; { if (items.length) { items = items.slice(1); rerender(); } }}&gt;
+        REMOVE FIRST
+      &lt;/button&gt;
+    &lt;/div&gt;
+    &lt;div className="keyed-list"&gt;
+      {document.createDocumentFragment(
+        ...items.map((item) =&gt; (
+          &lt;div key={item.id} className="keyed-item"&gt;
+            {item.label} (key: {item.id})
+          &lt;/div&gt;
+        ))
+      )}
+    &lt;/div&gt;
+  &lt;/section&gt;
+));
+
+document.getElementById("keyed-fragment-app").setChildren([keyedFragment]);</code></pre>
+    </details>
+  </article>
+  <article>
+    <span class="tag">10 · SERVER DOM ADOPTION</span>
+    <h2>Attach to existing (server-rendered) markup</h2>
+    <p>Bring it to existing pages: the <code>&lt;ul&gt;</code> is present in the HTML before any script runs (server-rendered). The engine adopts that node and reconciles a keyed descriptor tree against it, preserving DOM identity.</p>
+    <div id="adoption-app" class="demo-surface adoption-surface">
+      <h3>Server-rendered list</h3>
+      <p>This list is plain HTML in the document. Adoption attaches a virtual tree to it.</p>
+      <ul id="adoption-list" class="server-list">
+        <li>JavaScript will adopt it</li>
+        <li>This list was rendered as HTML</li>
+        <li>Hello from the server</li>
+      </ul>
+      <script id="adoption-data" type="application/json">[{"id":1,"text":"Hello from the server"},{"id":2,"text":"This list was rendered as HTML"},{"id":3,"text":"JavaScript will adopt it"}]</script>
+      <p id="adoption-status" class="status-note">Waiting for adoption...</p>
+    </div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">// Data embedded by the server alongside the rendered HTML.
+const serverMessages = JSON.parse(
+  document.getElementById("adoption-data").textContent
+);
+
+const listNode = document.getElementById("adoption-list");
+
+// Adopt the existing &lt;ul&gt; and reconcile a keyed descriptor tree
+// against its current children instead of recreating them.
+const listBuilder = document.createElement(
+  listNode,
+  null,
+  ...[...serverMessages]
+    .reverse()
+    .map((msg) =&gt; &lt;li key={msg.id}&gt;{msg.text}&lt;/li&gt;)
+);
+
+// listBuilder.node === listNode &amp;&amp; node identity is preserved
+document.getElementById("adoption-status").setText(
+  "Adopted existing &lt;ul&gt;: " + (listBuilder.node === listNode) +
+  " · reconciled items: " + listBuilder.struct.children.length
+);</code></pre>
+    </details>
+  </article>
+  <article>
+    <span class="tag">11 · REACTIVE SERVER MESSENGER</span>
+    <h2>Adopt server markup, then rerender reactively</h2>
+    <p>Combine adoption with components and state: the container is rendered in HTML up front, a component adopts that root with <code>document.createElement(existingNode, ...)</code>, then rerenders a keyed message list on Send while keeping the same root attached.</p>
+    <div id="messenger-app" class="demo-surface messenger-surface">
+      <h3>Reactive server messenger</h3>
+      <p>Server-rendered placeholder. The component will adopt and control this root.</p>
+      <ul class="server-list">
+        <li>Welcome! This came from the server.</li>
+        <li>Type below and press Send.</li>
+      </ul>
+      <div class="message-form">
+        <textarea class="message-input" aria-label="New message" placeholder="Write a message..."></textarea>
+        <button class="action-button" type="button">Send</button>
+      </div>
+      <p id="messenger-status" class="status-note">Waiting for component to attach...</p>
+    </div>
+    <script id="messenger-data" type="json">
+[
+  { "id": 1, "text": "Welcome! This came from the server." },
+  { "id": 2, "text": "Type below and press Send." }
+]
+    </script>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">// Data embedded by the server alongside the rendered HTML.
+const messages = JSON.parse(
+  document.getElementById("messenger-data").textContent
+);
+let nextId = Math.max(...messages.map((m) =&gt; m.id)) + 1;
+const rootNode = document.getElementById("messenger-app");
+
+const messenger = document.createComponent((rerender) =&gt;
+  document.createElement(
+    rootNode,
+    { class: "demo-surface messenger-surface" },
+    &lt;h3&gt;Reactive server messenger&lt;/h3&gt;,
+    &lt;p&gt;Adopts the pre-rendered root and rerenders a keyed list.&lt;/p&gt;,
+    &lt;ul class="server-list"&gt;
+      {[...messages].reverse().map((msg) =&gt; (
+        &lt;li key={msg.id}&gt;{msg.text}&lt;/li&gt;
+      ))}
+    &lt;/ul&gt;,
+    &lt;div class="message-form"&gt;
+      &lt;textarea class="message-input" placeholder="Write a message..."&gt;&lt;/textarea&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; {
+        const input = rootNode.querySelector("textarea");
+        const text = input.value.trim();
+        if (!text) return;
+        messages.push({ id: nextId++, text });
+        input.value = "";
+        rerender();
+      }}&gt;Send&lt;/button&gt;
+    &lt;/div&gt;,
+    &lt;p id="messenger-status" class="status-note"&gt;
+      {"Adopted root node · messages: " + messages.length}
+    &lt;/p&gt;
+  )
+);
+
+// Renders immediately and adopts the existing root (no .render() needed).</code></pre>
+    </details>
+  </article>
+  <article>
+    <span class="tag">12 · CROSS-COMPONENT UPDATE</span>
+    <h2>Components rerender each other directly</h2>
+    <p><code>document.createComponent</code> returns the element with a <code>.rerender()</code> method, so components can hold direct references to each other and trigger targeted updates without a parent intermediary.</p>
+    <div id="cross-update-app" class="demo-surface cross-update-surface"></div>
+    <details class="snippet">
+      <summary>View code</summary>
+      <pre><code class="language-javascript">let countA = 0;
+let countB = 0;
+
+const componentA = document.createComponent((rerender) =&gt; (
+  &lt;section className="cross-card"&gt;
+    &lt;h4&gt;Component A&lt;/h4&gt;
+    &lt;p className="cross-count"&gt;Count: {countA}&lt;/p&gt;
+    &lt;div className="cross-actions"&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; rerender(() =&gt; countA++)}&gt;
+        +1 A (self)
+      &lt;/button&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; { countB++; componentB.rerender(); }}&gt;
+        +1 B (from A)
+      &lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+));
+
+const componentB = document.createComponent((rerender) =&gt; (
+  &lt;section className="cross-card"&gt;
+    &lt;h4&gt;Component B&lt;/h4&gt;
+    &lt;p className="cross-count"&gt;Count: {countB}&lt;/p&gt;
+    &lt;div className="cross-actions"&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; rerender(() =&gt; countB++)}&gt;
+        +1 B (self)
+      &lt;/button&gt;
+      &lt;button class="action-button" type="button" onClick={() =&gt; { countA++; componentA.rerender(); }}&gt;
+        +1 A (from B)
+      &lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+));
+
+document.getElementById("cross-update-app").setChildren([componentA, componentB]);</code></pre>
+    </details>
+  </article>
+</div>
+<footer>DOM++ preview · Engine embedded · Babel Standalone required for JSX examples</footer>
+</main>
+
+
+<script type="module" src="../../src/index.js"></script>
+<script type="module">await import("./demo.jsx");</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+</body>
+</html>
