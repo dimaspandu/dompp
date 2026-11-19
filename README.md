@@ -108,29 +108,22 @@ Entry points:
 
 ## JSX (Optional)
 
-Use any JSX transform that targets a custom factory (e.g. `elementBuilder` for builders, or a DOM factory for enhanced elements).
+DOM++ enhances `document.createElement` and `document.createDocumentFragment`, so they can be used directly as JSX factories. No custom factory function is needed.
 
-```js
-/** @jsx d */
-function d(tag, props, ...children) {
-  const svgTags = new Set(["svg","circle","path","rect","line","polyline","polygon","ellipse","g","defs","use","symbol","text","tspan","image","foreignObject"]);
-  const node = tag === "fragment" || tag === "Fragment"
-    ? document.createDocumentFragment()
-    : svgTags.has(tag)
-      ? document.createElementNS("http://www.w3.org/2000/svg", tag)
-      : document.createElement(tag);
+```jsx
+/** @jsxRuntime classic */
+/** @jsx document.createElement */
+/** @jsxFrag document.createDocumentFragment */
 
-  if (props) {
-    const { style, className, class: classAttr, on, ...attrs } = props;
-    if (className || classAttr) node.setAttributes({ class: className || classAttr });
-    if (style) node.setStyles(style);
-    if (on) node.setEvents(on);
-    if (Object.keys(attrs).length) node.setAttributes(attrs);
-  }
-  if (children.length) node.setChildren(...children.flat());
-  return node;
-}
+const card = (
+  <div class="card" style={{ color: "tomato" }}>
+    <h2>DOMPP</h2>
+    <p>Browser-native runtime exploration</p>
+  </div>
+);
 ```
+
+For SVG elements, use `document.createElementNS` via a thin wrapper or set the namespace in the factory. See `examples/03-jsx-and-adoption/` for a working example.
 
 ## Examples (11)
 
