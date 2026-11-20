@@ -8,16 +8,31 @@
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
   <link rel="stylesheet" href="styles.css" />
-  </head>
+</head>
 <body>
-  <div class="container">
-    <h1>Components and MVVM</h1>
-    <p class="description"><code>createComponent()</code> renders immediately and returns the rendered result with <code>.rerender()</code>. State lives in a plain ViewModel; the view subscribes and rerenders explicitly.</p>
-    <h2>Live Demo</h2>
-    <div class="panel"><div id="app" class="demo-mount"></div></div>
-    <h2 style="margin-top: 48px;">Source Code</h2>
-    <pre><code id="source" class="language-javascript"></code></pre>
-  </div>
+  <main>
+    <header>
+      <div class="eyebrow">DOM++ · Example 02</div>
+      <h1>Components and MVVM</h1>
+      <p><code>createComponent()</code> renders immediately and returns the rendered result with <code>.rerender()</code>. State lives in a plain ViewModel; the view subscribes and rerenders explicitly.</p>
+    </header>
+
+    <div class="examples">
+      <article>
+        <h2>Live Demo</h2>
+        <div id="app" class="demo-surface mvvm-surface"></div>
+      </article>
+
+      <article>
+        <h2>Source Code</h2>
+        <details class="snippet">
+          <summary>View code</summary>
+          <pre><code id="source" class="language-javascript"></code></pre>
+        </details>
+      </article>
+    </div>
+  </main>
+
   <script type="module" src="../../src/index.js"></script>
   <script type="module">await import("./demo.js");</script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>

@@ -8,19 +8,36 @@
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" />
   <link rel="stylesheet" href="styles.css" />
-  <script defer src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  </head>
+</head>
 <body>
-  <div class="container">
-    <h1>JSX and Adoption</h1>
-    <p class="description">JSX is sugar for <code>document.createElement</code> and <code>document.createDocumentFragment</code>. Existing markup can be adopted and enhanced in place.</p>
-    <h2>Live Demo</h2>
-    <div class="panel"><div id="app" class="demo-mount"></div></div>
-    <h2 style="margin-top: 48px;">Source Code</h2>
-    <pre><code id="source" class="language-javascript"></code></pre>
-  </div>
+  <main>
+    <header>
+      <div class="eyebrow">DOM++ · Example 03</div>
+      <h1>JSX and Adoption</h1>
+      <p>JSX is sugar for <code>document.createElement</code> and <code>document.createDocumentFragment</code>. Existing markup can be adopted and enhanced in place.</p>
+    </header>
+
+    <div class="examples">
+      <article>
+        <h2>Live Demo</h2>
+        <div id="app" class="demo-surface jsx-surface"></div>
+      </article>
+
+      <article>
+        <h2>Source Code</h2>
+        <details class="snippet">
+          <summary>View code</summary>
+          <pre><code id="source" class="language-javascript"></code></pre>
+        </details>
+      </article>
+    </div>
+  </main>
+
   <script type="module" src="../../src/index.js"></script>
-  <script type="module">await import("./demo.js");</script>
+  <script type="module">
+    const isLocalhost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+    await import(isLocalhost ? "./demo.jsx" : "./demo.compiled.js");
+  </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script type="module">const js = await fetch("./demo.jsx", { headers: { Accept: "text/plain" } }).then((r) => r.text()).catch(() => fetch("./demo.js").then((r) => r.text()).catch(() => "// Source unavailable")); const block = document.getElementById("source"); block.textContent = js.trim(); hljs.highlightElement(block);</script>
 </body>
