@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="DOM++ technical documentation: architecture, setters, enhancements, and component rendering.">
+  <title>Documentation — DOM++</title>
+  <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f7f7f5;
+      --surface: #fff;
+      --ink: #20211f;
+      --muted: #777a73;
+      --line: #e6e7e1;
+      --accent: #526b4d;
+      --code: #f2f3ef;
+      --width: 1160px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      scroll-padding-top: 25px;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.65 "DM Sans", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .topbar {
+      height: 66px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffffd9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 max(24px, calc((100vw - var(--width)) / 2));
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-weight: 800;
+      letter-spacing: -.04em;
+    }
+
+    .mark {
+      width: 29px;
+      height: 29px;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: white;
+      border-radius: 8px;
+      font: 15px "DM Mono";
+    }
+
+    .toplinks {
+      display: flex;
+      gap: 22px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .toplinks a:hover,
+    .back:hover {
+      color: var(--accent);
+    }
+
+    .wrap {
+      max-width: var(--width);
+      margin: auto;
+      padding: 0 24px;
+    }
+
+    .hero {
+      padding: 76px 0 48px;
+    }
+
+    .kicker,
+    .eyebrow,
+    .sidebar-label {
+      color: var(--accent);
+      font: 500 11px "DM Mono";
+      letter-spacing: .12em;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 17px 0;
+      font-size: clamp(42px, 6vw, 68px);
+      line-height: 1.02;
+      letter-spacing: -.065em;
+    }
+
+    .hero p {
+      max-width: 620px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 54px;
+      align-items: start;
+      padding-bottom: 100px;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 28px;
+    }
+
+    .sidebar-label {
+      margin: 0 0 13px;
+      color: var(--muted);
+    }
+
+    .nav-list {
+      display: grid;
+      gap: 6px;
+    }
+
+    .nav-list a {
+      display: flex;
+      gap: 13px;
+      padding: 13px 12px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+    }
+
+    .nav-list a:hover {
+      background: white;
+      border-color: var(--line);
+    }
+
+    .nav-list span {
+      color: #9a9d94;
+      font: 11px "DM Mono";
+      padding-top: 2px;
+    }
+
+    .nav-list strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .nav-list small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.45;
+      margin-top: 3px;
+    }
+
+    .content {
+      min-width: 0;
+    }
+
+    .doc-section {
+      background: white;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 34px clamp(22px, 4vw, 42px);
+      margin-bottom: 22px;
+    }
+
+    .doc-section > h2 {
+      margin: 7px 0 3px;
+      font-size: 30px;
+      letter-spacing: -.045em;
+    }
+
+    .intro {
+      color: var(--muted);
+      margin: 0 0 30px;
+      font-size: 14px;
+    }
+
+    .doc-content h2 {
+      font-size: 19px;
+      letter-spacing: -.025em;
+      margin: 30px 0 13px;
+    }
+
+    .doc-content h3 {
+      font-size: 15px;
+      margin: 24px 0 9px;
+    }
+
+    .doc-content p,
+    .doc-content li {
+      font-size: 14px;
+    }
+
+    .doc-content p,
+    .doc-content ul {
+      color: #555850;
+    }
+
+    .doc-content ul {
+      padding-left: 20px;
+    }
+
+    .doc-content li {
+      padding: 3px 0;
+    }
+
+    code {
+      font: .9em "DM Mono";
+      background: var(--code);
+      padding: 2px 5px;
+      border-radius: 4px;
+      color: #394c36;
+    }
+
+    pre:not(.mermaid) {
+      overflow: auto;
+      padding: 17px;
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      font: 12px/1.6 "DM Mono";
+    }
+
+    pre.mermaid {
+      display: flex;
+      justify-content: center;
+      overflow-x: auto;
+      padding: 22px 10px;
+      margin: 16px 0 24px;
+      background: #fbfcfa;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    pre.mermaid svg {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .back {
+      display: inline-block;
+      margin-top: 20px;
+      color: var(--muted);
+      font: 11px "DM Mono";
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 25px 24px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    footer .wrap {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    @media (max-width: 760px) {
+      .topbar {
+        padding: 0 20px;
+      }
+
+      .hero {
+        padding: 54px 0 35px;
+      }
+
+      .layout {
+        grid-template-columns: 1fr;
+        gap: 25px;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .nav-list {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .nav-list a {
+        padding: 10px 8px;
+      }
+
+      .nav-list small {
+        display: none;
+      }
+
+      .doc-section {
+        padding: 26px 20px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .nav-list {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "strict" });
+  </script>
+</head>
+<body id="top">
+  <header class="topbar">
+    <a class="brand" href="../index.html"><span class="mark">++</span><span>DOM++</span></a>
+    <nav class="toplinks" aria-label="Main navigation">
+      <a href="../index.html">Home</a>
+      <a href="#documentation">Documentation</a>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="hero" id="documentation">
+      <div class="eyebrow">DOM++ / TECHNICAL DOCUMENTATION</div>
+      <h1>Understand how<br>DOM++ works.</h1>
+      <p>Explore the architecture, enhancement layer, setters, and component rendering flows behind DOM++.</p>
+    </section>
+
+    <div class="layout">
+      <aside class="sidebar" aria-label="Documentation contents">
+        <p class="sidebar-label">ON THIS PAGE</p>
+        <nav class="nav-list">
+          <a href="#architecture">
+            <span>01</span>
+            <div>
+              <strong>Architecture</strong>
+              <small>Layers, core building blocks, and design invariants.</small>
+            </div>
+          </a>
+          <a href="#setters">
+            <span>02</span>
+            <div>
+              <strong>Setters</strong>
+              <small>Chainable setters, child reconciliation, and attribute safety.</small>
+            </div>
+          </a>
+          <a href="#enhancement">
+            <span>03</span>
+            <div>
+              <strong>Enhancement</strong>
+              <small>Installation flow and how DOM APIs resolve builders.</small>
+            </div>
+          </a>
+          <a href="#component">
+            <span>04</span>
+            <div>
+              <strong>Component</strong>
+              <small>Render, rerender, root changes, and array reconciliation.</small>
+            </div>
+          </a>
+        </nav>
+      </aside>
+
+      <div class="content">
+        <section class="doc-section" id="architecture">
+          <div class="kicker">DOCUMENTATION / ARCHITECTURE</div>
+          <h2>Architecture</h2>
+          <p class="intro">Layers, core building blocks, and design invariants.</p>
+          <div class="doc-content">
+            <p>﻿# DOM++ Architecture (High Level)</p>
+            <pre class="mermaid">flowchart TB
+    subgraph Entry[&quot;Entry&quot;]
+        A[installDOMPP / createDOMPP]
+        B[window.DOMPP]
+    end
+
+    subgraph Builders[&quot;Builders (src/builders)&quot;]
+        EB[createElementBuilder]
+        CB[createComponentBuilder]
+        CB2[createBuilders]
+    end
+
+    subgraph Enhancements[&quot;Enhancements (src/enhancements)&quot;]
+        FE[fragment.js]
+        EE[element.js]
+        DE[document.js]
+    end
+
+    subgraph Core[&quot;Core Engine&quot;]
+        EB2[ElementBuilder]
+        CB3[ComponentBuilder]
+        REC[Reconciliation]
+        NORM[normalizeChildren]
+    end
+
+    A --&gt; CB2
+    CB2 --&gt; EB
+    CB2 --&gt; CB
+    EB --&gt; EB2
+    CB --&gt; CB3
+    CB2 --&gt; FE
+    CB2 --&gt; EE
+    CB2 --&gt; DE
+    FE --&gt; EB2
+    EE --&gt; EB2
+    DE --&gt; EB2
+    DE --&gt; CB3
+    EB2 --&gt; REC
+    CB3 --&gt; REC
+    REC --&gt; NORM</pre>
+            <h2>Layers</h2>
+            <ul>
+              <li><strong>Entry</strong>: <code>installDOMPP(doc)</code> installs builders and enhancements onto a document; browser entry auto-installs <code>window.DOMPP</code>.</li>
+              <li><strong>Builders</strong>: pure factories (<code>createElementBuilder</code>, <code>createComponentBuilder</code>, <code>createBuilders</code>) with no global dependency.</li>
+              <li><strong>Enhancements</strong>: patch <code>Document</code>, <code>Element</code>, and <code>DocumentFragment</code> prototypes to delegate to builders.</li>
+              <li><strong>Core Engine</strong>: <code>ElementBuilder</code> (virtual descriptor + reconciliation), <code>ComponentBuilder</code> (render/rerender boundary).</li>
+            </ul>
+            <h2>Key Invariants</h2>
+            <ul>
+              <li>DOM nodes are real browser nodes; no virtual DOM wrapper.</li>
+              <li><code>ElementBuilder</code> holds a <code>struct</code> descriptor and a live <code>node</code>.</li>
+              <li>Component render returns the rendered result directly (element or flat array) with a non-enumerable <code>.rerender</code>.</li>
+              <li>Fragments and array-returning components produce flat child arrays (per-slot reconciliation).</li>
+            </ul>
+          </div>
+          <a class="back" href="#top">Back to top ↑</a>
+        </section>
+
+        <section class="doc-section" id="setters">
+          <div class="kicker">DOCUMENTATION / SETTERS</div>
+          <h2>Setters</h2>
+          <p class="intro">Chainable setters, child reconciliation, and attribute safety.</p>
+          <div class="doc-content">
+            <p>﻿# Setters Flow</p>
+            <h2>Chainable Setters</h2>
+            <p>All setters return the same <code>ElementBuilder</code> for fluent composition.</p>
+            <pre class="mermaid">flowchart LR
+    C[createElement] --&gt; EB[ElementBuilder]
+    EB --&gt; SA[setAttributes]
+    EB --&gt; SS[setStyles]
+    EB --&gt; SE[setEvents]
+    EB --&gt; SC[setChildren]
+    EB --&gt; ST[setText]
+    SA --&gt; EB
+    SS --&gt; EB
+    SE --&gt; EB
+    SC --&gt; EB
+    ST --&gt; EB</pre>
+            <h2>setChildren Reconciliation</h2>
+            <pre class="mermaid">flowchart TD
+    A[setChildren invoked] --&gt; B[normalizeChildren]
+    B --&gt; C{node exists?}
+    C -- no --&gt; D[store in struct.children]
+    C -- yes --&gt; E[_reconcileChildren]
+    E --&gt; F{previous child?}
+    F -- ElementBuilder + same tag --&gt; G[patch in place]
+    F -- ElementBuilder + diff tag --&gt; H[replace node]
+    F -- text node --&gt; I[update nodeValue]
+    F -- none --&gt; J[create &amp; insert]
+    G --&gt; K[update children array]
+    H --&gt; K
+    I --&gt; K
+    J --&gt; K</pre>
+            <h2>setText</h2>
+            <p><code>setText(text)</code> is <code>setChildren([text])</code> — normalizes to a single text child and reconciles.</p>
+            <h2>Security Guards (setAttributes)</h2>
+            <pre class="mermaid">flowchart TD
+    A[setAttributes] --&gt; B{attr name?}
+    B -- on* --&gt; C[throw: inline events disabled]
+    B -- srcdoc --&gt; D[throw: srcdoc disabled]
+    B -- style --&gt; E[throw: use setStyles]
+    B -- URL attr --&gt; F[validate protocol]
+    B -- other --&gt; G[setAttribute]
+    F -- unsafe --&gt; H[throw]
+    F -- safe --&gt; G</pre>
+          </div>
+          <a class="back" href="#top">Back to top ↑</a>
+        </section>
+
+        <section class="doc-section" id="enhancement">
+          <div class="kicker">DOCUMENTATION / ENHANCEMENT</div>
+          <h2>Enhancement</h2>
+          <p class="intro">Installation flow and how DOM APIs resolve builders.</p>
+          <div class="doc-content">
+            <p>﻿# Enhancement Flow (High Level)</p>
+            <h2>Installation</h2>
+            <pre class="mermaid">flowchart TD
+    A[installDOMPP doc] --&gt; B[createBuilders doc]
+    B --&gt; C[installFragmentEnhancements]
+    B --&gt; D[installElementEnhancements]
+    B --&gt; E[installDocumentEnhancements]
+    C --&gt; F[DocumentFragment.prototype.setChildren/setText]
+    D --&gt; G[Element.prototype setters]
+    E --&gt; H[Document.prototype.createComponent]
+    E --&gt; I[Document.prototype.createElement override]
+    E --&gt; J[Document.prototype.createDocumentFragment override]
+    B --&gt; K[return API object]</pre>
+            <h2>Per-Document Builder Resolution</h2>
+            <p>Enhancements store builders on <code>doc.__domppBuilders</code>. Prototype methods resolve builders from <code>target.ownerDocument</code> (or the document itself), so the same prototypes work across documents.</p>
+            <pre class="mermaid">sequenceDiagram
+    participant U as User code
+    participant D as Document
+    participant P as Prototype method
+    participant B as Builders
+
+    U-&gt;&gt;D: document.createElement(tag, props, ...children)
+    D-&gt;&gt;P: createElement override
+    P-&gt;&gt;D: getBuilders(this)
+    D--&gt;&gt;P: builders
+    P-&gt;&gt;B: elementBuilder(...)
+    B--&gt;&gt;U: ElementBuilder</pre>
+            <h2>createElement Routing</h2>
+            <pre class="mermaid">flowchart TD
+    A[createElement tagName, options, rest] --&gt; B{builders installed?}
+    B -- no --&gt; C[native createElement]
+    B -- yes --&gt; D{tagName function?}
+    D -- yes --&gt; E[elementBuilder function component]
+    D -- no --&gt; F{tagName is element node?}
+    F -- yes --&gt; G[elementBuilder adopt]
+    F -- no --&gt; H{options plain object without is?}
+    H -- yes --&gt; I[elementBuilder with props]
+    H -- no --&gt; J{rest.length &gt; 0?}
+    J -- yes --&gt; K[elementBuilder with children]
+    J -- no --&gt; C</pre>
+            <h2>createComponent</h2>
+            <p><code>document.createComponent(builder)</code> returns a rendered <code>ElementBuilder</code> (or flat array) extended with <code>.rerender(callback?)</code>.</p>
+            <pre class="mermaid">flowchart TD
+    A[createComponent builder] --&gt; B[new ComponentBuilder]
+    B --&gt; C[render immediately]
+    C --&gt; D{result is array?}
+    D -- yes --&gt; E[materializeArray]
+    D -- no --&gt; F[return ElementBuilder]
+    E --&gt; G[flat child array + .rerender]
+    F --&gt; H[.rerender attached]</pre>
+          </div>
+          <a class="back" href="#top">Back to top ↑</a>
+        </section>
+
+        <section class="doc-section" id="component">
+          <div class="kicker">DOCUMENTATION / COMPONENT</div>
+          <h2>Component</h2>
+          <p class="intro">Render, rerender, root changes, and array reconciliation.</p>
+          <div class="doc-content">
+            <p>﻿# Component Rerender Flow</p>
+            <h2>Render and Rerender</h2>
+            <pre class="mermaid">sequenceDiagram
+    participant U as User
+    participant C as ComponentBuilder
+    participant R as Render fn
+    participant EB as ElementBuilder
+    participant DOM as DOM
+
+    U-&gt;&gt;C: createComponent(builder)
+    C-&gt;&gt;R: builder(rerender)
+    R--&gt;&gt;C: tree
+    C-&gt;&gt;EB: create/reconcile
+    EB-&gt;&gt;DOM: create nodes
+    C--&gt;&gt;U: rendered result + .rerender
+
+    U-&gt;&gt;C: result.rerender(callback)
+    C-&gt;&gt;R: apply callback
+    C-&gt;&gt;R: builder(rerender) -&gt; next tree
+    C-&gt;&gt;EB: reconcile (patch in place)
+    EB-&gt;&gt;DOM: patch nodes
+    C--&gt;&gt;U: same identity</pre>
+            <h2>Element Root Tag Change</h2>
+            <p>When a component&#x27;s root tag changes between renders, identity is preserved by replacing the node but keeping the same <code>ElementBuilder</code> instance.</p>
+            <pre class="mermaid">flowchart TD
+    A[rerender] --&gt; B{same node?}
+    B -- yes --&gt; C[sync struct/events]
+    B -- no --&gt; D{same tag?}
+    D -- yes --&gt; E[_patchFrom]
+    D -- no --&gt; F[create nextNode]
+    F --&gt; G[replaceChild in DOM]
+    G --&gt; H[update node/struct/events]
+    H --&gt; I[keep identity]
+    C --&gt; I
+    E --&gt; I</pre>
+            <h2>Array Component Reconciliation</h2>
+            <pre class="mermaid">flowchart TD
+    A[materializeArray next] --&gt; B[flatten next items]
+    B --&gt; C[for each slot]
+    C --&gt; D{nextChild null?}
+    D -- yes --&gt; E[remove old node]
+    D -- no --&gt; F[reconcileSlot prev, next, oldNode]
+    F --&gt; G[update slot node]
+    C --&gt; H[remove extra old nodes]
+    H --&gt; I[reorder nodes in DOM]
+    I --&gt; J[update flat array in place]</pre>
+          </div>
+          <a class="back" href="#top">Back to top ↑</a>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>© 2026 DOM++. All rights reserved.</span>
+      <span>Documentation</span>
+    </div>
+  </footer>
+</body>
+</html>
