@@ -13,9 +13,9 @@ function Counter(_props, ...children) {
   );
 }
 
-<Counter className="surface" styles={{ backgroundColor: "#fffebb" }}>
+<Counter className="demo-surface jsx-surface">
   <div className="like-row">
-    {count = <strong>{likes}</strong>}
+    {count = document.createElement("strong", null, likes)}
     <span> likes</span>
   </div>
   <button
@@ -26,6 +26,6 @@ function Counter(_props, ...children) {
       count.setText(likes);
     }}
   >
-    Like
+    ♥ Like
   </button>
 </Counter>

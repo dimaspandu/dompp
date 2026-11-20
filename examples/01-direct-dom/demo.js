@@ -3,9 +3,8 @@
 let likes = 0;
 const count = document.createElement("strong").setText(likes);
 const button = document.createElement("button")
-  .setText("Like")
-  .setAttributes({ type: "button" })
-  .setStyles({ padding: "6px 12px" })
+  .setText("♥ Like")
+  .setAttributes({ type: "button", class: "like-button" })
   .setEvents({
     click() {
       likes++;
@@ -17,6 +16,8 @@ const button = document.createElement("button")
   });
 
 app.setChildren(
-  document.createElement("div").setChildren(count, document.createElement("span").setText(" likes")),
+  document.createElement("div")
+    .setAttributes({ class: "like-row" })
+    .setChildren(count, document.createElement("span").setText(" likes")),
   button
 );

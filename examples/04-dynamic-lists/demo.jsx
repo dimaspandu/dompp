@@ -10,20 +10,25 @@ let items = [
 let showList = true;
 
 const listComponent = document.createComponent((rerender) => (
-  <div>
+  <div className="demo-surface keyed-surface">
+    <h3>Dynamic List</h3>
+    <p>Toggle list visibility and preserve item identity</p>
     <button
+      className="action-button"
       type="button"
       onClick={() => { showList = !showList; rerender(); }}
     >
-      {showList ? "Hide" : "Show"}
+      {showList ? "Hide List" : "Show List"}
     </button>
-    {showList
-      ? items.map((item) => (
-          <div key={item.id} style={{ padding: "4px 0" }}>
+    {showList ? (
+      <div className="keyed-list">
+        {items.map((item) => (
+          <div key={item.id} className="keyed-item">
             {item.text}
           </div>
-        ))
-      : null}
+        ))}
+      </div>
+    ) : null}
   </div>
 ));
 

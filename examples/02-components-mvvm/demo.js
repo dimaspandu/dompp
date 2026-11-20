@@ -17,16 +17,20 @@
 const viewModel = createLikeViewModel();
 
 const likeComponent = document.createComponent((rerender) => (
-  document.createElement("section").setChildren(
-    document.createElement("div").setChildren(
-      document.createElement("strong").setText(viewModel.likes),
-      document.createElement("span").setText(" likes")
-    ),
-    document.createElement("button")
-      .setText("Like")
-      .setAttributes({ type: "button" })
-      .setEvents({ click() { viewModel.like(); } })
-  )
+  document.createElement("section")
+    .setAttributes({ class: "demo-surface mvvm-surface" })
+    .setChildren(
+      document.createElement("div")
+        .setAttributes({ class: "like-row" })
+        .setChildren(
+          document.createElement("strong").setText(viewModel.likes),
+          document.createElement("span").setText(" likes")
+        ),
+      document.createElement("button")
+        .setText("♥ Like")
+        .setAttributes({ type: "button", class: "like-button" })
+        .setEvents({ click() { viewModel.like(); } })
+    )
 ));
 
 const app = document.getElementById("app");
