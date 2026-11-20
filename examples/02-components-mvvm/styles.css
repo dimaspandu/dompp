@@ -130,9 +130,10 @@ article > p {
 }
 
 .mvvm-surface {
-  flex-direction: column;
-  align-items: stretch;
-  gap: 12px;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   background: #dcfce7;
   color: #166534;
 }
