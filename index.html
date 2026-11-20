@@ -1,42 +1,154 @@
-﻿<!DOCTYPE html>
+﻿<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>DOMPP (DOM++)</title>
   <link rel="icon" type="image/svg+xml" href="./assets/favicon.svg" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/atom-one-dark.min.css"
+  />
   <style>
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: Inter, system-ui, sans-serif; background: #050816; color: #e5e7eb; line-height: 1.75; }
-    .container { max-width: 960px; margin: 0 auto; padding: 72px 24px 120px; }
-    h1 { font-size: 56px; margin: 0 0 8px; letter-spacing: -1px; }
-    h2 { font-size: 30px; margin: 64px 0 16px; color: #93c5fd; }
-    h3 { font-size: 20px; margin: 32px 0 8px; color: #fbbf24; }
-    p { color: #cbd5e1; margin: 0 0 18px; font-size: 17px; }
-    .subtitle { color: #94a3b8; font-size: 20px; margin-bottom: 40px; }
-    .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; margin: 20px 0; }
-    pre { background: #0b1220; border: 1px solid #1e293b; border-radius: 12px; padding: 18px; overflow: auto; font-size: 13px; line-height: 1.55; margin: 16px 0; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: #050816;
+      color: #e5e7eb;
+      line-height: 1.75;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 72px 24px 120px;
+    }
+
+    h1 {
+      font-size: 56px;
+      margin: 0 0 8px;
+      letter-spacing: -1px;
+    }
+
+    h2 {
+      font-size: 30px;
+      margin: 64px 0 16px;
+      color: #93c5fd;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin: 32px 0 8px;
+      color: #fbbf24;
+    }
+
+    p {
+      color: #cbd5e1;
+      margin: 0 0 18px;
+      font-size: 17px;
+    }
+
+    .subtitle {
+      color: #94a3b8;
+      font-size: 20px;
+      margin-bottom: 40px;
+    }
+
+    .card {
+      background: #0f172a;
+      border: 1px solid #1e293b;
+      border-radius: 16px;
+      padding: 24px;
+      margin: 20px 0;
+    }
+
+    pre {
+      background: #0b1220;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 18px;
+      overflow: auto;
+      font-size: 13px;
+      line-height: 1.55;
+      margin: 16px 0;
+    }
+
     code { font-family: "Fira Code", Consolas, monospace; }
-    .cta { display: inline-block; margin-top: 16px; padding: 12px 22px; background: #2563eb; color: #fff; border-radius: 8px; text-decoration: none; font-weight: 600; margin-right: 10px; }
+
+    .cta {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 12px 22px;
+      background: #2563eb;
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin-right: 10px;
+    }
+
     .cta:hover { background: #1d4ed8; }
     .cta.secondary { background: #1f2937; }
     .cta.secondary:hover { background: #374151; }
+
     .muted { color: #64748b; font-size: 14px; }
+
+    .site-footer {
+      border-top: 1px solid #1e293b;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .site-footer p { margin: 0; }
+
     ul { color: #cbd5e1; }
     a { color: #60a5fa; }
-    .quote { font-style: italic; color: #94a3b8; border-left: 3px solid #2563eb; padding-left: 16px; margin: 24px 0; }
-    .divider { height: 1px; background: #1e293b; margin: 48px 0; }
+
+    .quote {
+      font-style: italic;
+      color: #94a3b8;
+      border-left: 3px solid #2563eb;
+      padding-left: 16px;
+      margin: 24px 0;
+    }
+
+    .divider {
+      height: 1px;
+      background: #1e293b;
+      margin: 48px 0;
+    }
+
+    .code-label {
+      color: #94a3b8;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin: 20px 0 0;
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 48px 18px 80px; }
+      h1 { font-size: 42px; }
+      h2 { font-size: 26px; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
+  <main class="container">
     <h1>DOMPP (DOM++)</h1>
-    <p class="subtitle">What if the DOM was already reactive? The DOM API we might actually need.</p>
+    <p class="subtitle">
+      What if the DOM was already reactive? The DOM API we might actually need.
+    </p>
 
     <h2>Chapter 1 — The Beginning</h2>
     <p>In the beginning, there was the DOM. And the DOM was verbose.</p>
-    <p>Every UI was assembled by hand. Create a node. Set a property. Append a child. Repeat. It worked, but the code grew like vines.</p>
+    <p>
+      Every UI was assembled by hand. Create a node. Set a property. Append a
+      child. Repeat. It worked, but the code grew like vines.
+    </p>
     <pre><code class="language-javascript">const card = document.createElement("div");
 card.classList.add("card");
 
@@ -48,37 +160,144 @@ description.textContent = "Browser-native runtime exploration";
 
 card.appendChild(title);
 card.appendChild(description);</code></pre>
-    <p>Twenty lines to make a card. And every update meant touching the same nodes again, carefully, by hand.</p>
+    <p>
+      Twenty lines to make a card. And every update meant touching the same
+      nodes again, carefully, by hand.
+    </p>
 
     <h2>Chapter 2 — The Library Era</h2>
-    <p>So we invented libraries. jQuery made selection and mutation feel effortless. Backbone and AngularJS gave us structure and data binding. The web got faster to build.</p>
+    <p>
+      So we invented libraries. jQuery made selection and mutation feel
+      effortless. Backbone and AngularJS gave us structure and data binding.
+      The web got faster to build.
+    </p>
     <p>But the DOM was still the same DOM underneath. The libraries just hid it.</p>
 
     <h2>Chapter 3 — The React Revolution</h2>
-    <p>Then React arrived and changed everything. Declarative components. A virtual DOM. Diff and patch. Suddenly developers could think in terms of UI trees instead of mutation steps.</p>
+    <p>
+      Then React arrived and changed everything. Declarative components. A
+      virtual DOM. Diff and patch. Suddenly developers could think in terms of
+      UI trees instead of mutation steps.
+    </p>
     <p>The developer experience won. React became the default mental model for a generation.</p>
-    <p class="quote">But the cost was a layer between you and the platform. A runtime. A reconciliation engine. A bundle.</p>
+    <p class="quote">
+      But the cost was a layer between you and the platform. A runtime. A
+      reconciliation engine. A bundle.
+    </p>
 
     <h2>Chapter 4 — The Performance Wars</h2>
-    <p>Vue, Svelte, SolidJS, and others entered the arena. Each offered a different answer to the same question: how do we make UI fast and reactive?</p>
-    <p>Signals. Fine-grained updates. Compilers. Each framework optimized harder, shipped smarter, and fought for milliseconds.</p>
+    <p>
+      Vue, Svelte, SolidJS, and others entered the arena. Each offered a
+      different answer to the same question: how do we make UI fast and reactive?
+    </p>
+    <p>
+      Signals. Fine-grained updates. Compilers. Each framework optimized harder,
+      shipped smarter, and fought for milliseconds.
+    </p>
     <p>Meanwhile, the platform itself stayed still.</p>
 
     <h2>Chapter 5 — The AI Shift</h2>
-    <p>Now AI can generate vanilla code from a single prompt. The output runs fast. No framework. No bundle. Just the browser.</p>
-    <p>But open the generated source and you find imperative mutation scattered everywhere. Create this. Set that. Append here. Remove there. Fast to run, hard to read, harder to maintain.</p>
+    <p>
+      Now AI can generate vanilla code from a single prompt. The output runs
+      fast. No framework. No bundle. Just the browser.
+    </p>
+    <p>
+      But open the generated source and you find imperative mutation scattered
+      everywhere. Create this. Set that. Append here. Remove there. Fast to run,
+      hard to read, harder to maintain.
+    </p>
     <p class="quote">The speed is real. The maintainability is not.</p>
 
     <h2>Chapter 6 — What We Actually Need</h2>
-    <p>Strip away the hype and the question is simple. We need to assemble UI easily. We need it to stay maintainable. We need performance that is stable, not fragile.</p>
+    <p>
+      Strip away the hype and the question is simple. We need to assemble UI
+      easily. We need it to stay maintainable. We need performance that is
+      stable, not fragile.
+    </p>
     <p>So why not let the browser provide the APIs directly?</p>
-    <p>Why not make the DOM itself reactive, composable, and safe — so that the platform carries the weight, not a library?</p>
+    <p>
+      Why not make the DOM itself reactive, composable, and safe — so that the
+      platform carries the weight, not a library?
+    </p>
 
     <div class="divider"></div>
 
     <h2>DOM++ — A Preview</h2>
-    <p>DOM++ is a slice of a larger effort: <strong>the-future-of-the-browser</strong>, a browser runtime exploration (Rust, V8, and more) that aims to enhance the DOM itself. The hope is that this work can also serve as a proposal to MDN and the web platform.</p>
-    <p>DOM++ itself is a preview of how those new APIs might be used. Native-first. Explicit. No virtual DOM.</p>
+    <p>
+      DOM++ is a slice of a larger effort:
+      <strong>the-future-of-the-browser</strong>, a browser runtime exploration
+      (Rust, V8, and more) that aims to enhance the DOM itself. The hope is that
+      this work can also serve as a proposal to MDN and the web platform.
+    </p>
+    <p>
+      DOM++ itself is a preview of how those new APIs might be used.
+      Native-first. Explicit. No virtual DOM.
+    </p>
+
+    <h3>JSX Support — Declarative Syntax, DOM++ APIs</h3>
+    <p>
+      DOM++ also supports JSX as an alternative way to describe UI. JSX is
+      transformed into calls to the DOM++ factory API
+      (<code>document.createElement</code>), so the resulting elements still use
+      the same DOM++ builders and real DOM nodes. No virtual DOM is introduced.
+    </p>
+    <p>
+      The example below shows the JSX source and the equivalent JavaScript
+      generated by a classic JSX transform. The pragma tells the transform to
+      use <code>document.createElement</code> as its factory.
+    </p>
+
+    <p class="code-label">JSX source</p>
+    <pre><code class="language-jsx">/** @jsx document.createElement */
+
+const card = (
+  &lt;article
+    className="card"
+    styles={{ color: "tomato", padding: "1rem" }}
+  &gt;
+    &lt;h2&gt;Hello from JSX&lt;/h2&gt;
+    &lt;p&gt;JSX syntax powered by DOM++ APIs.&lt;/p&gt;
+    &lt;button
+      type="button"
+      onClick={() =&gt; console.log("DOM++ + JSX")}
+    &gt;
+      Explore
+    &lt;/button&gt;
+  &lt;/article&gt;
+);
+
+document.getElementById("app").setChildren(card);</code></pre>
+
+    <p class="code-label">Equivalent compiled JavaScript</p>
+    <pre><code class="language-javascript">const card = document.createElement(
+  "article",
+  {
+    className: "card",
+    styles: { color: "tomato", padding: "1rem" },
+  },
+  document.createElement("h2", null, "Hello from JSX"),
+  document.createElement(
+    "p",
+    null,
+    "JSX syntax powered by DOM++ APIs."
+  ),
+  document.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: () => console.log("DOM++ + JSX"),
+    },
+    "Explore"
+  )
+);
+
+document.getElementById("app").setChildren(card);</code></pre>
+
+    <p>
+      JSX is optional syntax and requires a JSX transform during development or
+      build time. The compiled output runs on the DOM++ API; applications can
+      also use the JavaScript API directly without JSX.
+    </p>
 
     <h3>Chainable Setters on Real Nodes</h3>
     <pre><code class="language-javascript">const card =
@@ -113,10 +332,17 @@ document.getElementById("app").setChildren(counter);</code></pre>
     <pre><code class="language-javascript">function createViewModel() {
   let likes = 0;
   const listeners = new Set();
+
   return {
     get likes() { return likes; },
-    like() { likes++; listeners.forEach((l) => l()); },
-    subscribe(l) { listeners.add(l); return () => listeners.delete(l); },
+    like() {
+      likes++;
+      listeners.forEach((listener) => listener());
+    },
+    subscribe(listener) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
   };
 }
 
@@ -138,7 +364,9 @@ document.getElementById("app").setChildren(view);</code></pre>
   document.createDocumentFragment(
     document.createElement("strong").setText("Item A"),
     document.createElement("strong").setText("Item B"),
-    showExtra ? document.createElement("strong").setText("Item C") : null
+    showExtra
+      ? document.createElement("strong").setText("Item C")
+      : null
   )
 ));
 
@@ -159,19 +387,28 @@ const safe = document.createElement("a")
   .setText("Safe link")
   .setAttributes({ href: "https://example.com" })
   .setStyles({ color: "blue" })
-  .setEvents({ click(e) { e.preventDefault(); } });</code></pre>
+  .setEvents({ click(event) { event.preventDefault(); } });</code></pre>
 
     <h2>Explore</h2>
     <ul>
-      <li><a href="examples/index.html">Examples (10 progressive demos)</a></li>
+      <li><a href="examples/index.html">Examples (progressive demos)</a></li>
       <li><a href="docs/README.md">Documentation (architecture diagrams)</a></li>
       <li><a href="https://github.com/dimaspandu/dompp">GitHub</a></li>
     </ul>
 
-    <p class="muted">DOM++ — native-first, explicit, no virtual DOM, no compiler required.</p>
-  </div>
+    <p class="muted">
+      DOM++ — native-first, explicit, no virtual DOM. Use the JavaScript API
+      directly, or write JSX and transform it to DOM++ factory calls.
+    </p>
+  </main>
+
+  <footer class="site-footer">
+    <p class="muted">&copy; 2026 DOM++. All rights reserved.</p>
+  </footer>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-  <script>hljs.highlightAll();</script>
+  <script>
+    window.hljs?.highlightAll();
+  </script>
 </body>
 </html>
