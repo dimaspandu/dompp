@@ -151,7 +151,7 @@
     const list = normalizeChildren(children);
     if (!list.setChildren) {
       Object.defineProperty(list, "setChildren", {
-        value(nextChildren) {
+        value(...nextChildren) {
           const next = normalizeChildren(nextChildren);
           list.splice(0, list.length, ...next);
           return list;

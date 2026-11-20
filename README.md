@@ -91,7 +91,7 @@ Use the dedicated setters rather than passing event-handler strings or style tex
 
 ### Components and explicit re-rendering
 
-`document.createComponent()` creates a component boundary around a render function. The returned component exposes `.rerender()` so an update can be requested explicitly.
+`document.createComponent(builder)` creates a component boundary around a render function. The returned component exposes `.rerender()` so an update can be requested explicitly.
 
 When a component re-renders, DOM++ reconciles its new output with the existing DOM structure. This is reconciliation, but it does not require maintaining a separate virtual DOM tree. The goal is to update the real DOM while preserving existing node identity where possible.
 
@@ -248,7 +248,7 @@ The main public API is exposed through the enhanced `document` methods:
 | --- | --- |
 | `document.createElement(tag, props, ...children)` | Create an element using the DOM++ builder API; it can also be used as a JSX factory |
 | `document.createElement(existingElement)` | Adopt an existing element |
-| `document.createComponent(render)` | Create a component boundary with explicit `.rerender()` and DOM-aware reconciliation |
+| `document.createComponent(builder)` | Create a component boundary with explicit `.rerender()` and DOM-aware reconciliation |
 | `document.createDocumentFragment(...children)` | Compose children into a flat array |
 | `document.createElement("fragment")` | Create a wrapper fragment element |
 
