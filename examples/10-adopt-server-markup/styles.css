@@ -114,16 +114,25 @@ article > p {
 }
 
 .jsx-surface {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   background: #ffedd5;
   color: #9a3412;
 }
 
 .component-surface {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   background: #e0f2fe;
   color: #075985;
 }
 
 .mvvm-surface {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 12px;
   background: #dcfce7;
   color: #166534;
 }
