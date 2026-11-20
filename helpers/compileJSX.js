@@ -19,6 +19,11 @@
  * 1. The `factory` parameter (highest priority).
  * 2. A JSX pragma comment (e.g. jsx pragma with name) in source.
  *
+ * Supported pragmas:
+ *   /** @jsx <factory> - JSX factory (dotted path allowed)
+ *   /** @jsxRuntime <mode> - JSX runtime mode (e.g. "classic")
+ *   /** @jsxFrag <fragment> - Fragment factory (dotted path allowed)
+ *
  * Parameter takes precedence over pragma; pragma is used if
  * parameter is omitted.
  *
@@ -30,22 +35,45 @@ export default function compileJSX(source, factory) {
   let i = 0;
 
   // -------------------------------------------------
-  // Resolve the JSX factory name.
+  // Resolve JSX pragmas.
+  // Supported:
+  //   /** @jsx <factory> */          - JSX factory (dotted path allowed)
+  //   /** @jsxRuntime <mode> */      - JSX runtime mode (e.g. "classic")
+  //   /** @jsxFrag <fragment> */     - Fragment factory (dotted path allowed)
+  //
   // Priority: explicit parameter > @jsx pragma > "d"
   // -------------------------------------------------
-  if (!factory) {
-    factory = "d";
+  let jsxFactory = factory || null;
+  let jsxRuntime = "classic";
+  let jsxFragFactory = null;
 
-    const pragmaMatch = source.match(
-      /^\s*\/\*\*?\s*@jsx\s+([A-Za-z_$][\w$]*)\s*\*\/\s*$/m
-    );
+  const pragmaRegex = /(?:\r?\n)?[ \t]*\/\*\*?\s*@(jsx|jsxRuntime|jsxFrag)\s+([^\*]*?)\*\/[ \t]*/g;
 
-    if (pragmaMatch) {
-      factory = pragmaMatch[1];
-      // Strip the pragma so it doesn't leak into output
-      source = source.replace(pragmaMatch[0], "");
+  let pragmaMatch;
+  while ((pragmaMatch = pragmaRegex.exec(source)) !== null) {
+    const [, type, value] = pragmaMatch;
+    const trimmed = value.trim();
+
+    if (type === "jsx" && !jsxFactory) {
+      jsxFactory = trimmed;
+    } else if (type === "jsxRuntime") {
+      jsxRuntime = trimmed;
+    } else if (type === "jsxFrag" && !jsxFragFactory) {
+      jsxFragFactory = trimmed;
     }
   }
+
+  if (!jsxFactory) {
+    jsxFactory = "d";
+  }
+
+  factory = jsxFactory;
+
+  // Strip all pragma comments so they don't leak into output
+  source = source.replace(
+    /(?:\r?\n)?[ \t]*\/\*\*?\s*@(jsx|jsxRuntime|jsxFrag)\s+[^\*]*?\*\/[ \t]*/g,
+    ""
+  );
 
   function error(message) {
     throw new SyntaxError(`${message} at position ${i}`);
@@ -137,7 +165,7 @@ export default function compileJSX(source, factory) {
   /**
    * Read {...}
    *
-   * Contoh:
+   * Example:
    *
    * {title}
    * {count()}
@@ -345,6 +373,10 @@ export default function compileJSX(source, factory) {
 
       const children = parseChildren(null);
 
+      if (jsxFragFactory) {
+        return `${jsxFragFactory}(${children.join(", ")})`;
+      }
+
       return `${factory}.fragment(${children.join(", ")})`;
     }
 
@@ -457,7 +489,7 @@ export default function compileJSX(source, factory) {
   /**
    * Find JSX inside normal JavaScript.
    *
-   * Contoh:
+   * Example:
    *
    * return (
    *   <div>Hello</div>

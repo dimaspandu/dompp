@@ -227,6 +227,64 @@ runTest(
 );
 
 /**
+ * FACTORY NAME - @jsx PRAGMA WITH DOTTED PATH
+ */
+
+runTest(
+  "JSX - @jsx pragma with dotted path factory",
+  compileJSX(`/** @jsx document.createElement */<div />`),
+  `document.createElement("div", null)`
+);
+
+runTest(
+  "JSX - @jsx pragma with dotted path factory and children",
+  compileJSX(`/** @jsx document.createElement */<div>Hello</div>`),
+  `document.createElement("div", null, "Hello")`
+);
+
+/**
+ * FACTORY NAME - @jsxRUNTIME PRAGMA
+ */
+
+runTest(
+  "JSX - @jsxRuntime classic pragma",
+  compileJSX(`/** @jsxRuntime classic */<div />`),
+  `d("div", null)`
+);
+
+runTest(
+  "JSX - @jsxRuntime classic pragma strips comment",
+  compileJSX(`/** @jsxRuntime classic */\n<div />`),
+  `\nd("div", null)`
+);
+
+/**
+ * FACTORY NAME - @jsxFRAG PRAGMA
+ */
+
+runTest(
+  "JSX - @jsxFrag pragma with dotted path",
+  compileJSX(`/** @jsxFrag document.createDocumentFragment */<><div /></>`),
+  `document.createDocumentFragment(d("div", null))`
+);
+
+runTest(
+  "JSX - @jsxFrag pragma without @jsx uses default factory for element",
+  compileJSX(`/** @jsxFrag document.createDocumentFragment */<><div /></>`),
+  `document.createDocumentFragment(d("div", null))`
+);
+
+/**
+ * FACTORY NAME - COMBINED PRAGMAS
+ */
+
+runTest(
+  "JSX - all three pragmas combined",
+  compileJSX(`/** @jsxRuntime classic */ /** @jsx document.createElement */ /** @jsxFrag document.createDocumentFragment */ <><div>A</div></>`),
+  `document.createDocumentFragment(document.createElement("div", null, "A"))`
+);
+
+/**
  * FRAGMENTS
  */
 
@@ -371,6 +429,90 @@ runTest(
   "JSX - comment expression child passes through unchanged",
   compileJSX(`<div>{/* a comment */}</div>`),
   `d("div", null, /* a comment */)`
+);
+
+/**
+ * COMMENTS AT TOP LEVEL (OUTSIDE JSX)
+ */
+
+runTest(
+  "JSX - block comment before JSX is ignored",
+  compileJSX(`/* a plain block comment */
+const x = <div>Hi</div>;`),
+  `/* a plain block comment */
+const x = d("div", null, "Hi");`
+);
+
+runTest(
+  "JSX - line comment before JSX is ignored",
+  compileJSX(`// a plain line comment
+const x = <div>Hi</div>;`),
+  `// a plain line comment
+const x = d("div", null, "Hi");`
+);
+
+runTest(
+  "JSX - apostrophe inside block comment does not swallow JSX",
+  compileJSX(`/*
+ * The stateless createView builds a container and embeds a componentBuilder
+ * instance. The ViewModel notifies listeners; the view's listener calls
+ */
+function createView(viewModel) {
+  return <div>{viewModel.count}</div>;
+}`),
+  `/*
+ * The stateless createView builds a container and embeds a componentBuilder
+ * instance. The ViewModel notifies listeners; the view's listener calls
+ */
+function createView(viewModel) {
+  return d("div", null, viewModel.count);
+}`
+);
+
+runTest(
+  "JSX - apostrophe inside line comment does not swallow JSX",
+  compileJSX(`// the view's listener calls
+const x = <div>Hi</div>;`),
+  `// the view's listener calls
+const x = d("div", null, "Hi");`
+);
+
+runTest(
+  "JSX - multiple top-level comments before JSX",
+  compileJSX(`/* first */
+// second
+/* third */
+const x = <div>Hi</div>;`),
+  `/* first */
+// second
+/* third */
+const x = d("div", null, "Hi");`
+);
+
+runTest(
+  "JSX - block comment between two JSX elements",
+  compileJSX(`const a = <div>A</div>;
+/* the view's listener */
+const b = <div>B</div>;`),
+  `const a = d("div", null, "A");
+/* the view's listener */
+const b = d("div", null, "B");`
+);
+
+runTest(
+  "JSX - apostrophe in string before JSX is still skipped",
+  compileJSX(`const name = "view's listener";
+const x = <div>{name}</div>;`),
+  `const name = "view's listener";
+const x = d("div", null, name);`
+);
+
+runTest(
+  "JSX - double slash inside block comment is not a line comment",
+  compileJSX(`/* see https://example.com/docs */
+const x = <div>Hi</div>;`),
+  `/* see https://example.com/docs */
+const x = d("div", null, "Hi");`
 );
 
 /**
