@@ -31,11 +31,20 @@ export function installDocumentEnhancements(builders) {
   // Fragment-producing APIs (JSX <></>, .fragment, createDocumentFragment with
   // children) return a flat child array. Use <fragment> or
   // document.createElement("fragment") for a wrapper element.
-  const originalCreateDocumentFragment = Document.prototype.createDocumentFragment;
+
+  const originalCreateDocumentFragment =
+    Document.prototype.createDocumentFragment;
+
   Document.prototype.createDocumentFragment = function(...children) {
-    const b = getBuilders(this);
+    // A JSX fragment factory may be invoked without its Document receiver.
+    // Use the installed document as the fallback in that case.
+    const receiver = this?.nodeType === 9 ? this : doc;
+    const b = getBuilders(receiver) || (
+      receiver === doc ? builders : null
+    );
+
     if (!b) {
-      return originalCreateDocumentFragment.call(this);
+      return originalCreateDocumentFragment.call(receiver);
     }
 
     if (children.length === 0) {

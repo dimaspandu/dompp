@@ -1,7 +1,3 @@
-/** @jsxRuntime classic */
-/** @jsx document.createElement */
-/** @jsxFrag document.createDocumentFragment */
-
 /*
  * DOM++ interaction examples — a guided tour.
  *
