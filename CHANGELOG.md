@@ -10,22 +10,24 @@ This project follows semantic versioning principles.
 
 ### Added
 
-- Refactored src/ into ESM foundation builders and enhancements with installDOMPP/window.DOMPP.
-- Added Node test suites and browser specs with headless browser runner (npm run test:browser).
-- Added setChildren support for both rest params and arrays.
-- Rewrote examples/ into 10 focused examples.
-- Added docs/ with mermaid diagrams.
-- Added storytelling landing page (index.html) with syntax-highlighted snippets.
+- Refactored `src/` into an ESM foundation built around builders and enhancements.
+- Added `installDOMPP()` and browser integration through `window.DOMPP`.
+- Added Node.js test suites and browser specifications with a headless browser runner (`npm run test:browser`).
+- Added `setChildren()` support for both rest parameters and array arguments.
+- Reorganized `examples/` into 10 focused examples.
+- Added `docs/` with Mermaid diagrams covering architecture, setters, enhancements, and component flows.
+- Added `docs/index.html` as a navigable documentation landing page.
+- Added a storytelling landing page (`index.html`) with syntax-highlighted code snippets.
 
 ### Changed
 
-- Removed legacy modules/tests.
-- Updated README examples section and testing commands.
+- Removed legacy modules and tests.
+- Updated the README examples section and testing instructions.
 
 ### Fixed
 
-- Per-document builder resolution in enhancements.
-- Fragment/array component reconciliation per slot.
+- Fixed per-document builder resolution in enhancements.
+- Fixed fragment and array component reconciliation to operate per slot.
 
 ## [1.5.1] - 2026-10-27
 
@@ -116,7 +118,9 @@ pm run dev, and added elementBuilder/componentBuilder counter and MVVM snippets.
 
 ### Added
 
-- Added examples/23-component-builder/ demonstrating componentBuilder ender()/erender(callback) flow with JSX.
+- Added examples/23-component-builder/ demonstrating componentBuilder 
+ender()/
+erender(callback) flow with JSX.
 
 ### Fixed
 
