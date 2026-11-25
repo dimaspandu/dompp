@@ -5,6 +5,11 @@
 let count = 0;
 
 const serverNode = document.getElementById("server-card");
+
+// RECONCILE (not hydrate): we want to replace all server children
+// (the <ul>, <script>, <p>) with the new reactive content, not preserve them.
+// document.hydrateElement() would keep undescribed server markup untouched,
+// which is not what this example wants.
 const adopted = document.createElement(serverNode);
 
 const card = document.createComponent((rerender) => (

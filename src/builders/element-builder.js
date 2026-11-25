@@ -725,16 +725,9 @@ ElementBuilder.prototype.toNode = function() {
 * JSX factory: elementBuilder(tag, props, ...children).
 * It separates attributes, styles, events, and keys into the virtual struct.
 */
-function elementBuilder(tag, props, ...children) {
 
-  // Custom components.
-  if (typeof tag === "function") {
-    return tag(props, ...children);
-  }
-
-  const element = tag && tag.nodeType === 1
-    ? adoptElement(tag)
-    : new ElementBuilder(tag);
+// Apply JSX/builder props (attributes, styles, events, class, key) to an element.
+function applyElementProps(element, props) {
   let elementKey = null;
 
   if (props) {
@@ -788,17 +781,51 @@ function elementBuilder(tag, props, ...children) {
     }
   }
 
+  return elementKey;
+}
+
+function elementBuilder(tag, props, ...children) {
+
+  // Custom components.
+  if (typeof tag === "function") {
+    return tag(props, ...children);
+  }
+
+  const element = tag && tag.nodeType === 1
+    ? adoptElement(tag)
+    : new ElementBuilder(tag);
+
+  const elementKey = applyElementProps(element, props);
   element.struct.key = elementKey;
   persistElementKey(element.node, elementKey);
 
-  // Use attach mode for an existing element; ordinary builders reconcile.
+  // Always reconcile children (destructive), even for existing nodes.
+  // Hydration is handled explicitly by hydrateElement().
   if (children.length) {
-    if (element.node) {
-      // Adopt matching nodes and leave unspecified server children untouched.
-      element._attachChildren(children);
-    } else {
-      element.setChildren(children);
-    }
+    element.setChildren(children);
+  }
+
+  return element;
+}
+
+// Explicit hydration: attach to server-rendered DOM without destroying
+// unspecified existing children. Use hydrateElement() when you want to keep
+// server markup that is not described in the virtual tree.
+function hydrateElement(node, props, ...children) {
+  if (!node || node.nodeType !== 1) {
+    throw new TypeError(
+      "hydrateElement requires an existing element node as the first argument."
+    );
+  }
+
+  const element = adoptElement(node);
+  const elementKey = applyElementProps(element, props);
+  element.struct.key = elementKey;
+  persistElementKey(element.node, elementKey);
+
+  // Hydration mode: attach to existing server markup, keep unspecified children.
+  if (children.length) {
+    element._attachChildren(children);
   }
 
   return element;
@@ -812,6 +839,7 @@ elementBuilder.fragment = function(...children) {
   return {
     ElementBuilder,
     elementBuilder,
+    hydrateElement,
     adoptElement,
     asFragmentChildren,
     normalizeChildren,

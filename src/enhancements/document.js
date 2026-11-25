@@ -96,6 +96,17 @@ export function installDocumentEnhancements(builders) {
     return originalCreateElement.call(this, tagName, options, ...rest);
   };
 
+  // Explicit hydration: attach to server-rendered DOM without destroying
+  // unspecified existing children. Use document.hydrateElement() when you want
+  // to keep server markup that is not described in the virtual tree.
+  Document.prototype.hydrateElement = function(node, props, ...children) {
+    const b = getBuilders(this);
+    if (!b) {
+      throw new Error("DOM++ builders are not installed for this document.");
+    }
+    return b.hydrateElement(node, props, ...children);
+  };
+
   Object.defineProperty(Document.prototype, INSTALLED, {
     value: true,
     configurable: true,
