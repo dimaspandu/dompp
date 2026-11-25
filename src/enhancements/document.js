@@ -88,6 +88,27 @@ export function installDocumentEnhancements(builders) {
       return b.elementBuilder(tagName, options, ...rest);
     }
 
+    // <fragment> creates a real element node via native createElement,
+    // not an ElementBuilder wrapper descriptor.
+    if (typeof tagName === "string" && tagName.toLowerCase() === "fragment") {
+      const el = originalCreateElement.call(this, "fragment", options);
+      if (rest.length > 0) {
+        const children = b.normalizeChildren(rest);
+        for (const child of children) {
+          if (child instanceof b.ElementBuilder) {
+            el.appendChild(child._createNode());
+          } else if (child && child.nodeType === 1) {
+            el.appendChild(child);
+          } else if (child && child.nodeType === b.Node.TEXT_NODE) {
+            el.appendChild(child);
+          } else if (child != null && typeof child !== "boolean") {
+            el.appendChild(this.createTextNode(String(child)));
+          }
+        }
+      }
+      return el;
+    }
+
     // JSX without props passes (tag, null, ...children).
     if (rest.length > 0) {
       return b.elementBuilder(tagName, options, ...rest);
