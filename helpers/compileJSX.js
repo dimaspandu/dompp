@@ -15,38 +15,53 @@
  *     "Hello"
  *   )
  *
- * The factory name can be customized via:
+ * The factory can be customized via:
  * 1. The `factory` parameter (highest priority).
- * 2. A JSX pragma comment (e.g. jsx pragma with name) in source.
+ *    - a string: used as the JSX element factory; fragment falls back to
+ *      `${factory}.fragment(...)` for backward compatibility
+ *    - an object: { jsx: "<factory>", jsxFrag: "<fragment>" }
+ * 2. A JSX pragma comment in source.
  *
  * Supported pragmas:
- *   /** @jsx <factory> - JSX factory (dotted path allowed)
- *   /** @jsxRuntime <mode> - JSX runtime mode (e.g. "classic")
+ *   /** @jsx <factory> - JSX element factory (dotted path allowed)
+ *   /** @jsxRuntime <mode> - JSX runtime mode (e.g. "classic"); stripped, no behavior change
  *   /** @jsxFrag <fragment> - Fragment factory (dotted path allowed)
  *
  * Parameter takes precedence over pragma; pragma is used if
  * parameter is omitted.
  *
+ * Defaults: jsx = "document.createElement", jsxFrag = "document.createDocumentFragment"
+ *
  * @param {string} source - JSX source code
- * @param {string} [factory] - Override factory name (e.g. "h", "jsx")
+ * @param {string|{jsx?: string, jsxFrag?: string}} [factory] - Override factory name(s)
  * @returns {string} - Transformed JavaScript source
  */
 export default function compileJSX(source, factory) {
   let i = 0;
 
   // -------------------------------------------------
-  // Resolve JSX pragmas.
-  // Supported:
-  //   /** @jsx <factory> */          - JSX factory (dotted path allowed)
-  //   /** @jsxRuntime <mode> */      - JSX runtime mode (e.g. "classic")
-  //   /** @jsxFrag <fragment> */     - Fragment factory (dotted path allowed)
-  //
-  // Priority: explicit parameter > @jsx pragma > "d"
+  // Resolve JSX configuration.
+  // Priority: explicit parameter > pragma > default
   // -------------------------------------------------
-  let jsxFactory = factory || null;
-  let jsxRuntime = "classic";
-  let jsxFragFactory = null;
+  const DEFAULTS = {
+    jsx: "document.createElement",
+    jsxFrag: "document.createDocumentFragment"
+  };
 
+  let jsxFactory = null;
+  let jsxFragFactory = null;
+  let jsxRuntime = "classic";
+
+  // Resolve from parameter
+  if (typeof factory === "object" && factory !== null) {
+    jsxFactory = factory.jsx ?? null;
+    jsxFragFactory = factory.jsxFrag ?? null;
+  } else if (typeof factory === "string") {
+    jsxFactory = factory;
+    jsxFragFactory = null; // will fall back to ${jsx}.fragment()
+  }
+
+  // Resolve from pragmas
   const pragmaRegex = /(?:\r?\n)?[ \t]*\/\*\*?\s*@(jsx|jsxRuntime|jsxFrag)\s+([^\*]*?)\*\/[ \t]*/g;
 
   let pragmaMatch;
@@ -63,11 +78,15 @@ export default function compileJSX(source, factory) {
     }
   }
 
+  // Apply defaults
   if (!jsxFactory) {
-    jsxFactory = "d";
+    jsxFactory = DEFAULTS.jsx;
   }
-
-  factory = jsxFactory;
+  if (!jsxFragFactory) {
+    jsxFragFactory = typeof factory === "string"
+      ? `${jsxFactory}.fragment`
+      : DEFAULTS.jsxFrag;
+  }
 
   // Strip all pragma comments so they don't leak into output
   source = source.replace(
@@ -165,7 +184,7 @@ export default function compileJSX(source, factory) {
   /**
    * Read {...}
    *
-   * Example:
+   * Contoh:
    *
    * {title}
    * {count()}
@@ -351,7 +370,7 @@ export default function compileJSX(source, factory) {
   }
 
   function normalizeText(text) {
-    // JSX whitespace normalization sederhana
+    // Simple JSX whitespace normalization
     return text
       .replace(/\r\n/g, "\n")
       .replace(/\n\s+/g, " ")
@@ -373,11 +392,7 @@ export default function compileJSX(source, factory) {
 
       const children = parseChildren(null);
 
-      if (jsxFragFactory) {
-        return `${jsxFragFactory}(${children.join(", ")})`;
-      }
-
-      return `${factory}.fragment(${children.join(", ")})`;
+      return `${jsxFragFactory}(${children.join(", ")})`;
     }
 
     const tag = readIdentifier();
@@ -392,7 +407,7 @@ export default function compileJSX(source, factory) {
     const props = buildProps(attributes);
 
     if (selfClosing) {
-      return `${factory}(${tagRef}, ${props})`;
+      return `${jsxFactory}(${tagRef}, ${props})`;
     }
 
     const children = parseChildren(tag);
@@ -403,7 +418,7 @@ export default function compileJSX(source, factory) {
       ...children
     ];
 
-    return `${factory}(${args.join(", ")})`;
+    return `${jsxFactory}(${args.join(", ")})`;
   }
 
   function parseChildren(parentTag) {
@@ -489,7 +504,7 @@ export default function compileJSX(source, factory) {
   /**
    * Find JSX inside normal JavaScript.
    *
-   * Example:
+   * Contoh:
    *
    * return (
    *   <div>Hello</div>

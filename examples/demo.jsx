@@ -649,12 +649,10 @@
 // -----------------------------------------------------------------------------
 
 // Example 10: Server DOM adoption (hydrate existing markup).
-// HYDRATE (method 1): document.createElement(existingNode, props, children)
-// adopts the server-rendered node and reconciles against it, preserving DOM
-// identity and leaving server children that are not described untouched.
-// Contrast: document.createElement(node).setAttributes({...}).setChildren([...])
-// (method 2) is a re-reconcile on an existing node that is destructive toward
-// old children, not hydrate.
+// HYDRATE (method 1): document.hydrateElement(existingNode, props, children)
+// adopts the server-rendered <ul> and reconciles against it while preserving
+// server children NOT described in the virtual tree (non-destructive).
+// DOM identity of the <ul> root is preserved.
 (function({ document }) {
   // Data embedded by the server alongside the rendered HTML.
   const serverMessages = JSON.parse(
@@ -666,7 +664,7 @@
 
   // Adopt the existing <ul> node and reconcile a keyed descriptor tree against
   // its current children instead of destroying and recreating them.
-  const listBuilder = document.createElement(
+  const listBuilder = document.hydrateElement(
     listNode,
     null,
     ...[...serverMessages]
@@ -683,10 +681,12 @@
 })(window);
 
 // Example 11: Reactive server messenger (hydrate + rerender).
-// HYDRATE (method 1): document.createElement(rootNode, props, children)
+// HYDRATE (method 1): document.hydrateElement(rootNode, props, children)
 // adopts the pre-rendered container root and rerenders a keyed message list
-// reactively while keeping the same DOM root node. Contrast with method 2
-// (setAttributes + setChildren) which is destructive toward existing children.
+// reactively while keeping the same DOM root node. Server children NOT
+// described in the virtual tree are preserved (non-destructive).
+// Contrast with document.createElement(node, props, children) which reconciles
+// and replaces old children not in the new tree (destructive).
 (function({ document }) {
   // Data embedded by the server alongside the rendered HTML.
   const messages = JSON.parse(
@@ -697,7 +697,7 @@
   const rootNode = document.getElementById("messenger-app");
 
   const messenger = document.createComponent((rerender) =>
-    document.createElement(
+    document.hydrateElement(
       rootNode,
       { class: "demo-surface messenger-surface" },
       <h3>Reactive server messenger</h3>,

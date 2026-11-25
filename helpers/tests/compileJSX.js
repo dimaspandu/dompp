@@ -8,79 +8,79 @@ import runTest from "./helpers/runTest.js";
 runTest(
   "JSX - basic element",
   compileJSX(`const x = <div>Hello</div>;`),
-  `const x = d("div", null, "Hello");`
+  `const x = document.createElement("div", null, "Hello");`
 );
 
 runTest(
   "JSX - element with className",
   compileJSX(`<div className="foo" />`),
-  `d("div", { "className": "foo" })`
+  `document.createElement("div", { "className": "foo" })`
 );
 
 runTest(
   "JSX - self-closing with attributes",
   compileJSX(`<img src="x.png" alt="img" />`),
-  `d("img", { "src": "x.png", "alt": "img" })`
+  `document.createElement("img", { "src": "x.png", "alt": "img" })`
 );
 
 runTest(
   "JSX - nested elements",
   compileJSX(`<div><span>A</span><span>B</span></div>`),
-  `d("div", null, d("span", null, "A"), d("span", null, "B"))`
+  `document.createElement("div", null, document.createElement("span", null, "A"), document.createElement("span", null, "B"))`
 );
 
 runTest(
   "JSX - expression child",
   compileJSX(`<h1>{title}</h1>`),
-  `d("h1", null, title)`
+  `document.createElement("h1", null, title)`
 );
 
 runTest(
   "JSX - mixed children",
   compileJSX(`<div>Text <span>{val}</span></div>`),
-  `d("div", null, "Text", d("span", null, val))`
+  `document.createElement("div", null, "Text", document.createElement("span", null, val))`
 );
 
 runTest(
   "JSX - boolean attribute",
   compileJSX(`<input disabled />`),
-  `d("input", { "disabled": true })`
+  `document.createElement("input", { "disabled": true })`
 );
 
 runTest(
   "JSX - spread attributes",
   compileJSX(`<div {...props} />`),
-  `d("div", { ...(props) })`
+  `document.createElement("div", { ...(props) })`
 );
 
 runTest(
   "JSX - spread attributes with whitespace after brace",
   compileJSX(`<StoryListItem { ...story } />`),
-  `d(StoryListItem, { ...(story) })`
+  `document.createElement(StoryListItem, { ...(story) })`
 );
 
 runTest(
   "JSX - spread attributes without whitespace after brace",
   compileJSX(`<StoryListItem {...story} />`),
-  `d(StoryListItem, { ...(story) })`
+  `document.createElement(StoryListItem, { ...(story) })`
 );
 
 runTest(
   "JSX - object expression attribute",
   compileJSX(`<button on={{ click: handler }}>Click</button>`),
-  `d("button", { "on": { click: handler } }, "Click")`
+  `document.createElement("button", { "on": { click: handler } }, "Click")`
 );
 
 runTest(
   "JSX - template literal expression",
   compileJSX('<strong>{`Count: ${count}`}</strong>'),
-  'd("strong", null, `Count: ${count}`)'
+  'document.createElement("strong", null, `Count: ${count}`)'
 );
 
 runTest(
   "JSX - template literal in attribute",
   compileJSX('<div style={`color: red`} />'),
-  'd("div", { "style": `color: red` })'
+  'document.createElement("div", { "style": `color: red` })'
 );
 
 runTest(
@@ -92,7 +92,7 @@ runTest(
   `),
   `
     return (
-      d("div", null, "Hello")
+      document.createElement("div", null, "Hello")
     );
   `
 );
@@ -104,37 +104,37 @@ runTest(
 runTest(
   "JSX - uppercase component without attributes",
   compileJSX(`<Item />`),
-  `d(Item, null)`
+  `document.createElement(Item, null)`
 );
 
 runTest(
   "JSX - uppercase component with attributes",
   compileJSX(`<Item text="Hello" />`),
-  `d(Item, { "text": "Hello" })`
+  `document.createElement(Item, { "text": "Hello" })`
 );
 
 runTest(
   "JSX - uppercase component with children",
   compileJSX(`<Item>text</Item>`),
-  `d(Item, null, "text")`
+  `document.createElement(Item, null, "text")`
 );
 
 runTest(
   "JSX - uppercase component with expression child",
   compileJSX(`<Item>{value}</Item>`),
-  `d(Item, null, value)`
+  `document.createElement(Item, null, value)`
 );
 
 runTest(
   "JSX - mixed lowercase and uppercase",
   compileJSX(`<div><Item text="x" /></div>`),
-  `d("div", null, d(Item, { "text": "x" }))`
+  `document.createElement("div", null, document.createElement(Item, { "text": "x" }))`
 );
 
 runTest(
   "JSX - multi-word uppercase component",
   compileJSX(`<FooBar>text</FooBar>`),
-  `d(FooBar, null, "text")`
+  `document.createElement(FooBar, null, "text")`
 );
 
 runTest(
@@ -249,13 +249,13 @@ runTest(
 runTest(
   "JSX - @jsxRuntime classic pragma",
   compileJSX(`/** @jsxRuntime classic */<div />`),
-  `d("div", null)`
+  `document.createElement("div", null)`
 );
 
 runTest(
   "JSX - @jsxRuntime classic pragma strips comment",
   compileJSX(`/** @jsxRuntime classic */\n<div />`),
-  `\nd("div", null)`
+  `\ndocument.createElement("div", null)`
 );
 
 /**
@@ -265,13 +265,13 @@ runTest(
 runTest(
   "JSX - @jsxFrag pragma with dotted path",
   compileJSX(`/** @jsxFrag document.createDocumentFragment */<><div /></>`),
-  `document.createDocumentFragment(d("div", null))`
+  `document.createDocumentFragment(document.createElement("div", null))`
 );
 
 runTest(
   "JSX - @jsxFrag pragma without @jsx uses default factory for element",
   compileJSX(`/** @jsxFrag document.createDocumentFragment */<><div /></>`),
-  `document.createDocumentFragment(d("div", null))`
+  `document.createDocumentFragment(document.createElement("div", null))`
 );
 
 /**
@@ -285,13 +285,59 @@ runTest(
 );
 
 /**
+ * FACTORY NAME - OBJECT PARAMETER
+ */
+
+runTest(
+  "JSX - object factory parameter",
+  compileJSX(`<div />`, { jsx: "h", jsxFrag: "h.fragment" }),
+  `h("div", null)`
+);
+
+runTest(
+  "JSX - object factory parameter with children",
+  compileJSX(`<div>Hello</div>`, { jsx: "jsx" }),
+  `jsx("div", null, "Hello")`
+);
+
+runTest(
+  "JSX - object factory parameter with custom fragment",
+  compileJSX(`<><span>x</span></>`, { jsx: "h", jsxFrag: "h.fragment" }),
+  `h.fragment(h("span", null, "x"))`
+);
+
+runTest(
+  "JSX - object factory parameter with dotted paths",
+  compileJSX(`<div>Hello</div>`, { jsx: "document.createElement", jsxFrag: "document.createDocumentFragment" }),
+  `document.createElement("div", null, "Hello")`
+);
+
+runTest(
+  "JSX - object factory parameter fragment uses jsxFrag",
+  compileJSX(`<><div>A</div></>`, { jsx: "document.createElement", jsxFrag: "document.createDocumentFragment" }),
+  `document.createDocumentFragment(document.createElement("div", null, "A"))`
+);
+
+runTest(
+  "JSX - object factory parameter only jsx specified",
+  compileJSX(`<div />`, { jsx: "custom" }),
+  `custom("div", null)`
+);
+
+runTest(
+  "JSX - object factory parameter only jsxFrag specified",
+  compileJSX(`<><div /></>`, { jsxFrag: "frag" }),
+  `frag(document.createElement("div", null))`
+);
+
+/**
  * FRAGMENTS
  */
 
 runTest(
   "JSX - fragment",
   compileJSX(`<><div>A</div><div>B</div></>`),
-  `d.fragment(d("div", null, "A"), d("div", null, "B"))`
+  `document.createDocumentFragment(document.createElement("div", null, "A"), document.createElement("div", null, "B"))`
 );
 
 runTest(
@@ -328,45 +374,45 @@ runTest(
   // TODO: use onInput for live search
   onInput={(e) => vm.search(e.target.value)}
 />`),
-  `d("input", { "value": query, "onInput": (e) => vm.search(e.target.value) })`
+  `document.createElement("input", { "value": query, "onInput": (e) => vm.search(e.target.value) })`
 );
 
 runTest(
   "JSX - block comment between attributes",
   compileJSX(`<div /* layout */ className="x" />`),
-  `d("div", { "className": "x" })`
+  `document.createElement("div", { "className": "x" })`
 );
 
 runTest(
   "JSX - comment as first thing inside opening tag",
   compileJSX(`<div /* first */ className="x" />`),
-  `d("div", { "className": "x" })`
+  `document.createElement("div", { "className": "x" })`
 );
 
 runTest(
   "JSX - line comment as first thing inside opening tag",
   compileJSX(`<div // first
   className="x" />`),
-  `d("div", { "className": "x" })`
+  `document.createElement("div", { "className": "x" })`
 );
 
 runTest(
   "JSX - comment immediately before closing bracket",
   compileJSX(`<div className="x" /* end */>hi</div>`),
-  `d("div", { "className": "x" }, "hi")`
+  `document.createElement("div", { "className": "x" }, "hi")`
 );
 
 runTest(
   "JSX - comment immediately before self-closing bracket",
   compileJSX(`<div className="x" /* end */ />`),
-  `d("div", { "className": "x" })`
+  `document.createElement("div", { "className": "x" })`
 );
 
 runTest(
   "JSX - line comment immediately before self-closing bracket",
   compileJSX(`<div className="x" // end
 />`),
-  `d("div", { "className": "x" })`
+  `document.createElement("div", { "className": "x" })`
 );
 
 runTest(
@@ -377,13 +423,13 @@ runTest(
   /* three */
   className="x"
 />`),
-  `d("div", { "className": "x" })`
+  `document.createElement("div", { "className": "x" })`
 );
 
 runTest(
   "JSX - comment between spread and normal attribute",
   compileJSX(`<div {...props} /* spread */ className="x" />`),
-  `d("div", { ...(props), "className": "x" })`
+  `document.createElement("div", { ...(props), "className": "x" })`
 );
 
 runTest(
@@ -391,25 +437,25 @@ runTest(
   compileJSX(`<div {...props}
   // spread
   className="x" />`),
-  `d("div", { ...(props), "className": "x" })`
+  `document.createElement("div", { ...(props), "className": "x" })`
 );
 
 runTest(
   "JSX - comment before spread attribute",
   compileJSX(`<div /* spread */ {...props} />`),
-  `d("div", { ...(props) })`
+  `document.createElement("div", { ...(props) })`
 );
 
 runTest(
   "JSX - double slash in quoted attribute value is not a comment",
   compileJSX(`<div title="// not a comment" />`),
-  `d("div", { "title": "// not a comment" })`
+  `document.createElement("div", { "title": "// not a comment" })`
 );
 
 runTest(
   "JSX - block comment marker in quoted attribute value is not a comment",
   compileJSX(`<div title="/* not a comment */" />`),
-  `d("div", { "title": "/* not a comment */" })`
+  `document.createElement("div", { "title": "/* not a comment */" })`
 );
 
 runTest(
@@ -428,7 +474,7 @@ runTest(
 runTest(
   "JSX - comment expression child passes through unchanged",
   compileJSX(`<div>{/* a comment */}</div>`),
-  `d("div", null, /* a comment */)`
+  `document.createElement("div", null, /* a comment */)`
 );
 
 /**
@@ -440,7 +486,7 @@ runTest(
   compileJSX(`/* a plain block comment */
 const x = <div>Hi</div>;`),
   `/* a plain block comment */
-const x = d("div", null, "Hi");`
+const x = document.createElement("div", null, "Hi");`
 );
 
 runTest(
@@ -448,7 +494,7 @@ runTest(
   compileJSX(`// a plain line comment
 const x = <div>Hi</div>;`),
   `// a plain line comment
-const x = d("div", null, "Hi");`
+const x = document.createElement("div", null, "Hi");`
 );
 
 runTest(
@@ -465,7 +511,7 @@ function createView(viewModel) {
  * instance. The ViewModel notifies listeners; the view's listener calls
  */
 function createView(viewModel) {
-  return d("div", null, viewModel.count);
+  return document.createElement("div", null, viewModel.count);
 }`
 );
 
@@ -474,7 +520,7 @@ runTest(
   compileJSX(`// the view's listener calls
 const x = <div>Hi</div>;`),
   `// the view's listener calls
-const x = d("div", null, "Hi");`
+const x = document.createElement("div", null, "Hi");`
 );
 
 runTest(
@@ -486,7 +532,7 @@ const x = <div>Hi</div>;`),
   `/* first */
 // second
 /* third */
-const x = d("div", null, "Hi");`
+const x = document.createElement("div", null, "Hi");`
 );
 
 runTest(
@@ -494,9 +540,9 @@ runTest(
   compileJSX(`const a = <div>A</div>;
 /* the view's listener */
 const b = <div>B</div>;`),
-  `const a = d("div", null, "A");
+  `const a = document.createElement("div", null, "A");
 /* the view's listener */
-const b = d("div", null, "B");`
+const b = document.createElement("div", null, "B");`
 );
 
 runTest(
@@ -504,7 +550,7 @@ runTest(
   compileJSX(`const name = "view's listener";
 const x = <div>{name}</div>;`),
   `const name = "view's listener";
-const x = d("div", null, name);`
+const x = document.createElement("div", null, name);`
 );
 
 runTest(
@@ -512,7 +558,7 @@ runTest(
   compileJSX(`/* see https://example.com/docs */
 const x = <div>Hi</div>;`),
   `/* see https://example.com/docs */
-const x = d("div", null, "Hi");`
+const x = document.createElement("div", null, "Hi");`
 );
 
 /**
@@ -548,11 +594,11 @@ runTest(
   `
     function createView(viewModel) {
       const stateful = componentBuilder(() => (
-        d("div", null, d("h3", null, viewModel.count), d("button", { "onClick": () => viewModel.increment() }, "UPDATE"))
+        document.createElement("div", null, document.createElement("h3", null, viewModel.count), document.createElement("button", { "onClick": () => viewModel.increment() }, "UPDATE"))
       ));
 
       const container = (
-        d("div", null, d("h2", null, "Local stateful inside stateless"), d("p", null, "Outer container is static; inner subtree rerenders via componentBuilder."), stateful.render())
+        document.createElement("div", null, document.createElement("h2", null, "Local stateful inside stateless"), document.createElement("p", null, "Outer container is static; inner subtree rerenders via componentBuilder."), stateful.render())
       );
 
       viewModel.addListener(() => stateful.rerender());
@@ -565,7 +611,7 @@ runTest(
 runTest(
   "JSX - card-like component",
   compileJSX(`
-    function card(title, description, content) {
+    function cardocument.createElement(title, description, content) {
       return (
         <section className="card">
           <h2>{title}</h2>
@@ -576,9 +622,9 @@ runTest(
     }
   `),
   `
-    function card(title, description, content) {
+    function cardocument.createElement(title, description, content) {
       return (
-        d("section", { "className": "card" }, d("h2", null, title), d("small", null, description), content)
+        document.createElement("section", { "className": "card" }, document.createElement("h2", null, title), document.createElement("small", null, description), content)
       );
     }
   `,
