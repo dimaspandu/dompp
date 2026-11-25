@@ -9,10 +9,14 @@ let items = [
   { id: 3, text: "Gamma" },
 ];
 
-const keyedList = document.createComponent((rerender) => (
-  <div className="demo-surface keyed-surface">
-    <h3>Dynamic List</h3>
-    <p>Stable keys preserve item identity across append, prepend, reverse, and remove.</p>
+const appNode = document.getElementById("app");
+
+document.createComponent((rerender) => (
+  document.createElement(
+    appNode,
+    { id: "app", className: "demo-surface keyed-surface" },
+    <h3>Dynamic List</h3>,
+    <p>Stable keys preserve item identity across append, prepend, reverse, and remove.</p>,
     <div className="keyed-controls">
       <button
         className="keyed-button"
@@ -58,7 +62,7 @@ const keyedList = document.createComponent((rerender) => (
       >
         REMOVE FIRST
       </button>
-    </div>
+    </div>,
     <div className="keyed-list">
       {items.map((item) => (
         <div key={item.id} className="keyed-item">
@@ -66,7 +70,5 @@ const keyedList = document.createComponent((rerender) => (
         </div>
       ))}
     </div>
-  </div>
+  )
 ));
-
-document.getElementById("app").setChildren([keyedList]);
