@@ -648,9 +648,13 @@
 // Chapter 6 — Adoption: attach to existing markup and make it reactive
 // -----------------------------------------------------------------------------
 
-// Example 10: Server DOM adoption (attach to existing markup).
-// Bring it to real pages: adopt server-rendered nodes and reconcile against them,
-// preserving DOM identity instead of recreating it.
+// Example 10: Server DOM adoption (hydrate existing markup).
+// HYDRATE (method 1): document.createElement(existingNode, props, children)
+// adopts the server-rendered node and reconciles against it, preserving DOM
+// identity and leaving server children that are not described untouched.
+// Contrast: document.createElement(node).setAttributes({...}).setChildren([...])
+// (method 2) is a re-reconcile on an existing node that is destructive toward
+// old children, not hydrate.
 (function({ document }) {
   // Data embedded by the server alongside the rendered HTML.
   const serverMessages = JSON.parse(
@@ -678,9 +682,11 @@
   );
 })(window);
 
-// Example 11: Reactive server messenger (adoption + rerender).
-// Combine adoption (10) with components and state (03-04): keep the adopted root,
-// then rerender a keyed list reactively on user input.
+// Example 11: Reactive server messenger (hydrate + rerender).
+// HYDRATE (method 1): document.createElement(rootNode, props, children)
+// adopts the pre-rendered container root and rerenders a keyed message list
+// reactively while keeping the same DOM root node. Contrast with method 2
+// (setAttributes + setChildren) which is destructive toward existing children.
 (function({ document }) {
   // Data embedded by the server alongside the rendered HTML.
   const messages = JSON.parse(

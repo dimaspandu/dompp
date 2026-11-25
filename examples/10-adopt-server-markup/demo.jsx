@@ -25,6 +25,3 @@ const card = document.createComponent((rerender) => (
     </div>
   )
 ));
-
-const app = document.getElementById("app");
-app.setChildren(card);

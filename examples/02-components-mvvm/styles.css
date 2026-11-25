@@ -336,7 +336,7 @@ article > p {
 
 .like-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   font-size: 15px;
 }

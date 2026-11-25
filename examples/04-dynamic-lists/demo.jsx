@@ -9,14 +9,25 @@ let items = [
 ];
 let showList = true;
 
-const listComponent = document.createComponent((rerender) => (
-  <div className="demo-surface keyed-surface">
+function App(_props, ...children) {
+  return document.createElement(
+    document.getElementById("app"),
+    _props,
+    ...children
+  );
+}
+
+document.createComponent((rerender) => (
+  <App className="demo-surface keyed-surface">
     <h3>Dynamic List</h3>
     <p>Toggle list visibility and preserve item identity</p>
     <button
       className="action-button"
       type="button"
-      onClick={() => { showList = !showList; rerender(); }}
+      onClick={() => {
+        showList = !showList;
+        rerender();
+      }}
     >
       {showList ? "Hide List" : "Show List"}
     </button>
@@ -29,8 +40,5 @@ const listComponent = document.createComponent((rerender) => (
         ))}
       </div>
     ) : null}
-  </div>
+  </App>
 ));
-
-const app = document.getElementById("app");
-app.setChildren(listComponent);

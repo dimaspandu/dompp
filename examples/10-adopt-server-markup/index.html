@@ -21,13 +21,15 @@
       <article>
         <h2>Live Demo</h2>
         <div id="app" class="demo-surface adoption-surface">
-          <ul id="adoption-list" class="server-list">
-            <li>JavaScript will adopt it</li>
-            <li>This list was rendered as HTML</li>
-            <li>Hello from the server</li>
-          </ul>
-          <script id="adoption-data" type="application/json">[{"id":1,"text":"Hello from the server"},{"id":2,"text":"This list was rendered as HTML"},{"id":3,"text":"JavaScript will adopt it"}]</script>
-          <p id="adoption-status" class="status-note">Waiting for adoption...</p>
+          <div id="server-card">
+            <ul id="adoption-list" class="server-list">
+              <li>JavaScript will adopt it</li>
+              <li>This list was rendered as HTML</li>
+              <li>Hello from the server</li>
+            </ul>
+            <script id="adoption-data" type="application/json">[{"id":1,"text":"Hello from the server"},{"id":2,"text":"This list was rendered as HTML"},{"id":3,"text":"JavaScript will adopt it"}]</script>
+            <p id="adoption-status" class="status-note">Waiting for adoption...</p>
+          </div>
         </div>
       </article>
 

@@ -114,8 +114,9 @@ article > p {
 }
 
 .jsx-surface {
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   background: #ffedd5;
   color: #9a3412;
@@ -335,7 +336,7 @@ article > p {
 
 .like-row {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 6px;
   font-size: 15px;
 }

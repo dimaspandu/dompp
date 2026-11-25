@@ -15,7 +15,7 @@ function Counter(_props, ...children) {
 
 <Counter className="demo-surface jsx-surface">
   <div className="like-row">
-    {count = document.createElement("strong", null, likes)}
+    {count = <strong>{likes}</strong>}
     <span> likes</span>
   </div>
   <button
