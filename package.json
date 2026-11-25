@@ -45,7 +45,8 @@
   "scripts": {
     "dev": "node server.js",
     "test": "node --test",
-    "test:browser": "node scripts/test-browser.js"
+    "test:browser": "node scripts/test-browser.js",
+    "build": "node scripts/build-examples-jsx.mjs"
   },
   "engines": {
     "node": ">=18"
