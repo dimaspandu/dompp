@@ -35,10 +35,10 @@ const fragmentComponent = document.createComponent((rerender) => (
     </p>
     <div className="fragment-box">
       <strong>Parent</strong>
-      <fragment>
-        <div className="fragment-child fragment-child-a">Wrapped child one</div>
+      {document.createElement("fragment", null,
+        <div className="fragment-child fragment-child-a">Wrapped child one</div>,
         <div className="fragment-child fragment-child-b">Wrapped child two</div>
-      </fragment>
+      )}
     </div>
     <button
       className="action-button"
