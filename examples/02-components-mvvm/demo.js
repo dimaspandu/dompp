@@ -21,27 +21,35 @@
 
 const viewModel = createLikeViewModel();
 
-const likeComponent = document.createComponent(() => (
-  document.createElement(document.getElementById("app"))
-    .setChildren(
-      document.createElement("div")
-        .setAttributes({ class: "like-row" })
-        .setChildren(
-          document.createElement("strong").setText(viewModel.likes),
-          document.createElement("span").setText(" likes")
-        ),
-      document.createElement("button")
-        .setText("♥ Like")
-        .setAttributes({
-          type: "button",
-          class: "like-button"
-        })
-        .setEvents({
-          click() {
-            viewModel.like();
-          }
-        })
-    )
-));
+const likeComponent = document.createComponent(() => {
+  const component = document.createElement(
+    document.getElementById("app")
+  )
+  .setAttributes({
+    id: "app",
+    class: "demo-surface mvvm-surface"
+  })
+  .setChildren(
+    document.createElement("div")
+      .setAttributes({ class: "like-row" })
+      .setChildren(
+        document.createElement("strong").setText(viewModel.likes),
+        document.createElement("span").setText(" likes")
+      ),
+    document.createElement("button")
+      .setText("♥ Like")
+      .setAttributes({
+        type: "button",
+        class: "like-button"
+      })
+      .setEvents({
+        click() {
+          viewModel.like();
+        }
+      })
+  );
+
+  return component;
+});
 
 viewModel.subscribe(() => likeComponent.rerender());
