@@ -135,7 +135,7 @@ let nextId = Math.max(...messages.map((m) => m.id)) + 1;
 const rootNode = document.getElementById("messenger-app");
 
 const messenger = document.createComponent((rerender) =>
-  document.createElement(
+  document.hydrateElement(
     rootNode,
     { class: "demo-surface messenger-surface" },
     <h3>Reactive server messenger</h3>,
@@ -176,7 +176,7 @@ const messenger = document.createComponent((rerender) =>
 );
 ```
 
-Here, `document.createElement(rootNode, ...)` adopts the existing element, while `document.createComponent(...)` provides the component's `rerender` callback. Reconciliation updates the keyed message list without requiring a separate virtual DOM tree. Unlike an `ElementBuilder`, a component supports `.rerender()`.
+Here, `document.hydrateElement(rootNode, ...)` adopts the existing element for non-destructive hydration (server markup not described in the virtual tree is preserved), while `document.createComponent(...)` provides the component's `rerender` callback. Reconciliation updates the keyed message list without requiring a separate virtual DOM tree. Unlike an `ElementBuilder`, a component supports `.rerender()`.
 
 ### Fragments and arrays
 
@@ -247,7 +247,8 @@ The main public API is exposed through the enhanced `document` methods:
 | API | Purpose |
 | --- | --- |
 | `document.createElement(tag, props, ...children)` | Create an element using the DOM++ builder API; it can also be used as a JSX factory |
-| `document.createElement(existingElement)` | Adopt an existing element |
+| `document.createElement(existingElement)` | Adopt an existing element and reconcile its children destructively |
+| `document.hydrateElement(existingElement, props, ...children)` | Adopt an existing element for non-destructive hydration; server children not described in the virtual tree are preserved |
 | `document.createComponent(builder)` | Create a component boundary with explicit `.rerender()` and DOM-aware reconciliation |
 | `document.createDocumentFragment(...children)` | Compose children into a flat array |
 | `document.createElement("fragment")` | Create a wrapper fragment element |
@@ -261,21 +262,23 @@ The builder layer (`elementBuilder`, `componentBuilder`, and related utilities) 
 
 ## Examples
 
-The `examples/` directory contains 11 progressive examples:
+The `examples/` directory contains a single-page guided tour under `examples/index.html` with 12 progressive examples. Example source files live under `examples/demos/`:
 
-1. **01-direct-dom** — create and update real DOM nodes with chainable setters.
-2. **02-components-mvvm** — component boundaries, explicit `.rerender()`, and ViewModel-driven state.
-3. **03-jsx-and-adoption** — JSX syntax and adopting existing markup in place.
-4. **04-dynamic-lists** — conditional rendering and keyed lists with identity preservation.
-5. **05-fragments-and-arrays** — multi-root fragments and array-returning components.
-6. **06-safe-by-default** — validation for dangerous attributes and URL protocols.
-7. **07-capstone-mini-app** — combine components, state, lists, and fragments in one app.
-8. **08-local-stateful-subtree** — keep a stateful component inside a larger view.
-9. **09-add-remove-subtree** — dynamically mount and unmount subtrees.
-10. **10-adopt-server-markup** — adopt existing server-rendered markup and update it.
-11. **11-guided-tour** — a guided walkthrough from direct DOM operations to components, composition, and adoption.
+1. **01.0 · Basic DOM** — create and update real DOM nodes with chainable setters.
+2. **01.1 · Basic DOM + Reconciliation** — replace children and let reconciliation patch the tree.
+3. **02 · Basic DOM + JSX** — same direct-mutation foundation expressed with JSX.
+4. **03 · Component** — component boundaries, explicit `.rerender()`, DOM-aware reconciliation.
+5. **04 · MVVM** — ViewModel-owned state with subscriber-driven rerenders.
+6. **05 · Local Stateful in Stateless** — keep a stateful subtree inside a larger stateless view.
+7. **06 · Conditional Rendering** — add/remove subtrees by returning `null`.
+8. **07 · Keyed List** — stable keys preserve item identity across append, prepend, reverse, remove.
+9. **08 · Fragments and Arrays** — `<fragment>` wrapper vs `<>...</>` inlined arrays vs `document.createDocumentFragment(...)`.
+10. **09 · Keyed List in Fragment** — keyed list produced inside an inlined fragment array.
+11. **10 · Server DOM Adoption** — `document.hydrateElement()` on server-rendered markup (non-destructive).
+12. **11 · Reactive Server Messenger** — adopt server markup then rerender reactively with `document.hydrateElement()`.
+12. **12 · Cross-Component Update** — components rerender each other directly via `.rerender()` references.
 
-Browse the `examples/` directory or run the local development server as described below.
+Browse `examples/index.html` or run the local development server as described below.
 
 ## Experiments
 

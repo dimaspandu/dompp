@@ -83,8 +83,14 @@ function serveFile(res, filePath, req) {
   if (extension === ".jsx") {
     try {
       const source = readFileSync(filePath, "utf8");
+      const acceptHeader = req.headers.accept || "";
+      const acceptTypes = acceptHeader
+        .split(",")
+        .map((a) => a.trim().split(";")[0]);
       const wantsSource =
-        req.headers.accept?.includes("text/plain") ||
+        acceptTypes.includes("text/plain") &&
+        !acceptTypes.includes("text/javascript") &&
+        !acceptTypes.includes("*/*") ||
         new URL(req.url || "/", "http://localhost").searchParams.has("source");
       if (wantsSource) {
         res.writeHead(200, { "Content-Type": "text/plain; charset=utf-8" });

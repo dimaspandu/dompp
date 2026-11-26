@@ -23,13 +23,13 @@
         <div id="basic-app-01.0"></div>
         <details class="snippet">
           <summary>View code (01.0)</summary>
-          <pre><code data-example="01.0" class="language-javascript"></code></pre>
+          <pre><code data-demo="01.0" class="language-javascript"></code></pre>
         </details>
         <hr />
         <div id="basic-app-01.1"></div>
         <details class="snippet">
           <summary>View code (01.1)</summary>
-          <pre><code data-example="01.1" class="language-javascript"></code></pre>
+          <pre><code data-demo="01.1" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -40,7 +40,7 @@
         <div id="basic-jsx-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="02" class="language-javascript"></code></pre>
+          <pre><code data-demo="02" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -51,7 +51,7 @@
         <div id="component-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="03" class="language-javascript"></code></pre>
+          <pre><code data-demo="03" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -62,7 +62,7 @@
         <div id="mvvm-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="04" class="language-javascript"></code></pre>
+          <pre><code data-demo="04" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -73,7 +73,7 @@
         <div id="lsisv-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="05" class="language-javascript"></code></pre>
+          <pre><code data-demo="05" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -84,7 +84,7 @@
         <div id="conditional-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="06" class="language-javascript"></code></pre>
+          <pre><code data-demo="06" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -95,7 +95,7 @@
         <div id="keyed-list-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="07" class="language-javascript"></code></pre>
+          <pre><code data-demo="07" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -106,7 +106,7 @@
         <div id="fragment-array-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="08" class="language-javascript"></code></pre>
+          <pre><code data-demo="08" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -117,7 +117,7 @@
         <div id="keyed-fragment-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="09" class="language-javascript"></code></pre>
+          <pre><code data-demo="09" class="language-javascript"></code></pre>
         </details>
       </article>
       <article>
@@ -137,7 +137,7 @@
         </div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="10" class="language-javascript"></code></pre>
+          <pre><code data-demo="10" class="language-javascript"></code></pre>
         </details>
       </article>
       <article>
@@ -165,7 +165,7 @@
         </script>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="11" class="language-javascript"></code></pre>
+          <pre><code data-demo="11" class="language-javascript"></code></pre>
         </details>
           <p class="note">
             <code>document.hydrateElement(existingNode, ...)</code> preserves
@@ -183,7 +183,7 @@
         <div id="cross-update-app" class="demo-surface cross-update-surface"></div>
         <details class="snippet">
           <summary>View code</summary>
-          <pre><code data-example="12" class="language-javascript"></code></pre>
+          <pre><code data-demo="12" class="language-javascript"></code></pre>
         </details>
       </article>
     </div>
@@ -193,46 +193,66 @@
 
   <script type="module" src="../src/index.js"></script>
   <script type="module">
-    const isLocalhost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-    await import(isLocalhost ? "./demo.jsx" : "./demo.compiled.js");
+    // Mount each example from its own demos/XX.jsx file (JSX compiled by server).
+    async function mountDemo(id, appId, file) {
+      try {
+        const mod = await import(`./demos/${file}`);
+      } catch (err) {
+        console.error(`Failed to load demo ${id}:`, err);
+      }
+    }
+
+    await mountDemo("01.0", "basic-app-01.0", "01.0.jsx");
+    await mountDemo("01.1", "basic-app-01.1", "01.1.jsx");
+    await mountDemo("02",  "basic-jsx-app",   "02.jsx");
+    await mountDemo("03",  "component-app",   "03.jsx");
+    await mountDemo("04",  "mvvm-app",        "04.jsx");
+    await mountDemo("05",  "lsisv-app",      "05.jsx");
+    await mountDemo("06",  "conditional-app", "06.jsx");
+    await mountDemo("07",  "keyed-list-app",  "07.jsx");
+    await mountDemo("08",  "fragment-array-app", "08.jsx");
+    await mountDemo("09",  "keyed-fragment-app", "09.jsx");
+    await mountDemo("10",  "adoption-app",    "10.jsx");
+    await mountDemo("11",  "messenger-app",   "11.jsx");
+    await mountDemo("12",  "cross-update-app", "12.jsx");
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script type="module">
-    // Auto-load example code snippets from demo.jsx so source is written once.
-    const js = await fetch("./demo.jsx", {
-      headers: { Accept: "text/plain" }
-    })
-    .then((r) => r.text())
-    .catch(
-      () => fetch("./demo.js")
-        .then((r) => r.text())
-        .catch(() => "// Source unavailable")
-    );
-
-    // Parse sections delimited by // EXAMPLE_START:ID ... // EXAMPLE_END:ID
-    const sections = {};
-    const re = /\/\/ EXAMPLE_START:(\S+)\r?\n([\s\S]*?)\r?\n\/\/ EXAMPLE_END:\1/gm;
-    let m;
-    while ((m = re.exec(js)) !== null) {
-      sections[m[1]] = m[2].trim();
+    // Load source snippets from demos/XX.jsx (raw source for display).
+    async function loadSnippet(demoId, file) {
+      try {
+        const res = await fetch(`./demos/${file}`, {
+          headers: { Accept: "text/plain" }
+        });
+        const text = await res.text();
+        const code = document.querySelector(`code[data-demo="${demoId}"]`);
+        if (code) {
+          code.textContent = text.trim();
+          hljs.highlightElement(code);
+        }
+      } catch (err) {
+        console.error(`Failed to load snippet ${demoId}:`, err);
+        const code = document.querySelector(`code[data-demo="${demoId}"]`);
+        if (code) {
+          code.textContent = `// Source unavailable: ${err.message}`;
+          hljs.highlightElement(code);
+        }
+      }
     }
 
-    const codes = document.querySelectorAll("code[data-example]");
-    if (Object.keys(sections).length === 0 && codes.length > 0) {
-      // No sections parsed: likely file:// protocol where fetch is blocked,
-      // or demo.jsx not served. Show a helpful hint instead of silent failure.
-      codes.forEach((code) => {
-        code.textContent = "// Source unavailable — run 'npm run dev' and open via http://localhost:5173";
-        hljs.highlightElement(code);
-      });
-      return;
-    }
-
-    codes.forEach((code) => {
-      const id = code.getAttribute("data-example");
-      code.textContent = sections[id] ?? "// Source unavailable";
-      hljs.highlightElement(code);
-    });
+    await loadSnippet("01.0", "01.0.jsx");
+    await loadSnippet("01.1", "01.1.jsx");
+    await loadSnippet("02",   "02.jsx");
+    await loadSnippet("03",   "03.jsx");
+    await loadSnippet("04",   "04.jsx");
+    await loadSnippet("05",   "05.jsx");
+    await loadSnippet("06",   "06.jsx");
+    await loadSnippet("07",   "07.jsx");
+    await loadSnippet("08",   "08.jsx");
+    await loadSnippet("09",   "09.jsx");
+    await loadSnippet("10",   "10.jsx");
+    await loadSnippet("11",   "11.jsx");
+    await loadSnippet("12",   "12.jsx");
   </script>
 </body>
 </html>

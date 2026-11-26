@@ -6,6 +6,26 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.7.1] - 2026-11-26
+
+### Added
+
+- Added `document.hydrateElement(existingNode, props, ...children)` for explicit non-destructive hydration of server-rendered DOM markup. Preserves server children not described in the virtual tree.
+
+### Changed
+
+- `document.createElement(existingNode, props, ...children)` now reconciles children destructively (replaces old children not in the new tree) instead of hydrating. Use `document.hydrateElement()` when you want to preserve server markup not described in the virtual tree.
+- Extracted `applyElementProps()` helper shared by `elementBuilder` and `hydrateElement`.
+- `document.createElement("fragment")` now returns a real wrapper element node instead of an `ElementBuilder` descriptor.
+- Consolidated `examples/` into a single page with per-example source files under `examples/demos/`; source snippets are auto-loaded from `demos/XX.jsx`.
+
+### Fixed
+
+- Fixed example 04 (dynamic lists) to adopt `#app` directly without nested surface divs.
+- Fixed example 02 (MVVM) to adopt `#app` on every rerender instead of creating new root nodes.
+- Fixed `<fragment>` JSX compilation: replaced `document.createElement.fragment` with `document.createElement("fragment")`.
+- Fixed `server.js` raw-source detection so `import()` of `.jsx` files always returns compiled JS.
+
 ## [1.7.0] - 2026-11-19
 
 ### Added
