@@ -131,3 +131,49 @@ test("document.createElement adopts an existing element node", async () => {
   equal(existing.getAttribute("data-owned"), "yes");
   equal(existing.querySelector("span").textContent, "updated");
 });
+
+test("document.hydrateElement adopts existing node and preserves undescribed server children", async () => {
+  freshEnv();
+  // Manually build server-rendered markup.
+  const list = document.createElement("ul");
+  list.setAttribute("id", "list");
+  const li1 = document.createElement("li");
+  li1.textContent = "server item 1";
+  const li2 = document.createElement("li");
+  li2.textContent = "server item 2";
+  list.appendChild(li1);
+  list.appendChild(li2);
+  document.body.appendChild(list);
+
+  const listNode = document.getElementById("list");
+  const hydrated = document.hydrateElement(listNode, null,
+    document.createElement("li", { key: "a" }, "Item A")
+  );
+
+  // Identity of the adopted root is preserved.
+  ok(hydrated.toNode() === listNode);
+  equal(listNode.getAttribute("id"), "list");
+
+  // Described child replaces; undescribed server child is preserved (non-destructive).
+  equal(listNode.children.length, 2);
+  equal(listNode.children[0].textContent, "Item A");
+  equal(listNode.children[1].textContent, "server item 2");
+});
+
+test("document.hydrateElement applies props to the adopted node", async () => {
+  freshEnv();
+  const target = document.createElement("div");
+  target.setAttribute("id", "target");
+  target.textContent = "original";
+  document.body.appendChild(target);
+
+  const hydrated = document.hydrateElement(target, {
+    "data-owned": "yes",
+    className: "hydrated",
+  });
+  const node = hydrated.toNode();
+
+  ok(node === target);
+  equal(node.getAttribute("data-owned"), "yes");
+  equal(node.getAttribute("class"), "hydrated");
+});

@@ -161,3 +161,57 @@ test("createElement with { is } option is passed to native createElement", () =>
   assert.equal(el.nodeType, 1);
   assert.equal(el.tagName, "BUTTON");
 });
+
+test("document.hydrateElement adopts existing node and preserves undescribed server children", () => {
+  const { document, root } = setup();
+  // Manually build server-rendered markup (fake DOM has no innerHTML parser).
+  const list = document.createElement("ul");
+  list.setAttribute("id", "list");
+  const li1 = document.createElement("li");
+  li1.textContent = "server item 1";
+  const li2 = document.createElement("li");
+  li2.textContent = "server item 2";
+  list.appendChild(li1);
+  list.appendChild(li2);
+  root.appendChild(list);
+  document.body.appendChild(root);
+
+  const listNode = document.getElementById("list");
+  const hydrated = document.hydrateElement(listNode, null,
+    document.createElement("li", { key: "a" }, "Item A")
+  );
+
+  // Identity of the adopted root is preserved.
+  assert.equal(hydrated.node, listNode);
+  assert.equal(listNode.getAttribute("id"), "list");
+
+  // Described child replaces/updates; undescribed server child is preserved (non-destructive).
+  assert.equal(listNode.children.length, 2);
+  assert.equal(listNode.children[0].textContent, "Item A");
+  assert.equal(listNode.children[1].textContent, "server item 2");
+});
+
+test("document.hydrateElement applies props to the adopted node", () => {
+  const { document, root } = setup();
+  const target = document.createElement("div");
+  target.setAttribute("id", "target");
+  target.textContent = "original";
+  root.appendChild(target);
+  document.body.appendChild(root);
+
+  const hydrated = document.hydrateElement(target, {
+    "data-owned": "yes",
+    className: "hydrated",
+  });
+  const node = hydrated.node;
+
+  assert.equal(node, target);
+  assert.equal(node.getAttribute("data-owned"), "yes");
+  assert.equal(node.getAttribute("class"), "hydrated");
+});
+
+test("document.hydrateElement requires an element node as first argument", () => {
+  const { document } = setup();
+  assert.throws(() => document.hydrateElement(null), TypeError);
+  assert.throws(() => document.hydrateElement(document.createTextNode("text")), TypeError);
+});

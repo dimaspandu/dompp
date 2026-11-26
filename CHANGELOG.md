@@ -25,6 +25,7 @@ This project follows semantic versioning principles.
 - Fixed example 02 (MVVM) to adopt `#app` on every rerender instead of creating new root nodes.
 - Fixed `<fragment>` JSX compilation: replaced `document.createElement.fragment` with `document.createElement("fragment")`.
 - Fixed `server.js` raw-source detection so `import()` of `.jsx` files always returns compiled JS.
+- Added unit and browser tests for `document.hydrateElement` (adoption, prop application, non-destructive preservation of undescribed server children, argument validation).
 
 ## [1.7.0] - 2026-11-19
 
