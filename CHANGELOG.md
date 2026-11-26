@@ -26,6 +26,7 @@ This project follows semantic versioning principles.
 - Fixed `<fragment>` JSX compilation: replaced `document.createElement.fragment` with `document.createElement("fragment")`.
 - Fixed `server.js` raw-source detection so `import()` of `.jsx` files always returns compiled JS.
 - Added unit and browser tests for `document.hydrateElement` (adoption, prop application, non-destructive preservation of undescribed server children, argument validation).
+- Updated `docs/enhancement.md` and `docs/index.html`: added `hydrateElement` routing diagram and updated `createElement` routing to show destructive reconcile.
 
 ## [1.7.0] - 2026-11-19
 

@@ -12,8 +12,9 @@ flowchart TD
     D --> G[Element.prototype setters]
     E --> H[Document.prototype.createComponent]
     E --> I[Document.prototype.createElement override]
-    E --> J[Document.prototype.createDocumentFragment override]
-    B --> K[return API object]
+    E --> J[Document.prototype.hydrateElement]
+    E --> K[Document.prototype.createDocumentFragment override]
+    B --> L[return API object]
 ```
 
 ## Per-Document Builder Resolution
@@ -44,12 +45,28 @@ flowchart TD
     B -- yes --> D{tagName function?}
     D -- yes --> E[elementBuilder function component]
     D -- no --> F{tagName is element node?}
-    F -- yes --> G[elementBuilder adopt]
+    F -- yes --> G[elementBuilder adopt + reconcile children]
     F -- no --> H{options plain object without is?}
     H -- yes --> I[elementBuilder with props]
     H -- no --> J{rest.length > 0?}
     J -- yes --> K[elementBuilder with children]
     J -- no --> C
+```
+
+## hydrateElement Routing
+
+```mermaid
+flowchart TD
+    A[hydrateElement node, props, ...children] --> B{builders installed?}
+    B -- no --> C[error: builders not installed]
+    B -- yes --> D{node is element node?}
+    D -- no --> E[throw TypeError]
+    D -- yes --> F[adoptElement(node)]
+    F --> G[apply props via applyElementProps]
+    G --> H{children?}
+    H -- yes --> I[_attachChildren (non-destructive)]
+    H -- no --> J[return ElementBuilder]
+    I --> J
 ```
 
 ## createComponent

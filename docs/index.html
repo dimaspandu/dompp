@@ -505,8 +505,9 @@
     D --&gt; G[Element.prototype setters]
     E --&gt; H[Document.prototype.createComponent]
     E --&gt; I[Document.prototype.createElement override]
-    E --&gt; J[Document.prototype.createDocumentFragment override]
-    B --&gt; K[return API object]</pre>
+    E --&gt; J[Document.prototype.hydrateElement]
+    E --&gt; K[Document.prototype.createDocumentFragment override]
+    B --&gt; L[return API object]</pre>
             <h2>Per-Document Builder Resolution</h2>
             <p>Enhancements store builders on <code>doc.__domppBuilders</code>. Prototype methods resolve builders from <code>target.ownerDocument</code> (or the document itself), so the same prototypes work across documents.</p>
             <pre class="mermaid">sequenceDiagram
@@ -528,12 +529,24 @@
     B -- yes --&gt; D{tagName function?}
     D -- yes --&gt; E[elementBuilder function component]
     D -- no --&gt; F{tagName is element node?}
-    F -- yes --&gt; G[elementBuilder adopt]
+    F -- yes --&gt; G[elementBuilder adopt + reconcile children]
     F -- no --&gt; H{options plain object without is?}
     H -- yes --&gt; I[elementBuilder with props]
     H -- no --&gt; J{rest.length &gt; 0?}
     J -- yes --&gt; K[elementBuilder with children]
     J -- no --&gt; C</pre>
+            <h2>hydrateElement Routing</h2>
+            <pre class="mermaid">flowchart TD
+    A[hydrateElement node, props, ...children] --&gt; B{builders installed?}
+    B -- no --&gt; C[error: builders not installed]
+    B -- yes --&gt; D{node is element node?}
+    D -- no --&gt; E[throw TypeError]
+    D -- yes --&gt; F[adoptElement(node)]
+    F --&gt; G[apply props via applyElementProps]
+    G --&gt; H{children?}
+    H -- yes --&gt; I[_attachChildren (non-destructive)]
+    H -- no --&gt; J[return ElementBuilder]
+    I --&gt; J</pre>
             <h2>createComponent</h2>
             <p><code>document.createComponent(builder)</code> returns a rendered <code>ElementBuilder</code> (or flat array) extended with <code>.rerender(callback?)</code>.</p>
             <pre class="mermaid">flowchart TD
