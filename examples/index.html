@@ -211,13 +211,24 @@
 
     // Parse sections delimited by // EXAMPLE_START:ID ... // EXAMPLE_END:ID
     const sections = {};
-    const re = /\/\/ EXAMPLE_START:([^\s]+)\n([\s\S]*?)\n\/\/ EXAMPLE_END:\1/gm;
+    const re = /\/\/ EXAMPLE_START:(\S+)\r?\n([\s\S]*?)\r?\n\/\/ EXAMPLE_END:\1/gm;
     let m;
     while ((m = re.exec(js)) !== null) {
-      sections[m[1]] = m[2].trimStart();
+      sections[m[1]] = m[2].trim();
     }
 
-    document.querySelectorAll("code[data-example]").forEach((code) => {
+    const codes = document.querySelectorAll("code[data-example]");
+    if (Object.keys(sections).length === 0 && codes.length > 0) {
+      // No sections parsed: likely file:// protocol where fetch is blocked,
+      // or demo.jsx not served. Show a helpful hint instead of silent failure.
+      codes.forEach((code) => {
+        code.textContent = "// Source unavailable — run 'npm run dev' and open via http://localhost:5173";
+        hljs.highlightElement(code);
+      });
+      return;
+    }
+
+    codes.forEach((code) => {
       const id = code.getAttribute("data-example");
       code.textContent = sections[id] ?? "// Source unavailable";
       hljs.highlightElement(code);
