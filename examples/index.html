@@ -193,7 +193,7 @@
 
   <script type="module" src="../src/index.js"></script>
   <script type="module">
-    // Mount each example from its own demos/XX.jsx file (JSX compiled by server).
+    // Mount each example from its own demos/XX.compiled.js file (pre-compiled JSX).
     async function mountDemo(id, appId, file) {
       try {
         const mod = await import(`./demos/${file}`);
@@ -202,19 +202,19 @@
       }
     }
 
-    await mountDemo("01.0", "basic-app-01.0", "01.0.jsx");
-    await mountDemo("01.1", "basic-app-01.1", "01.1.jsx");
-    await mountDemo("02",  "basic-jsx-app",   "02.jsx");
-    await mountDemo("03",  "component-app",   "03.jsx");
-    await mountDemo("04",  "mvvm-app",        "04.jsx");
-    await mountDemo("05",  "lsisv-app",      "05.jsx");
-    await mountDemo("06",  "conditional-app", "06.jsx");
-    await mountDemo("07",  "keyed-list-app",  "07.jsx");
-    await mountDemo("08",  "fragment-array-app", "08.jsx");
-    await mountDemo("09",  "keyed-fragment-app", "09.jsx");
-    await mountDemo("10",  "adoption-app",    "10.jsx");
-    await mountDemo("11",  "messenger-app",   "11.jsx");
-    await mountDemo("12",  "cross-update-app", "12.jsx");
+    await mountDemo("01.0", "basic-app-01.0", "01.0.compiled.js");
+    await mountDemo("01.1", "basic-app-01.1", "01.1.compiled.js");
+    await mountDemo("02",  "basic-jsx-app",   "02.compiled.js");
+    await mountDemo("03",  "component-app",   "03.compiled.js");
+    await mountDemo("04",  "mvvm-app",        "04.compiled.js");
+    await mountDemo("05",  "lsisv-app",      "05.compiled.js");
+    await mountDemo("06",  "conditional-app", "06.compiled.js");
+    await mountDemo("07",  "keyed-list-app",  "07.compiled.js");
+    await mountDemo("08",  "fragment-array-app", "08.compiled.js");
+    await mountDemo("09",  "keyed-fragment-app", "09.compiled.js");
+    await mountDemo("10",  "adoption-app",    "10.compiled.js");
+    await mountDemo("11",  "messenger-app",   "11.compiled.js");
+    await mountDemo("12",  "cross-update-app", "12.compiled.js");
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script type="module">

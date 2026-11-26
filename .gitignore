@@ -10,6 +10,3 @@ coverage
 .agent2
 .agent
 .ai
-
-# Compiled example JSX output (generated)
-examples/**/*.compiled.js
