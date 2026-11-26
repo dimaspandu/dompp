@@ -156,9 +156,9 @@
     </section>
   ));
 
-  document.getElementById("component-app").setChildren([
+  document.getElementById("component-app").setChildren(
     likeComponent
-  ]);
+  );
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -176,10 +176,12 @@
       get likes() {
         return likes;
       },
+
       like() {
         likes++;
         listeners.forEach(listener => listener(likes));
       },
+
       subscribe(listener) {
         listeners.add(listener);
         return () => listeners.delete(listener);
@@ -246,7 +248,11 @@
     const stateful = document.createComponent(() => (
       <div className="stateful-card">
         <h3>Count: {viewModel.count}</h3>
-        <button class="action-button" type="button" onClick={() => viewModel.increment()}>
+        <button
+          class="action-button"
+          type="button"
+          onClick={() => viewModel.increment()}
+        >
           UPDATE
         </button>
       </div>
@@ -301,8 +307,10 @@
         class="action-button"
         type="button"
         onClick={() => {
-          confirming = true;
-          rerender();
+          if (!confirming) {
+            confirming = true;
+            rerender();
+          }
         }}
       >
         OPEN
@@ -325,9 +333,9 @@
     </section>
   ));
 
-  document.getElementById("conditional-app").setChildren([
+  document.getElementById("conditional-app").setChildren(
     validator,
-  ]);
+  );
 })(window);
 
 // Example 07: Keyed list with JSX (stable keys preserve item nodes).
@@ -420,9 +428,9 @@
     </section>
   ));
 
-  document.getElementById("keyed-list-app").setChildren([
+  document.getElementById("keyed-list-app").setChildren(
     keyedList,
-  ]);
+  );
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -493,18 +501,18 @@
     <section className="demo-surface fragment-surface">
       <h3>Fragments and arrays</h3>
       <p>
-        Fragment-producing forms (<code>&lt;&gt;...&lt;/&gt;</code>,{" "}
+        Fragment-producing forms (<code>{"<>"}...{"</>"}</code>,{" "}
         <code>elementBuilder.fragment</code>,{" "}
         <code>document.createDocumentFragment(...)</code>) return a flat child
         array that is inlined (no wrapper node). Use{" "}
-        <code>&lt;fragment&gt;</code> or{" "}
+        <code>{"<"}fragment{">"}</code> or{" "}
         <code>document.createElement("fragment")</code> for an explicit wrapper
         element.
       </p>
 
-      <h4>&lt;fragment&gt; wrapper element</h4>
+      <h4>{"<"}fragment{">"} wrapper element</h4>
       <p>
-        <code>&lt;fragment&gt;</code> creates a real wrapper element node that
+        <code>{"<"}fragment{">"}</code> creates a real wrapper element node that
         owns its children.
       </p>
       <div className="fragment-box">
@@ -515,7 +523,7 @@
         </fragment>
       </div>
 
-      <h4>JSX fragment &lt;&gt;...&lt;/&gt; (inlined array)</h4>
+      <h4>JSX fragment {"<"}{">"}...{"<"}/{">"} (inlined array)</h4>
       <p>Children are contributed directly to the parent with no wrapper.</p>
       <div className="fragment-box">
         <strong>Parent label</strong>
@@ -559,7 +567,7 @@
     </section>
   ));
 
-  document.getElementById("fragment-array-app").setChildren([view]);
+  document.getElementById("fragment-array-app").setChildren(view);
 })(window);
 
 // Example 09: Keyed list inside a real fragment (createDocumentFragment array).
@@ -579,7 +587,7 @@
       <p>
         The list items are produced inside a real fragment array via{" "}
         <code>document.createDocumentFragment(...)</code> (not the{" "}
-        <code>&lt;fragment&gt;</code> wrapper element). The fragment inlines its
+        <code>{"<"}fragment{">"}</code> wrapper element). The fragment inlines its
         children into the container while stable keys preserve item identity
         across updates.
       </p>
@@ -641,7 +649,7 @@
     </section>
   ));
 
-  document.getElementById("keyed-fragment-app").setChildren([keyedFragment]);
+  document.getElementById("keyed-fragment-app").setChildren(keyedFragment);
 })(window);
 
 // -----------------------------------------------------------------------------
