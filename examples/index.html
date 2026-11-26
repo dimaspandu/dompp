@@ -23,77 +23,13 @@
         <div id="basic-app-01.0"></div>
         <details class="snippet">
           <summary>View code (01.0)</summary>
-      <pre><code class="language-javascript">let basicLikes = 0;
-let basicCount;
-let basicButton;
-
-document.getElementById("basic-app-01.0")
-  .setAttributes({ class: "demo-surface basic-surface" })
-  .setStyles({ backgroundColor: "#fffebb" })
-  .setChildren([
-    document.createElement("div")
-      .setAttributes({ class: "like-row" })
-      .setChildren([
-        (basicCount = document.createElement("strong").setText(basicLikes)),
-        document.createElement("span").setText(" likes"),
-      ]),
-    (basicButton = document.createElement("button")
-      .setAttributes({ class: "like-button", type: "button" })
-      .setText("♥ Like")
-      .setEvents({
-        click() {
-          basicLikes++;
-          basicButton.setStyles({
-            fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal",
-          });
-          basicCount.setText(basicLikes);
-          if (basicLikes === 10) {
-            basicButton.setAttributes({ disabled: true });
-          }
-        },
-      })),
-  ]);</code></pre>
+          <pre><code data-example="01.0" class="language-javascript"></code></pre>
         </details>
         <hr />
         <div id="basic-app-01.1"></div>
         <details class="snippet">
           <summary>View code (01.1)</summary>
-      <pre><code class="language-javascript">let basicLikes = 0;
-let basicApp;
-
-basicApp = document.createElement(
-  document.getElementById("basic-app-01.1"),
-  {
-    className: "demo-surface basic-surface",
-    styles: { backgroundColor: "#fffebb" },
-  },
-  renderChildren()
-);
-
-function renderChildren() {
-  return [
-    document.createElement(
-      "div",
-      { class: "like-row" },
-      document.createElement("strong").setText(basicLikes),
-      document.createElement("span").setText(" likes")
-    ),
-    document.createElement(
-      "button",
-      {
-        class: "like-button",
-        type: "button",
-        styles: { fontStyle: basicLikes % 2 !== 0 ? "italic" : "normal" },
-        disabled: basicLikes === 10,
-        onClick() {
-          basicLikes++;
-          basicApp.setChildren(renderChildren());
-        },
-      },
-      "♥ Like"
-    ),
-  ];
-}</code></pre>
+          <pre><code data-example="01.1" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -104,38 +40,7 @@ function renderChildren() {
         <div id="basic-jsx-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">let basicLikes = 0;
-let basicCount;
-
-function BasicApp(_props, ...children) {
-  return document.createElement(
-    document.getElementById("basic-jsx-app"),
-    _props,
-    ...children
-  );
-}
-
-&lt;BasicApp
-  className="demo-surface jsx-surface"
-  styles={{
-    backgroundColor: "#fffebb",
-  }}
-&gt;
-  &lt;div class="like-row"&gt;
-    {basicCount = &lt;strong&gt;{basicLikes}&lt;/strong&gt;}
-    &lt;span&gt; likes&lt;/span&gt;
-  &lt;/div&gt;
-  &lt;button
-    class="like-button"
-    type="button"
-    onClick={() =&gt; {
-      basicLikes++;
-      basicCount.setText(basicLikes);
-    }}
-  &gt;
-    ♥ Like
-  &lt;/button&gt;
-&lt;/BasicApp&gt;</code></pre>
+          <pre><code data-example="02" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -146,27 +51,7 @@ function BasicApp(_props, ...children) {
         <div id="component-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">let componentLikes = 0;
-
-const likeComponent = document.createComponent((rerender) =&gt; (
-  &lt;section class="demo-surface component-surface"&gt;
-    &lt;div class="like-row"&gt;
-      &lt;strong&gt;{componentLikes}&lt;/strong&gt;
-      &lt;span&gt; likes&lt;/span&gt;
-    &lt;/div&gt;
-    &lt;button
-      class="like-button"
-      type="button"
-      onClick={() =&gt; rerender(() =&gt; componentLikes++)}
-    &gt;
-      ♥ Like
-    &lt;/button&gt;
-  &lt;/section&gt;
-));
-
-document.getElementById("component-app").setChildren([
-  likeComponent
-]);</code></pre>
+          <pre><code data-example="03" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -177,48 +62,7 @@ document.getElementById("component-app").setChildren([
         <div id="mvvm-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">function LikeViewModel() {
-  let likes = 0;
-  const listeners = new Set();
-
-  return {
-    get likes() { return likes; },
-    like() {
-      likes++;
-      listeners.forEach(listener =&gt; listener(likes));
-    },
-    subscribe(listener) {
-      listeners.add(listener);
-      return () =&gt; listeners.delete(listener);
-    }
-  };
-}
-
-const viewModel = LikeViewModel();
-const likeComponent = document.createComponent(() =&gt; (
-  &lt;section class="demo-surface mvvm-surface"&gt;
-    &lt;div class="like-row"&gt;
-      &lt;strong&gt;{viewModel.likes}&lt;/strong&gt;
-      &lt;span&gt; likes&lt;/span&gt;
-    &lt;/div&gt;
-    &lt;button
-      class="like-button"
-      type="button"
-      onClick={() =&gt; viewModel.like()}
-    &gt;
-      ♥ Like
-    &lt;/button&gt;
-  &lt;/section&gt;
-));
-
-// Mount without using setChildren (.render() no longer needed).
-document.createElement(
-  document.getElementById("mvvm-app"),
-  null,
-  likeComponent
-);
-
-viewModel.subscribe(() =&gt; likeComponent.rerender());</code></pre>
+          <pre><code data-example="04" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -229,60 +73,7 @@ viewModel.subscribe(() =&gt; likeComponent.rerender());</code></pre>
         <div id="lsisv-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">function createViewModel() {
-  const listeners = new Set();
-  let count = 0;
-
-  return {
-    get count() { return count; },
-    increment() {
-      count++;
-      this.notifyListener();
-    },
-    addListener(listener) {
-      listeners.add(listener);
-      return () =&gt; listeners.delete(listener);
-    },
-    notifyListener() {
-      listeners.forEach((listener) =&gt; listener(this));
-    },
-  };
-}
-
-function createView(viewModel) {
-  const stateful = document.createComponent(() =&gt; (
-    &lt;div className="stateful-card"&gt;
-      &lt;h3&gt;Count: {viewModel.count}&lt;/h3&gt;
-      &lt;button class="action-button" type="button" onClick={() =&gt; viewModel.increment()}&gt;
-        UPDATE
-      &lt;/button&gt;
-    &lt;/div&gt;
-  ));
-
-  const container = (
-    &lt;div class="demo-surface lsisv-surface"&gt;
-      &lt;div class="lsisv-header"&gt;
-        &lt;h2&gt;Local stateful inside stateless&lt;/h2&gt;
-        &lt;p&gt;
-          The outer container stays static. Only the inner
-          &lt;code&gt;createComponent&lt;/code&gt; subtree rerenders when the
-          ViewModel notifies listeners.
-        &lt;/p&gt;
-      &lt;/div&gt;
-      {stateful}
-    &lt;/div&gt;
-  );
-
-  viewModel.addListener(() =&gt; stateful.rerender());
-  return container;
-}
-
-const viewModel = createViewModel();
-document.createElement(
-  document.getElementById("lsisv-app"),
-  null,
-  createView(viewModel)
-);</code></pre>
+          <pre><code data-example="05" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -293,46 +84,7 @@ document.createElement(
         <div id="conditional-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">let confirming = false;
-
-const validator = document.createComponent((rerender) =&gt; (
-  &lt;section className="demo-surface conditional-surface"&gt;
-    &lt;h3&gt;Conditional child reconciliation&lt;/h3&gt;
-    &lt;p&gt;
-      The panel is added or removed by rerendering only this component.
-      A &lt;code&gt;null&lt;/code&gt; branch leaves no node in the virtual tree.
-    &lt;/p&gt;
-    &lt;button
-      class="action-button"
-      type="button"
-      onClick={() =&gt; {
-        confirming = true;
-        rerender();
-      }}
-    &gt;
-      OPEN
-    &lt;/button&gt;
-    {confirming ? (
-      &lt;div className="conditional-panel" role="dialog" aria-label="Confirm"&gt;
-        &lt;h4&gt;Are you sure?&lt;/h4&gt;
-        &lt;button
-          class="action-button"
-          type="button"
-          onClick={() =&gt; {
-            confirming = false;
-            rerender();
-          }}
-        &gt;
-          CLOSE
-        &lt;/button&gt;
-      &lt;/div&gt;
-    ) : null}
-  &lt;/section&gt;
-));
-
-document.getElementById("conditional-app").setChildren([
-  validator,
-]);</code></pre>
+          <pre><code data-example="06" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -343,96 +95,7 @@ document.getElementById("conditional-app").setChildren([
         <div id="keyed-list-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">let nextId = 4;
-let items = [
-  { id: 1, label: "Alpha", tag: "article" },
-  { id: 2, label: "Bravo", tag: "article" },
-  { id: 3, label: "Charlie", tag: "article" },
-];
-
-const keyedList = document.createComponent((rerender) =&gt; (
-  &lt;section className="demo-surface keyed-surface"&gt;
-    &lt;h3&gt;Keyed child reconciliation&lt;/h3&gt;
-    &lt;p&gt;
-      Stable keys preserve item nodes when the list order changes.
-      Changing an item's tag intentionally replaces its node.
-    &lt;/p&gt;
-    &lt;div className="keyed-controls"&gt;
-      &lt;button
-        class="keyed-button"
-        type="button"
-        onClick={() =&gt; {
-          const id = nextId++;
-          items = [...items, { id, label: `Item ${id}`, tag: "article" }];
-          rerender();
-        }}
-      &gt;
-        APPEND
-      &lt;/button&gt;
-      &lt;button
-        class="keyed-button"
-        type="button"
-        onClick={() =&gt; {
-          const id = nextId++;
-          items = [{ id, label: `Item ${id}`, tag: "article" }, ...items];
-          rerender();
-        }}
-      &gt;
-        PREPEND
-      &lt;/button&gt;
-      &lt;button
-        class="keyed-button"
-        type="button"
-        onClick={() =&gt; {
-          items = [...items].reverse();
-          rerender();
-        }}
-      &gt;
-        REVERSE
-      &lt;/button&gt;
-      &lt;button
-        class="keyed-button"
-        type="button"
-        onClick={() =&gt; {
-          items = items.slice(1);
-          rerender();
-        }}
-      &gt;
-        REMOVE FIRST
-      &lt;/button&gt;
-      &lt;button
-        class="keyed-button"
-        type="button"
-        onClick={() =&gt; {
-          if (items.length) {
-            const [first, ...remaining] = items;
-            items = [{
-              ...first,
-              tag: first.tag === "article" ? "p" : "article",
-            }, ...remaining];
-            rerender();
-          }
-        }}
-      &gt;
-        CHANGE FIRST TAG
-      &lt;/button&gt;
-    &lt;/div&gt;
-    &lt;div className="keyed-list"&gt;
-      {items.map((item) =&gt; {
-        const Tag = item.tag;
-        return (
-          &lt;Tag key={item.id} className="keyed-item"&gt;
-            {item.label} (key: {item.id})
-          &lt;/Tag&gt;
-        );
-      })}
-    &lt;/div&gt;
-  &lt;/section&gt;
-));
-
-document.getElementById("keyed-list-app").setChildren([
-  keyedList,
-]);</code></pre>
+          <pre><code data-example="07" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -443,82 +106,7 @@ document.getElementById("keyed-list-app").setChildren([
         <div id="fragment-array-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">let showPanel = false;
-let renderCount = 0;
-
-// Array-returning component: reconciled per slot on rerender.
-function ArrayChildList({ rerender }) {
-  return [
-    &lt;div key="a" className="fragment-child fragment-child-a"&gt;Array child A&lt;/div&gt;,
-    &lt;div key="b" className="fragment-child fragment-child-b"&gt;
-      Array child B (renders: {renderCount})
-    &lt;/div&gt;,
-    &lt;button key="action" class="action-button" type="button"
-      onClick={() =&gt; rerender(() =&gt; renderCount++)}&gt;
-      Rerender array slots
-    &lt;/button&gt;,
-  ];
-}
-
-// createDocumentFragment(...) returns an inlined child array; as a component
-// result its slots are reconciled (null removes a slot).
-const inlineFragmentPanel = document.createComponent((rerender) =&gt;
-  document.createDocumentFragment(
-    &lt;strong&gt;Inline fragment array&lt;/strong&gt;,
-    &lt;p&gt;Time: {new Date().toLocaleTimeString()}&lt;/p&gt;,
-    &lt;button class="action-button" type="button"
-      onClick={() =&gt; rerender(() =&gt; (showPanel = true))}&gt;Open panel&lt;/button&gt;,
-    showPanel ? (
-      &lt;div className="conditional-panel" style={{ marginTop: "10px" }}&gt;
-        &lt;h4&gt;Conditional slot&lt;/h4&gt;
-        &lt;button class="action-button" type="button"
-          onClick={() =&gt; rerender(() =&gt; (showPanel = false))}&gt;Close&lt;/button&gt;
-      &lt;/div&gt;
-    ) : null
-  )
-);
-
-const view = document.createComponent((rerender) =&gt; (
-  &lt;section className="demo-surface fragment-surface"&gt;
-    {/* &lt;fragment&gt;: explicit wrapper element node */}
-    &lt;div className="fragment-box"&gt;
-      &lt;strong&gt;Parent&lt;/strong&gt;
-      &lt;fragment&gt;
-        &lt;div className="fragment-child fragment-child-a"&gt;Wrapped child one&lt;/div&gt;
-        &lt;div className="fragment-child fragment-child-b"&gt;Wrapped child two&lt;/div&gt;
-      &lt;/fragment&gt;
-    &lt;/div&gt;
-
-    {/* &lt;&gt;...&lt;/&gt;: inlined child array, no wrapper */}
-    &lt;div className="fragment-box"&gt;
-      &lt;strong&gt;Parent label&lt;/strong&gt;
-      &lt;&gt;
-        &lt;div className="fragment-child fragment-child-a"&gt;Inlined child one&lt;/div&gt;
-        &lt;div className="fragment-child fragment-child-b"&gt;Inlined child two&lt;/div&gt;
-      &lt;/&gt;
-    &lt;/div&gt;
-
-    {/* Array-returning component, per-slot rerender */}
-    &lt;div className="fragment-box"&gt;
-      &lt;strong&gt;Parent label&lt;/strong&gt;
-      &lt;ArrayChildList rerender={rerender} /&gt;
-    &lt;/div&gt;
-
-    {/* document.createDocumentFragment(...) child arrays */}
-    &lt;div className="fragment-box"&gt;
-      {document.createDocumentFragment(
-        &lt;strong&gt;Static fragment array&lt;/strong&gt;,
-        &lt;p&gt;Two nodes inlined with no wrapper.&lt;/p&gt;
-      )}
-      {document.createDocumentFragment().setChildren([
-        &lt;em key="set-children"&gt;Built via .setChildren([...])&lt;/em&gt;,
-      ])}
-      {inlineFragmentPanel}
-    &lt;/div&gt;
-  &lt;/section&gt;
-));
-
-document.getElementById("fragment-array-app").setChildren([view]);</code></pre>
+          <pre><code data-example="08" class="language-javascript"></code></pre>
         </details>
       </article>
 
@@ -529,53 +117,7 @@ document.getElementById("fragment-array-app").setChildren([view]);</code></pre>
         <div id="keyed-fragment-app"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">let nextId = 4;
-let items = [
-  { id: 1, label: "Alpha" },
-  { id: 2, label: "Bravo" },
-  { id: 3, label: "Charlie" },
-];
-
-const keyedFragment = document.createComponent((rerender) =&gt; (
-  &lt;section className="demo-surface keyed-surface"&gt;
-    &lt;h3&gt;Keyed list inside a fragment&lt;/h3&gt;
-    &lt;p&gt;
-      Items are produced inside a real fragment array via
-      &lt;code&gt;document.createDocumentFragment(...)&lt;/code&gt; (not the
-      &lt;code&gt;&amp;lt;fragment&amp;gt;&lt;/code&gt; wrapper). The fragment inlines
-      its children while stable keys preserve item identity.
-    &lt;/p&gt;
-    &lt;div className="keyed-controls"&gt;
-      &lt;button class="keyed-button" type="button"
-        onClick={() =&gt; { const id = nextId++; items = [...items, { id, label: `Item ${id}` }]; rerender(); }}&gt;
-        APPEND
-      &lt;/button&gt;
-      &lt;button class="keyed-button" type="button"
-        onClick={() =&gt; { const id = nextId++; items = [{ id, label: `Item ${id}` }, ...items]; rerender(); }}&gt;
-        PREPEND
-      &lt;/button&gt;
-      &lt;button class="keyed-button" type="button"
-        onClick={() =&gt; { items = [...items].reverse(); rerender(); }}&gt;
-        REVERSE
-      &lt;/button&gt;
-      &lt;button class="keyed-button" type="button"
-        onClick={() =&gt; { if (items.length) { items = items.slice(1); rerender(); } }}&gt;
-        REMOVE FIRST
-      &lt;/button&gt;
-    &lt;/div&gt;
-    &lt;div className="keyed-list"&gt;
-      {document.createDocumentFragment(
-        ...items.map((item) =&gt; (
-          &lt;div key={item.id} className="keyed-item"&gt;
-            {item.label} (key: {item.id})
-          &lt;/div&gt;
-        ))
-      )}
-    &lt;/div&gt;
-  &lt;/section&gt;
-));
-
-document.getElementById("keyed-fragment-app").setChildren([keyedFragment]);</code></pre>
+          <pre><code data-example="09" class="language-javascript"></code></pre>
         </details>
       </article>
       <article>
@@ -595,28 +137,7 @@ document.getElementById("keyed-fragment-app").setChildren([keyedFragment]);</cod
         </div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">// Data embedded by the server alongside the rendered HTML.
-const serverMessages = JSON.parse(
-  document.getElementById("adoption-data").textContent
-);
-
-const listNode = document.getElementById("adoption-list");
-
-// Adopt the existing &lt;ul&gt; and reconcile a keyed descriptor tree
-// against its current children instead of recreating them.
-const listBuilder = document.hydrateElement(
-  listNode,
-  null,
-  ...[...serverMessages]
-    .reverse()
-    .map((msg) =&gt; &lt;li key={msg.id}&gt;{msg.text}&lt;/li&gt;)
-);
-
-// listBuilder.node === listNode &amp;&amp; node identity is preserved
-document.getElementById("adoption-status").setText(
-  "Adopted existing &lt;ul&gt;: " + (listBuilder.node === listNode) +
-  " · reconciled items: " + listBuilder.struct.children.length
-);</code></pre>
+          <pre><code data-example="10" class="language-javascript"></code></pre>
         </details>
       </article>
       <article>
@@ -644,42 +165,8 @@ document.getElementById("adoption-status").setText(
         </script>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">// Data embedded by the server alongside the rendered HTML.
-const messages = JSON.parse(
-  document.getElementById("messenger-data").textContent
-);
-let nextId = Math.max(...messages.map((m) =&gt; m.id)) + 1;
-const rootNode = document.getElementById("messenger-app");
-
-const messenger = document.createComponent((rerender) =&gt;
-  document.hydrateElement(
-    rootNode,
-    { class: "demo-surface messenger-surface" },
-    &lt;h3&gt;Reactive server messenger&lt;/h3&gt;,
-    &lt;p&gt;Adopts the pre-rendered root and rerenders a keyed list.&lt;/p&gt;,
-    &lt;ul class="server-list"&gt;
-      {[...messages].reverse().map((msg) =&gt; (
-        &lt;li key={msg.id}&gt;{msg.text}&lt;/li&gt;
-      ))}
-    &lt;/ul&gt;,
-    &lt;div class="message-form"&gt;
-      &lt;textarea class="message-input" placeholder="Write a message..."&gt;&lt;/textarea&gt;
-      &lt;button class="action-button" type="button" onClick={() =&gt; {
-        const input = rootNode.querySelector("textarea");
-        const text = input.value.trim();
-        if (!text) return;
-        messages.push({ id: nextId++, text });
-        input.value = "";
-        rerender();
-      }}&gt;Send&lt;/button&gt;
-    &lt;/div&gt;,
-    &lt;p id="messenger-status" class="status-note"&gt;
-      {"Adopted root node · messages: " + messages.length}
-    &lt;/p&gt;
-  )
-);
-
-// Renders immediately and adopts the existing root (no .render() needed).</code></pre>
+          <pre><code data-example="11" class="language-javascript"></code></pre>
+        </details>
           <p class="note">
             <code>document.hydrateElement(existingNode, ...)</code> preserves
             server markup that is not described in the virtual tree
@@ -696,40 +183,7 @@ const messenger = document.createComponent((rerender) =&gt;
         <div id="cross-update-app" class="demo-surface cross-update-surface"></div>
         <details class="snippet">
           <summary>View code</summary>
-      <pre><code class="language-javascript">let countA = 0;
-let countB = 0;
-
-const componentA = document.createComponent((rerender) =&gt; (
-  &lt;section className="cross-card"&gt;
-    &lt;h4&gt;Component A&lt;/h4&gt;
-    &lt;p className="cross-count"&gt;Count: {countA}&lt;/p&gt;
-    &lt;div className="cross-actions"&gt;
-      &lt;button class="action-button" type="button" onClick={() =&gt; rerender(() =&gt; countA++)}&gt;
-        +1 A (self)
-      &lt;/button&gt;
-      &lt;button class="action-button" type="button" onClick={() =&gt; { countB++; componentB.rerender(); }}&gt;
-        +1 B (from A)
-      &lt;/button&gt;
-    &lt;/div&gt;
-  &lt;/section&gt;
-));
-
-const componentB = document.createComponent((rerender) =&gt; (
-  &lt;section className="cross-card"&gt;
-    &lt;h4&gt;Component B&lt;/h4&gt;
-    &lt;p className="cross-count"&gt;Count: {countB}&lt;/p&gt;
-    &lt;div className="cross-actions"&gt;
-      &lt;button class="action-button" type="button" onClick={() =&gt; rerender(() =&gt; countB++)}&gt;
-        +1 B (self)
-      &lt;/button&gt;
-      &lt;button class="action-button" type="button" onClick={() =&gt; { countA++; componentA.rerender(); }}&gt;
-        +1 A (from B)
-      &lt;/button&gt;
-    &lt;/div&gt;
-  &lt;/section&gt;
-));
-
-document.getElementById("cross-update-app").setChildren([componentA, componentB]);</code></pre>
+          <pre><code data-example="12" class="language-javascript"></code></pre>
         </details>
       </article>
     </div>
@@ -744,10 +198,9 @@ document.getElementById("cross-update-app").setChildren([componentA, componentB]
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script type="module">
+    // Auto-load example code snippets from demo.jsx so source is written once.
     const js = await fetch("./demo.jsx", {
-      headers: {
-        Accept: "text/plain"
-      }
+      headers: { Accept: "text/plain" }
     })
     .then((r) => r.text())
     .catch(
@@ -755,14 +208,20 @@ document.getElementById("cross-update-app").setChildren([componentA, componentB]
         .then((r) => r.text())
         .catch(() => "// Source unavailable")
     );
-    
-    document.querySelectorAll("code").forEach(code => {
-      // code.textContent = js.trim();
-      // console.log("code", code);
+
+    // Parse sections delimited by // EXAMPLE_START:ID ... // EXAMPLE_END:ID
+    const sections = {};
+    const re = /\/\/ EXAMPLE_START:([^\s]+)\n([\s\S]*?)\n\/\/ EXAMPLE_END:\1/gm;
+    let m;
+    while ((m = re.exec(js)) !== null) {
+      sections[m[1]] = m[2].trimStart();
+    }
+
+    document.querySelectorAll("code[data-example]").forEach((code) => {
+      const id = code.getAttribute("data-example");
+      code.textContent = sections[id] ?? "// Source unavailable";
       hljs.highlightElement(code);
     });
-    // block.textContent = js.trim();
-    // hljs.highlightElement(block);
   </script>
 </body>
 </html>

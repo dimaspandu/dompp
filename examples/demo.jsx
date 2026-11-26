@@ -17,6 +17,7 @@
 // Example 01.0: Basic DOM (direct element mutation).
 // Hold references to nodes and update only what changes. No rerender pass.
 (function({ document }) {
+// EXAMPLE_START:01.0
   let basicLikes = 0;
   let basicCount;
   let basicButton;
@@ -47,11 +48,13 @@
           },
         })),
     ]);
+// EXAMPLE_END:01.0
 })(window);
 
 // Example 01.1: Basic DOM (direct element mutation with child reconciliation).
 // Step up from 01.0: re-render by replacing children and let reconciliation patch the tree.
 (function({ document }) {
+// EXAMPLE_START:01.1
   let basicLikes = 0;
   let basicApp;
 
@@ -88,6 +91,7 @@
       ),
     ];
   }
+// EXAMPLE_END:01.1
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -101,6 +105,7 @@
 // Example 02: Basic DOM with JSX (direct element mutation, no component rerender).
 // Same direct-mutation idea as 01, written with familiar JSX syntax.
 (function({ document }) {
+// EXAMPLE_START:02
   let basicLikes = 0;
   let basicCount;
 
@@ -133,11 +138,13 @@
       ♥ Like
     </button>
   </BasicApp>
+// EXAMPLE_END:02
 })(window);
 
 // Example 03: Component with JSX (render + rerender patches the existing DOM).
 // Move from manual updates to a component: render once, then rerender to patch.
 (function({ document }) {
+// EXAMPLE_START:03
   let componentLikes = 0;
 
   const likeComponent = document.createComponent((rerender) => (
@@ -159,6 +166,7 @@
   document.getElementById("component-app").setChildren(
     likeComponent
   );
+// EXAMPLE_END:03
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -168,6 +176,7 @@
 // Example 04: MVVM with JSX (ViewModel owns state and notifies subscribers).
 // Separate state (ViewModel) from the view: the view subscribes and rerenders.
 (function({ document }) {
+// EXAMPLE_START:04
   function LikeViewModel() {
     let likes = 0;
     const listeners = new Set();
@@ -214,11 +223,13 @@
   );
 
   viewModel.subscribe(() => likeComponent.rerender());
+// EXAMPLE_END:04
 })(window);
 
 // Example 05: Local stateful subtree inside a stateless view (ViewModel-driven).
 // Localize rerenders: only the embedded stateful subtree updates, not the whole view.
 (function({ document }) {
+// EXAMPLE_START:05
   function createViewModel() {
     const listeners = new Set();
     let count = 0;
@@ -284,6 +295,7 @@
     null,
     view
   );
+// EXAMPLE_END:05
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -294,6 +306,7 @@
 // After controlling where rerenders happen (05), control what renders:
 // a null branch removes the subtree from the tree.
 (function({ document }) {
+// EXAMPLE_START:06
   let confirming = false;
 
   const validator = document.createComponent((rerender) => (
@@ -336,11 +349,13 @@
   document.getElementById("conditional-app").setChildren(
     validator,
   );
+// EXAMPLE_END:06
 })(window);
 
 // Example 07: Keyed list with JSX (stable keys preserve item nodes).
 // Give dynamic lists identity: stable keys preserve nodes across reorder/insert/remove.
 (function({ document }) {
+// EXAMPLE_START:07
   let nextId = 4;
   let items = [
     { id: 1, label: "Alpha", tag: "article" },
@@ -431,6 +446,7 @@
   document.getElementById("keyed-list-app").setChildren(
     keyedList,
   );
+// EXAMPLE_END:07
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -442,6 +458,7 @@
 // (<>...</>, elementBuilder.fragment, document.createDocumentFragment(...)),
 // plus array-returning components reconciled per slot.
 (function({ document }) {
+// EXAMPLE_START:08
   let showPanel = false;
   let renderCount = 0;
 
@@ -568,12 +585,14 @@
   ));
 
   document.getElementById("fragment-array-app").setChildren(view);
+// EXAMPLE_END:08
 })(window);
 
 // Example 09: Keyed list inside a real fragment (createDocumentFragment array).
 // Combine 07 and 08: keys still preserve item identity when the list is produced
 // inside an inlined fragment (child array), not a wrapper element.
 (function({ document }) {
+// EXAMPLE_START:09
   let nextId = 4;
   let items = [
     { id: 1, label: "Alpha" },
@@ -650,6 +669,7 @@
   ));
 
   document.getElementById("keyed-fragment-app").setChildren(keyedFragment);
+// EXAMPLE_END:09
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -662,6 +682,7 @@
 // server children NOT described in the virtual tree (non-destructive).
 // DOM identity of the <ul> root is preserved.
 (function({ document }) {
+// EXAMPLE_START:10
   // Data embedded by the server alongside the rendered HTML.
   const serverMessages = JSON.parse(
     document.getElementById("adoption-data").textContent
@@ -686,6 +707,7 @@
     " · reconciled items: " + listBuilder.struct.children.length +
     " · same DOM node kept: " + adopted
   );
+// EXAMPLE_END:10
 })(window);
 
 // Example 11: Reactive server messenger (hydrate + rerender).
@@ -696,6 +718,7 @@
 // Contrast with document.createElement(node, props, children) which reconciles
 // and replaces old children not in the new tree (destructive).
 (function({ document }) {
+// EXAMPLE_START:11
   // Data embedded by the server alongside the rendered HTML.
   const messages = JSON.parse(
     document.getElementById("messenger-data").textContent
@@ -746,6 +769,7 @@
   );
 
   // ComponentBuilder renders immediately and adopts the existing root.
+// EXAMPLE_END:11
 })(window);
 
 // -----------------------------------------------------------------------------
@@ -756,6 +780,7 @@
 // createComponent returns the element with .rerender(), so components can hold
 // references to each other and trigger targeted updates without a parent intermediary.
 (function({ document }) {
+// EXAMPLE_START:12
   let countA = 0;
   let countB = 0;
 
@@ -790,4 +815,5 @@
   ));
 
   document.getElementById("cross-update-app").setChildren([componentA, componentB]);
+// EXAMPLE_END:12
 })(window);
