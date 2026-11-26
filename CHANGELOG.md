@@ -6,6 +6,16 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.7.2] - 2026-11-26
+
+### Fixed
+
+- `examples/index.html` now imports pre-compiled `./demos/XX.compiled.js`
+  instead of raw `./demos/XX.jsx`, so examples work on static hosts (Netlify)
+  without a JSX compilation server
+- Removed `examples/**/*.compiled.js` from `.gitignore` so compiled files
+  are committed and deployed
+
 ## [1.7.1] - 2026-11-26
 
 ### Added
