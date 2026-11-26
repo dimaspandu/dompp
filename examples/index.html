@@ -193,10 +193,13 @@
 
   <script type="module" src="../src/index.js"></script>
   <script type="module">
-    // Mount each example from its own demos/XX.compiled.js file (pre-compiled JSX).
+    // Mount each example from demos/XX.jsx on localhost (server compiles JSX)
+    // or demos/XX.compiled.js on static production hosts.
+    const isLocalhost = location.hostname === "localhost" || location.hostname === "127.0.0.1";
     async function mountDemo(id, appId, file) {
+      const entry = isLocalhost ? file.replace(/\.compiled\.js$/, ".jsx") : file;
       try {
-        const mod = await import(`./demos/${file}`);
+        const mod = await import(`./demos/${entry}`);
       } catch (err) {
         console.error(`Failed to load demo ${id}:`, err);
       }

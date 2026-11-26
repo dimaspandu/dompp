@@ -6,6 +6,14 @@ This project follows semantic versioning principles.
 
 ---
 
+## [1.7.3] - 2026-11-26
+
+### Fixed
+
+- `examples/index.html` loads `.jsx` on `localhost` (dev server compiles JSX)
+  and `.compiled.js` on static production hosts (Netlify), so examples work
+  in both environments.
+
 ## [1.7.2] - 2026-11-26
 
 ### Fixed
